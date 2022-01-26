@@ -1,42 +1,11 @@
 const express = require('express');
-const fss = require('fs');
-const meka = require('./buildMekamount.js');
-const web3 =  require("@solana/web3.js");
+const nootBot = require('./nootBot.js');
+const solBot = require('./sol.js');
+const key0 = require('./key0.js');
 const app = express();
+
+require('dotenv').config();
 const port = process.env.PORT || 5000;
-
-function getAttempt(mek, pfp, success, error){
-    return {
-        date : Date().toLocaleString(),
-        mek : mek,
-        pfp : pfp,
-        success : success,
-        error : error
-    };
-}
-
-function getReport(report, user){
-    if(report[user] == null){
-        return report;
-    } else {
-        return {user : report[user]};
-    }
-}
-
-function getBuildCount(report, user){
-    return (report[user] == null) ? 0 : report[user].builds.length;
-}
-
-function setReport(report, user, mek, pfp, success, error){
-    if(report[user] == null){
-        report[user] = {
-            wallet : user,
-            builds : [getAttempt(mek, pfp, success, error)] 
-        }
-    } else {
-        report[user].builds.push(getAttempt(mek, pfp, success, error))
-    }
-}
 
 async function connectToSolana(){
     console.log("Connecting to Solana");
@@ -47,82 +16,68 @@ async function connectToSolana(){
     // console.log(info);
 }
 
+
+function getTXAmount(sol, keyNumber){
+    console.log("JD5C5Bsp3q9jeC5S57QuSCDDfpeKzXvRkfPB3Td6x3Wh".length);
+    console.log("7RawqnUsUxA8pnb8nAUTgyzRaLVRYwR9yzPR3gfzbdht".length);
+    console.log("DeBtJy88jrnheD8F3HEAqiQztykXksgMyvmcByHC5RGv".length);
+    console.log("HVVzRzhEsMURJd42CcEgSxDFcAZEwDWVZdZvfFtKkaDd".length);
+    console.log("F95gRGdq3prYCZYtXeYXK5MQw5qu3c7rh2hnaAjux9Ld".length);
+
+    console.log("tfxdDLtqfQAWLo5zZjW4kfGKv1J7E6LZrShtHdoFjgc".length);
+}
+
+//https://onecompiler.com/nodejs/3xrfq5a67
+function key0Check(sol, solution){
+    return solution === key0.key0Hash(sol, process.env.FAKE_NFT);
+}
+
+//Morse code
+//red Harring
+// https://onecompiler.com/nodejs/3xrft5nu6
+function key1Check(sol, solution){
+
+    return true;
+
+}
+
+//red Harring
+// https://onecompiler.com/nodejs/3xrftanzm
+function key3Check(sol, solution){
+
+    return true;
+}
+
+function checkAnswer(tweet){
+
+    //Null Check
+    if(tweet == null) return false;
+
+    //Get Parts
+    let parts = tweet.split(":");
+    if(parts.length !== 3) return false;
+    
+    switch(parts[0]){
+        case "key0": return key0Check(parts[1], parts[2]);
+        case "key1": return key1Check(parts[1], parts[2]);
+        case "key2": return key3Check(parts[1], parts[2]);
+    }
+
+    return false;
+}
+
 function spinUpServer(){
-    let creditsLeft = 0;
-    let report = {};
 
     //Connect To Solana
-    let connection = connectToSolana();
+    let sol = solBot.connectToSolana();
+
+    //Spin up Twitter Bot
+    let noot = nootBot.startnootBootLoop(checkAnswer);
 
     //Spin Up Server
     app.listen(port, () => console.log(`Listening on port ${port}`));
 
-    //Set Hook
-    app.get('/sol/:sol/meka/:meka/mekaflip/:mekaflip/pfp/:pfp/pfpflip/:pfpflip/twittercrop/:twittercrop/scale/:scale', (req, res) => {
-        try {
-            console.log(`-- Buidling for: ${req.params.sol}...`);
-            if(creditsLeft > 0){
-                meka.buildMekamount(
-                    req.params.sol,
-                    req.params.meka,
-                    req.params.mekaflip,
-                    req.params.pfp,
-                    req.params.pfpflip,
-                    req.params.twittercrop,
-                    parseFloat(req.params.scale),
-                    parseInt(getBuildCount(report, req.params.sol)),
-                    (filepath)=> {
-                        creditsLeft--;
-                        console.log(`-- SUCCESS for: ${req.params.sol}`);
-                        setReport(report, req.params.sol, req.params.meka, req.params.pfp, true, "");
-                        res.download(filepath);
-                    },
-                    (error)=>{
-                        console.log(`-- FAIL for: ${req.params.sol} (${error})`);
-                        setReport(report, req.params.sol, req.params.meka, req.params.pfp, false, `(${error})`);
-                        res.send({ error: error });
-                    }
-                );
-            } else {
-                console.log(`-- No Credits Left for: ${req.params.sol}`);
-                res.send({ noCredits: true });
-            }
-        } catch(error){
-            console.log(`-- GLOBAL FAIL for: ${req.params.sol} (${error})`);
-        }
-    });
-
-    app.get('/credits', (req, res) => {
-        try {
-            res.send({ credits: creditsLeft });
-        } catch {
-            console.log(`Trouble gettings credits (${error})`);
-        }
-    });
-
-    app.get('/nuke/:soladdress', (req, res) => {
-        try{
-            meka.nuke(req.params.soladdress);
-            res.send({ theDeed: "is done" });
-            console.log(`-- CLEARED for: ${req.params.soladdress}`);
-        } catch (error) {
-            console.log(`Trouble nuking mek (${error})`);
-        }
-    });
-
-    app.get('/credits/:credits/pass/:pass', (req, res) => {
-        try{
-            if(req.params.pass == "beep"){
-                creditsLeft = (parseInt(req.params.credits) == null) ? 0 : parseInt(req.params.credits);
-                res.send({ set: `${req.params.credits} credits` });
-            } else {
-                res.send({ naughty : "naughty" });
-            }
-        } catch (error) {
-            console.log(`Trouble setting credits (${error})`);
-        }
-    });
-
+    //Set Hooks
     app.get('/report/:user', (req, res) => {
         try{
             res.send(getReport(report, req.params.user));
@@ -133,4 +88,11 @@ function spinUpServer(){
 
 }
 
-spinUpServer();
+// spinUpServer();
+// 7DhUR2sgQCtCGYZw1RWvzKPJCDu2Qp2N9nkiGZZUMCfN
+
+const key = 'key0';
+const user = process.env.USER_SOL;
+const solution = key0.key0Hash(user, process.env.FAKE_NFT);
+
+console.log(checkAnswer(`${key}:${user}:${solution}`));
