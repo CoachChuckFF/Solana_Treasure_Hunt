@@ -1,201 +1,75 @@
-const TwitterV2 = require('twitter-v2');
+console.log('You found me! [key2] LAST KEY!');
 
-require('dotenv').config();
+//---------------- EDIT BELOW -----------------//
 
-// var twitterDM = new Twitter({
-//     consumer_key: process.env.TWITTER_CONSUMER_KEY,
-//     consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
-//     access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
-//     access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
-// });
+let YOUR_KEY2_MINTING_ADDRESS = '';
+let PASSWORD = '';
 
-var twitterBot = new TwitterV2({
-    consumer_key: process.env.TWITTER_CONSUMER_KEY,
-    consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
-    access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
-    access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
-});
+// ----- Finish the function! ------
+// Input: (number, number)
+// Output: a XOR b
+function hashFunction(a, b){
 
-var twitterServer = new TwitterV2({
-    consumer_key: process.env.TWITTER_CONSUMER_KEY,
-    consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
-    bearer_token: process.env.TWITTER_BEARER_TOKEN,
-});
+    // TODO
+    // bitwise XOR a and b 
+    let output = a^b;
 
-
-function sleep(ms) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
+    return output;
 }
 
-function printData(data) {
-    if(data.errors != null){
-        data.errors.forEach((error)=>{
-            console.log("----- ERROR -----");
-            console.log(error);
-            console.log("\n\n");
-        });
+//---------------- EDIT ABOVE -----------------//
+
+
+//*** Directions
+console.log(`Step 1: Go to twitter and find @Noot_Noot_Bot`);
+console.log(`Step 2: Reply to any Noot Noot Bot's tweets with the following output:`);
+console.log(`\nkey2:${YOUR_KEY2_MINTING_ADDRESS}:${key2Hash(YOUR_KEY2_MINTING_ADDRESS, PASSWORD)}\n`);
+console.log('Step 3: Wait for a like and a DM!');
+
+//*** Hash Function
+function key2Hash(yourWallet, password){
+    let hash = 0;
+    let answer = '';
+
+    if(!yourWallet){console.log(`[ERROR]: Enter in your sol in the YOUR_KEY2_MINTING_ADDRESS=''`); return "ERROR"}
+    if(!password){console.log(`[ERROR]: Enter in a password in PASSWORD=''`); return "ERROR"}
+    if(!testHashFunction()){console.log(`[ERROR]: Bad function - you want A XOR B`); return "ERROR"}
+
+    //STAGE 0: HASH
+    for (i = 0; i < Math.min(yourWallet.length, password.length); i++) {
+        let char = hashFunction(yourWallet.charCodeAt(i), password.charCodeAt(i));
+        hash  = ((hash << 5) - hash) + char;
+        hash |= 0; // Convert to 32bit integer        
     }
 
-    console.log("----- DATA -----");
-    console.log(data);
-    console.log("\n\n");
-}
-
-function getRules(){
-    return [
-        {
-            "value": "to:Noot_Noot_Bot", 
-            "tag": "noot"
-        },
-    ];
-}
-
-function deleteRules(){
-    twitterServer.post(
-        'tweets/search/stream/rules', 
-        {
-            delete: {
-                ids: [
-                    "1486030790530064384",
-                    "1486041655388127243",
-                ]
-            }
+    //STAGE 1: NOOT!
+    let hashNumberString = `${Math.abs(hash) | 100}`;
+    for(var i = 0; i < 3; i++){
+        switch(hashNumberString.charAt(i)){
+            case "0": answer += "noot"; break;
+            case "1": answer += "Noot"; break;
+            case "2": answer += "NoOt"; break;
+            case "3": answer += "NOOT"; break;
+            case "4": answer += "nOOT"; break;
+            case "5": answer += "nOoT"; break;
+            case "6": answer += "nooT"; break;
+            case "7": answer += "NooT"; break;
+            case "8": answer += "N0OT"; break;
+            case "9": answer += "noOt"; break;
         }
-    ).then((data)=>{
-        printData(data);
-    });
-}
-
-function getOwner(tweetID){
-    twitterBot.get('tweets', {
-        ids: tweetID,
-        tweet: {
-          fields: ['created_at', 'entities', 'public_metrics', 'author_id'],
-        },
-      }).then((data)=>{
-        printData(data);
-      });
-}
-
-
-
-
-function postResponse(tweetID){
-    twitterBot.post(`tweets`, {
-        text: "Hello World!",
-    }).then((data)=>{
-        printData(data);
-    });
-}
-
-// getOwner('1486106100453806086');
-postResponse();
-
-// 1486030790530064384
-function streamFactory(){
-    return new Promise((resolve, reject) => {
-
-        twitterServer.post('tweets/search/stream/rules', {add:getRules()}).then((data)=>{
-            twitterServer.get('tweets/search/stream/rules').then((data)=>{
-                printData(data);
-                resolve(twitterServer.stream('tweets/search/stream'));
-            })
-            .catch((error)=>{reject(error);})
-        })
-        .catch((error)=>{reject(error);})
-    });
-}
-
-function dataConsumer(data){
-    console.log(`----- TWEET ----\n`);
-    console.log(data);
-    console.log(`\n`);
-
-    getOwner(data.id);
-}
-
-async function listenForever(streamFactory, dataConsumer) {
-
-    try {
-        for await (const { data } of (await streamFactory())) {
-            dataConsumer(data);
-        }   
-        // The stream has been closed by Twitter. It is usually safe to reconnect.
-        console.log('Stream disconnected healthily. Reconnecting.');
-        sleep(3000).then(()=>{listenForever(streamFactory, dataConsumer)});
-    } catch (error) {
-        // An error occurred so we reconnect to the stream. Note that we should
-        // probably have retry logic here to prevent reconnection after a number of
-        // closely timed failures (may indicate a problem that is not downstream).
-        console.warn('Stream disconnected with error. Retrying.', error);
-        sleep(5000).then(()=>{listenForever(streamFactory, dataConsumer)});
+        if(i < 2)
+            answer += "-";
     }
+
+    // STAGE 2: OUTPUT
+    return answer;
 }
-  
-// listenForever(
-//     streamFactory,
-//     dataConsumer,
-// );
 
-// hideTweet('1486080151049981952');
+function testHashFunction(){
+    if(hashFunction(0xAA, 0x55) != 0xFF) return false;
+    if(hashFunction(0xFF, 0x00) != 0xFF) return false;
+    if(hashFunction(0xFF, 0xFF) != 0x00) return false;
+    return true;
+}
 
-// twitterDM.post('statuses/update', 
-// {status: 'I Love Twitter'})
-// .then(function (tweet) {
-//     console.log(tweet);
-// })
-// .catch(function (error) {
-//     throw error;
-// })
-
-// twitterDM.get(
-//     'direct_messages/events/list', 
-//     {},
-// )
-// .then(function (tweet) {
-//     printData(tweet.events[0].message_create);
-// })
-// .catch(function (error) {
-//     printData(error);
-// });
-
-// twitterDM.post(
-//     'direct_messages/events/new', 
-//     {
-//         event: {
-//             type: "message_create",
-//             message_create: {
-//                 target: {
-//                     recipient_id: "1467706010492100612",
-//                 },
-//                 sender_id: "1485965200222265345",
-//                 message_data: {
-//                     text: "Test"
-//                 }
-//             }
-//         }
-//     }
-// )
-// .then(function (tweet) {
-//     printData(tweet);
-// })
-// .catch(function (error) {
-//     printData(error);
-// });
-
-
-// {
-//     "event": {
-//         "type": "message_create", 
-//         "message_create": {
-//             "target": {
-//                 "recipient_id": "RECIPIENT_USER_ID"
-//             }, 
-//             "message_data": {
-//                 "text": "Hello World!"
-//             }
-//         }
-//     }
-// }
+module.exports = { key2Hash };

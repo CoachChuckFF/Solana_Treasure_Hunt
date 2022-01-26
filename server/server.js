@@ -2,6 +2,8 @@ const express = require('express');
 const nootBot = require('./nootBot.js');
 const solBot = require('./sol.js');
 const key0 = require('./key0.js');
+const key1 = require('./key1.js');
+const key2 = require('./key2.js');
 const app = express();
 
 require('dotenv').config();
@@ -27,25 +29,30 @@ function getTXAmount(sol, keyNumber){
     console.log("tfxdDLtqfQAWLo5zZjW4kfGKv1J7E6LZrShtHdoFjgc".length);
 }
 
+//Spot the fake penguin
 //https://onecompiler.com/nodejs/3xrfq5a67
 function key0Check(sol, solution){
-    return solution === key0.key0Hash(sol, process.env.FAKE_NFT);
+    return solution === key0.key0Hash(sol, process.env.KEY0_SOLUTION);
 }
 
-//Morse code
-//red Harring
+//Morse code -> Pesky Penguin Mint Date
+//Red Harring
 // https://onecompiler.com/nodejs/3xrft5nu6
+
+//Real
+// https://onecompiler.com/nodejs/3xrfxkjrd
 function key1Check(sol, solution){
-
-    return true;
-
+    return solution === key1.key1Hash(sol, process.env.KEY1_SOLUTION);
 }
 
-//red Harring
+//???
+//Red Harring
 // https://onecompiler.com/nodejs/3xrftanzm
-function key3Check(sol, solution){
 
-    return true;
+//Real
+// https://onecompiler.com/nodejs/3xrfyzyzm
+function key3Check(sol, solution){
+    return solution === key2.key2Hash(sol, process.env.KEY2_SOLUTION);
 }
 
 function checkAnswer(tweet){
@@ -91,8 +98,11 @@ function spinUpServer(){
 // spinUpServer();
 // 7DhUR2sgQCtCGYZw1RWvzKPJCDu2Qp2N9nkiGZZUMCfN
 
-const key = 'key0';
+const key = 2;
 const user = process.env.USER_SOL;
-const solution = key0.key0Hash(user, process.env.FAKE_NFT);
+const k0Solution = key0.key0Hash(user, process.env.KEY0_SOLUTION);
+const k1Solution = key1.key1Hash(user, process.env.KEY1_SOLUTION);
+const k2Solution = key2.key2Hash(user, process.env.KEY2_SOLUTION);
 
-console.log(checkAnswer(`${key}:${user}:${solution}`));
+// console.log(checkAnswer(`${key}:${user}:${solution}`));
+console.log(checkAnswer(`key${key}:${user}:${k2Solution}`));
