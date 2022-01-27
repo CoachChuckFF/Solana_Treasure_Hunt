@@ -1,6 +1,6 @@
 .App {
   height: 100vh;
-  background-color: #3D3D3D;
+  background-color: #1a202c;
   overflow: scroll;
   text-align: center;
 }
@@ -32,12 +32,6 @@
   color: white;
 }
 
-.file-name {
-  font-size: 25px;
-  color: #FF5C38;
-  /* color: -webkit-linear-gradient(left, #1AE38C, #923FF2); */
-}
-
 .gradient-text {
   background: -webkit-linear-gradient(left, #60c657 30%, #35aee2 60%);
   background-clip: text;
@@ -59,23 +53,23 @@
 }
 
 .connect-wallet-button {
-  background: -webkit-linear-gradient(left, #1AE38C, #568DC5);
+  background: -webkit-linear-gradient(left, #60c657, #35aee2);
   background-size: 200% 200%;
   animation: gradient-animation 4s ease infinite;
 }
 
 .submit-gif-button {
-  background: -webkit-linear-gradient(left, #568DC5, #923FF2);
+  background: -webkit-linear-gradient(left, #4e44ce, #35aee2);
   background-size: 200% 200%;
   animation: gradient-animation 4s ease infinite;
-  /* margin-left: 10px; */
+  margin-left: 10px;
 }
 
 .footer-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  /* position: absolute; */
+  position: absolute;
   width: 100%;
   bottom: 0;
   left: 0;
@@ -95,11 +89,10 @@
 
 .gif-grid {
   display: grid;
-  grid-template-columns: 30% 30% 30%; 
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
   grid-gap: 1.5rem;
   justify-items: center;
-  margin-right: 2%;
-  margin-left: 2%;
+  margin: 0;
   padding: 0;
 }
 
@@ -110,35 +103,10 @@
   justify-self: center;
   align-self: center;
 }
-/* repeat(auto-fit, minmax(500px, 1fr)); */
+
 .gif-item img {
   width: 100%;
-  /* height: 300px; */
-  border-radius: 10px;
-  object-fit: cover;
-}
-
-.selected-grid{
-  display: grid;
-  grid-template-columns: auto auto; 
-  grid-gap: 1.5rem;
-  justify-items: center;
-  margin-right: 13%;
-  margin-left: 13%;
-  padding: 0;
-}
-
-.seleced-grid .selected-item  {
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  justify-self: center;
-  align-self: center;
-}
-
-.selected-item img {
-  width: 200px;
-  height: 200px;
+  height: 300px;
   border-radius: 10px;
   object-fit: cover;
 }
@@ -157,165 +125,6 @@
   margin: 50px auto;
 }
 
-button:disabled,
-button[disabled]{
-  background: -webkit-linear-gradient(left, #20515B, #3D3458);
-  background-size: 200% 200%;
-  animation: gradient-animation 4s ease infinite;
-}
-
-.selection-overlay {
-  position: absolute;
-  bottom: 0;
-  background: rgb(0, 0, 0);
-  background: rgba(0, 0, 0, 0.5); /* Black see-through */
-  color: #f1f1f1;
-  width: 100%;
-  height: 100%;
-  transition: .5s ease;
-  opacity:0;
-  color: white;
-  border-radius: 10px;
-  font-size: 20px;
-  text-align: center;
-}
-
-.selected {
-  position: absolute;
-  bottom: 0;
-  background: rgb(8, 90, 29);
-  background: rgba(11, 161, 74, 0.5); /* Black see-through */
-  color: #f1f1f1;
-  transition: .5s ease;
-  width: 100%;
-  height: 100%;
-  opacity:1;
-  color: white;
-  font-size: 20px;
-  text-align: center;
-  border-radius: 10px;
-  object-fit: cover;
-}
-
-/* When you mouse over the container, fade in the overlay title */
-.overlay:hover .selection-overlay {
-  opacity: 1;
-}
-
-.overlay:hover .selected {
-  background: rgb(15, 168, 53);
-  background: rgba(14, 194, 89, 0.5); /* Black see-through */
-  opacity: 1;
-}
-
 .connected-container button {
   height: 50px;
-}
-
-.spacing {
-  height: 50px;
-}
-
-.mini-spacing {
-  height: 21px;
-}
-
-.zero-spacing {
-  height: 0px;
-  width: 0px;
-  margin: 0px;
-  padding: 0px;
-}
-
-.can-flip {
-  transition: .5s ease;
-  transform: scaleX(1);
-}
-
-.is-flipped {
-  transition: .5s ease;
-  transform: scaleX(-1);
-}
-
-.flip-container:hover .can-flip{
-  transform: scaleX(-1);
-}
-
-/* .flip-container:hover .is-flipped{
-  transform: scaleX(1);
-} */
-
-.flip-container {
-  width: 200px;
-  height: 200px;
-}
-
-
-.toggle-switch {
-  padding: 34px;
-  color: white;
-}
-
-
-/* The switch - the box around the slider */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 34px;
-}
-
-/* Hide default HTML checkbox */
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-/* The slider */
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  -webkit-transition: .4s;
-  transition: .4s;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  -webkit-transition: .4s;
-  transition: .4s;
-}
-
-input:checked + .slider {
-  background-color: #2196F3;
-}
-
-input:focus + .slider {
-  box-shadow: 0 0 1px #2196F3;
-}
-
-input:checked + .slider:before {
-  -webkit-transform: translateX(26px);
-  -ms-transform: translateX(26px);
-  transform: translateX(26px);
-}
-
-/* Rounded sliders */
-.slider.round {
-  border-radius: 34px;
-}
-
-.slider.round:before {
-  border-radius: 50%;
 }
