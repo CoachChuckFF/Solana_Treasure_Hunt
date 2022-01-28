@@ -1,75 +1,90 @@
-const anchor = require('@project-serum/anchor');
-const { SystemProgram } = require('@solana/web3.js');
-const kp = require('./keypair.json');
+// This file is from Farza's Buildspace Solana course - not my own
+// https://app.buildspace.so/
 
-const secretArray = Object.values(kp._keypair.secretKey);
+const anchor = require('@project-serum/anchor');
+const serumCmn = require("@project-serum/common");
+const { TOKEN_PROGRAM_ID } = require("@solana/spl-token");
+const { SystemProgram } = anchor.web3;
+
+const hunterKP = require('./hunter.json');
+
+const secretArray = Object.values(hunterKP._keypair.secretKey);
 const secret = new Uint8Array(secretArray);
-const treasureChest = anchor.web3.Keypair.fromSecretKey(secret);
+const hunter = anchor.web3.Keypair.fromSecretKey(secret);
+
+// Wallet: HAzgWmFC2TGw1Ry6C3h2i2eAnnbrD91wDremBSxXBgCB
+// Token: 8DWGZBLd3eCw73mEiFqdxfJFiDVwh7mo6Rcu4Kzx6RQR
+// Account: jkwfpHCGwErBMLqttT8QVZahFJD5bi8qFnsV3ddvZaA
+
+// New Token: 99BCKjZJZ8ntffwWmrnGfN9DFEBLJwRPsszbYtd1ZNvB
+// New Account: FpWn6R3eYVCN28CKh1hTKfYSWhS9cM8Z6rnUnSKLMEJs
 
 const main = async() => {
   console.log("🚀 Starting test...")
 
-  //Create and set the provider. We set it 
-  const provider = anchor.Provider.env();
-  anchor.setProvider(provider);
+    // const [_mint, _god] = await serumCmn.createMintAndVault(
+    //   program.provider,
+    //   new anchor.BN(1000000)
+    // );
+
+  const coach = anchor.Provider.env();
+  anchor.setProvider(coach);
 
   const program = anchor.workspace.Soltreasure;
+  let tokenWallet = new anchor.web3.PublicKey("FpWn6R3eYVCN28CKh1hTKfYSWhS9cM8Z6rnUnSKLMEJs");
+  console.log(tokenWallet.toString());
 
-  // Create an account keypair for our program to use
-  // const baseAccount = anchor.web3.Keypair.generate();
-  // await testBuildSpace(program, baseAccount, provider);
+  let tokenAccount = await serumCmn.getTokenAccount(program.provider, tokenWallet);
+  
+  let amount = tokenAccount.amount;
+  let address = tokenAccount.address;
+  let owner = tokenAccount.owner;
+  console.log(lamportsToSol(amount.toNumber()));
+  console.log(address);
+  console.log(owner.toString());
 
-  // const testChest = anchor.web3.Keypair.generate();
+  // const barista = anchor.Provider.env();
+  // barista; //for now the barista will buy their own coffee
+  // anchor.setProvider(barista);
 
-  // let tx = await program.rpc.lockChest(
-  //   numToRust(21), 
-  //   numToRust(34), 
-  //   numToRust(55), 
-  //   numToRust(89),
-  //   numToRust(89),
+  // const program = anchor.workspace.Buymeasolcoffee;
+  // const coffeeJar = anchor.web3.Keypair.generate();
+
+  // console.log("☕ Brewing Coffee...")
+  // let foundingTx = await program.rpc.startCoffeeJar({
+  //   accounts: {
+  //     coffeeJar: coffeeJar.publicKey,                //Web  keypair
+  //     barista: barista.wallet.publicKey,             //User keypair
+  //     systemProgram: SystemProgram.programId,
+  //   },
+  //   signers: [coffeeJar], //even though the barista is the payer, the coffeejar needs to sign this
+  // });
+
+  // console.log("💲 Buying 0.1 Coffee...");
+  // let buyingTx = await program.rpc.buyCoffee(
+  //   numToRust(solTolamports(0.1)),
   //   {
   //     accounts: {
-  //       treasureChest: testChest.publicKey,
-  //       hunter: provider.wallet.publicKey,
+  //       coffeeJar: coffeeJar.publicKey,
+  //       from: coffeeBuyer.publicKey,
+  //       to: barista.wallet.publicKey,
   //       systemProgram: SystemProgram.programId,
   //     },
-  //     signers: [testChest]
+  //     signers: [coffeeBuyer]
   //   }
   // );
-  // console.log("📝 Your transaction signature", tx);
 
-  // let account = await program.account.treasureChest.fetch(testChest.publicKey);
-  // console.log('Key 0 count:', account.key0Count);
-  // console.log('Key 1 count:', account.key1Count);
-  // console.log('Key 2 count:', account.key2Count);
-  // console.log('Treasure count:', account.treasureCount);
-
-  // tx = await program.rpc.mintKey0(
-  //   solTolamports(0.1), 
-  //   solTolamports(0.05), 
-  //   {
-  //     accounts: {
-  //       to: treasureChest.publicKey,
-  //       from: provider.wallet.publicKey,
-  //       systemProgram: SystemProgram.programId,
-  //     },
-  //     signers: [provider.wallet.Keypair]
-  //   }
-  // );
-  tx = await program.rpc.sendSol(
-    solTolamports(0.1), 
-    // solTolamports(0.05), 
-    {
-      accounts: {
-        to: treasureChest.publicKey,
-        from: provider.wallet.publicKey,
-        systemProgram: SystemProgram.programId,
-      },
-      signers: [provider.wallet.Keypair]
-    }
-  );
-  console.log("📝 Your transaction signature", tx);
-
+  // console.log("🧮 Tabulating Info...");
+  // let coffeeJarAccount = await program.account.coffeeJar.fetch(coffeeJar.publicKey);
+  
+  // console.log("\n---- 📝 Coffee Jar Info -----");
+  // console.log(`--- Founding TX   : [${foundingTx}]`);
+  // console.log(`--- Buying TX     : [${buyingTx}]`);
+  // console.log(`--- Barista Key   : [${coffeeJarAccount.barista}]`);
+  // console.log(`--- Buyer Key     : [${coffeeBuyer.publicKey}]`);
+  // console.log(`--- Coffee Count  : [${coffeeJarAccount.coffeeCount}]`);
+  // console.log(`--- Sol Total     : [${lamportsToSol(coffeeJarAccount.lamportCount)}]`);
+  // console.log("-----------------------------\n");
 
   console.log("... to the moon! 🌑")
 }
@@ -84,66 +99,23 @@ const runMain = async () => {
   }
 };
 
-// ---- Helpers ----
-const numToRust = (num) => {
+// Helpers
+const LAMPORT_COST = 0.000000001
+const numFromRust = (num) => 
+{
+  return num.toNumber();
+}
+const numToRust = (num) => 
+{
   return new anchor.BN(Math.round(num));
 }
 
 const solTolamports = (sol) => {
-  return new anchor.BN(Math.round(sol / 0.000000001));
+  return Math.round(sol / LAMPORT_COST);
 }
 
-// ---- Old -----
-
-const printGifs = async (program, baseAccount) => {
-  let account = await program.account.baseAccount.fetch(baseAccount.publicKey);
-  console.log('👀 GIF Count', account.totalGifs.toString());
-  console.log('👀 GIF List', account.gifList);
-}
-
-const testBuildSpace = async (program, baseAccount, provider) => {
-  // Call start_stuff_off, pass it the params it needs
-  let tx = await program.rpc.startStuffOff({
-    accounts: {
-      baseAccount: baseAccount.publicKey,
-      user: provider.wallet.publicKey,
-      systemProgram: SystemProgram.programId,
-    },
-    signers: [baseAccount]
-  });
-  console.log("📝 Your transaction signature", tx);
-
-  //0 Gifs
-  await printGifs(program, baseAccount);
-  
-
-  tx = await program.rpc.addGif("this is a link", {
-    accounts: {
-      baseAccount: baseAccount.publicKey,
-      user: provider.wallet.publicKey,
-    }
-  });
-  console.log("📝 Your transaction signature", tx);
-
-  //1 Gif
-  await printGifs(program, baseAccount);
+const lamportsToSol = (lamports) => {
+  return lamports * LAMPORT_COST;
 }
 
 runMain();
-
-// console.log(solTolamports(0.5).toNumber());
-
-// const anchor = require('@project-serum/anchor');
-
-// describe('soltreasure', () => {
-
-//   // Configure the client to use the local cluster.
-//   anchor.setProvider(anchor.Provider.env());
-
-//   it('Is initialized!', async () => {
-//     // Add your test here.
-//     const program = anchor.workspace.Soltreasure;
-//     const tx = await program.rpc.initialize();
-//     console.log("Your transaction signature", tx);
-//   });
-// });

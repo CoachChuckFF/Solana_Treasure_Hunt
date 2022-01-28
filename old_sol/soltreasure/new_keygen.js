@@ -6,4 +6,4 @@ const anchor = require("@project-serum/anchor")
 
 const account = anchor.web3.Keypair.generate()
 fs.writeFileSync('./tests/keypair.json', JSON.stringify(account))
-fs.writeFileSync('./tests/raw.json', `[${account.secretKey.toString()}]`);
+fs.writeFileSync('./tests/keypair_raw.json', `[${account.secretKey.toString()}]`);

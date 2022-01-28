@@ -1,14 +1,14 @@
 [features]
 seeds = false
-[programs.devnet]
-soltreasure = "BrMDSDPTx2qZ5p1EWWDDom1vgjiLJDwSeVR7mo17o5Tr"
+[programs.localnet]
+temp = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
 
 [registry]
 url = "https://anchor.projectserum.com"
 
 [provider]
-cluster = "devnet"
+cluster = "localnet"
 wallet = "/Users/drkrueger/.config/solana/id.json"
 
 [scripts]
-test = "node tests/soltreasure.js"
+test = "yarn run mocha -t 1000000 tests/"
