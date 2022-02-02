@@ -1,7 +1,7 @@
 [features]
 seeds = false
 [programs.devnet]
-soltreasure = "BrMDSDPTx2qZ5p1EWWDDom1vgjiLJDwSeVR7mo17o5Tr"
+soltreasure = "76k1YLcR4sPGoyoFk8BH38RDtCMAq6R61n9eEibDMq85"
 
 [registry]
 url = "https://anchor.projectserum.com"

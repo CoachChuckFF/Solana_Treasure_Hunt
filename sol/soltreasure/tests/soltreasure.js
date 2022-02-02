@@ -5,18 +5,24 @@ const anchor = require('@project-serum/anchor');
 const serumCmn = require("@project-serum/common");
 const { TOKEN_PROGRAM_ID } = require("@solana/spl-token");
 const { SystemProgram } = anchor.web3;
+const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new anchor.web3.PublicKey(
+  'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
+);
+
 
 // Keys
-const mapHolderKP = require('./hunter.json');
+const playerKP = require('./hunter.json');
 
-const secretArray = Object.values(mapHolderKP._keypair.secretKey);
+const secretArray = Object.values(playerKP._keypair.secretKey);
 const secret = new Uint8Array(secretArray);
-const mapHolder = anchor.web3.Keypair.fromSecretKey(secret);
+const playerSecret = anchor.web3.Keypair.fromSecretKey(secret);
 
 const devWallet = 'HAzgWmFC2TGw1Ry6C3h2i2eAnnbrD91wDremBSxXBgCB';
 
-const mapMint = '3C8pWGsvZsxSxNduMVhRXW5fs9he8ydb8LXWu3V1731g';
-const mapVault = 'CeMWCN6zYPEL8wbfxqrgsLHa1DzNeAdq1j3wJKvU7PuL';
+const badMint = 'HYBRCvzBnQJmypAD1Se3ptu9EqFTE6USoXieqqf3hzFL';
+
+const mapMint = 'En8Q8mwd2nKJewEaZUdoGkq1NzDrqYYZcmHCRABfugE4';
+const mapVault = '3B1UNSJ94hZzGsWb961NhMfh5wa3zQd1yNg6ouY5zqc3';
 
 const brokenKeyMint = 'DzKrhc5B4w999J1KYJ1ahtNepPmDEm4CMhn8wNZdKbac';
 const brokenKeyVault = 'DYDHGM6N4D4wjS8GZrYwcJfuWkpywbzW3aiw2bmVPUt6';
@@ -68,6 +74,10 @@ const lamportsToSol = (lamports) => {
   return lamports * LAMPORT_COST;
 }
 
+const getUnixTimeStamp = (hours) => {
+  return new anchor.BN(Math.floor(new Date.now().getTime() / 1000) + (hours * 60))
+}
+
 // Settings
 const MAP = "map";
 const BROKENKEY = "brokenKey";
@@ -90,14 +100,14 @@ const mintIndexes = {
 }
 
 const amounts = [
-  1, // Map
-  2, // Broken Key
-  3, // Key 0
-  4, // Key 1
-  5, // Key 2
-  6, // Chest
-  7, // Real Treasure
-  8, // Actual Treasure
+  100, // Map
+  100, // Broken Key
+  100, // Key 0
+  100, // Key 1
+  100, // Key 2
+  100, // Chest
+  100, // Real Treasure
+  100, // Actual Treasure
 ];
 
 const costs = [
@@ -126,6 +136,7 @@ const getTreasureSize = () => {
     // bomb
     8 + 
     // vaults
+    VECSIZE + (1          * amounts.length) +
     VECSIZE + (8          * amounts.length) +
     VECSIZE + (PUBKEYSIZE * amounts.length) +
     VECSIZE + (8          * amounts.length) +
@@ -135,14 +146,55 @@ const getTreasureSize = () => {
     VECSIZE + (PUBKEYSIZE * amounts[mintIndexes[ACTUALTREASURE]]);
 }
 
-const getMapSize = () => {
-  return 0 +
-    // map
-    PUBKEYSIZE + 
-    // holder
-    PUBKEYSIZE +
-    // treasure counts
-    VECSIZE + (PUBKEYSIZE * amounts.length);
+const airdrop = async (pubkey) => {
+  try {
+    const connection = new anchor.web3.Connection("https://api.devnet.solana.com", "confirmed");
+    const myAddress = new anchor.web3.PublicKey("2nr1bHFT86W9tGnyvmYW4vcHKsQB3sVQfnddasz4kExM");
+    const signature = await connection.requestAirdrop(pubkey, anchor.web3.LAMPORTS_PER_SOL * 2);
+    await connection.confirmTransaction(signature);
+  } catch (_){}
+
+}
+
+const getProvider = async (keyPair) => {
+  try {
+    const connection = new anchor.web3.Connection("https://api.devnet.solana.com", "confirmed");
+    const myAddress = new anchor.web3.PublicKey("2nr1bHFT86W9tGnyvmYW4vcHKsQB3sVQfnddasz4kExM");
+    const signature = await connection.requestAirdrop(pubkey, anchor.web3.LAMPORTS_PER_SOL * 2);
+    await connection.confirmTransaction(signature);
+  } catch (_){}
+
+}
+
+// const getProvider = (secret) => {
+//   const connection = new anchor.Connection(
+//     anchor.web3.clusterApiUrl('mainnet-beta'), 
+//     "processed"
+//   );
+//   const provider = new anchor.Provider(
+//     connection, 
+//     playerSecret.toBuffer(),
+//     "processed",
+//   );
+//   return provider;
+// }
+
+const findAssociatedTokenAddress = (wallet, mint) => {
+  return new Promise((resolve, reject) => {
+    anchor.web3.PublicKey.findProgramAddress(
+      [
+          wallet.toBuffer(),
+          TOKEN_PROGRAM_ID.toBuffer(),
+          mint.toBuffer(),
+      ],
+      SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID
+    ).then((keyList) => {
+      resolve(keyList[0]);
+    })
+    .catch((error)=>{
+      reject(error);
+    });
+  });
 }
 
 const createKeypairArray = (amount) => {
@@ -182,31 +234,11 @@ const main = async() => {
   );
   gatekeeper = _gatekeeper;
 
-  receiver = await serumCmn.createTokenAccount(
-    coach,
-    mints[0],
-    coach.wallet.publicKey
-  );
+  console.log("Gatekeeper Address ", gatekeeper.toString());
+  console.log("Chest Address ", treasureChest.publicKey.toString());
 
-  console.log(receiver);
-
-
-  receiver = await serumCmn.createTokenAccount(
-    coach,
-    mints[0],
-    coach.wallet.publicKey
-  );
-
-  console.log(receiver);
-
-  receiver = await serumCmn.createTokenAccount(
-    coach,
-    mints[0],
-    coach.wallet.publicKey
-  );
-
-  console.log(receiver);
-
+  //Airdropping
+  airdrop(coach.wallet.publicKey);
 
   console.log(
     "Account opening cost: [", 
@@ -216,8 +248,9 @@ const main = async() => {
 
   // Build Chest
   let buildTx = await program.rpc.buildChest(
-    new anchor.BN(amounts[mintIndexes[REALTREASURE]]),
+    new anchor.BN(lamportsToSol(amounts[mintIndexes[REALTREASURE]])),
     new anchor.BN(lamportsToSol(amounts[mintIndexes[ACTUALTREASURE]])),
+    getUnixTimeStamp(2), //Now + 2 Hours
     nonce,
     {
       accounts: {
@@ -235,6 +268,9 @@ const main = async() => {
   );
 
   console.log("Build: ", buildTx);
+  let treasureChestAccount = await program.account.treasureChest.fetch(treasureChest.publicKey);
+  console.log("Bomb: ", treasureChestAccount.bomb.toNumber());
+  
 
   // Fill Chest
   for(var i = 0; i < amounts.length; i++){
@@ -255,7 +291,6 @@ const main = async() => {
   
         coach: coach.wallet.publicKey,
         tokenProgram: TOKEN_PROGRAM_ID,
-        rent: anchor.web3.SYSVAR_RENT_PUBKEY,
       },
       signers: [chestVaults[index], coach.wallet.Keypair],
       instructions: [
@@ -263,7 +298,11 @@ const main = async() => {
       ],
     });
 
-    console.log(`Fill [${index}]: `, fillTx);
+    treasureChestAccount = await program.account.treasureChest.fetch(treasureChest.publicKey);
+
+    console.log(`Token Account [${index}]: `, treasureChestAccount.vaults[i].toString());
+    console.log(`Token Mint [${index}]: `, treasureChestAccount.mints[i].toString());
+    console.log('');
   }
 
     
@@ -274,7 +313,6 @@ const main = async() => {
       treasureChest: treasureChest.publicKey, //Main Account
       coach: coach.wallet.publicKey,
     },
-    signers: [coach.wallet.Keypair],
   });
 
   console.log(`Lock `, lockTx);
@@ -292,35 +330,95 @@ const main = async() => {
   //   console.log("Good Error ", error)
   // }
 
-  const treasureChestAccount = await program.account.treasureChest.fetch(treasureChest.publicKey);
+  // Setup Player Context
+  const playerContextTreasureChest = treasureChest.publicKey;
+  treasureChestAccount = await program.account.treasureChest.fetch(playerContextTreasureChest);
+
   console.log(treasureChestAccount);
+  treasureChestAccount.mints.forEach((mint)=>{
+    console.log(mint.toString());
+  });
 
-  // // getMapSize
-  // let map = anchor.web3.Keypair.generate();
-  // let holderMapVault = anchor.web3.Keypair.generate();
+  const player = coach; // this is phantom
 
-  // // Create a Map Holder
-  // let findMapTx = await program.rpc.findMap({
-  //   accounts: {
-  //     map: map.publicKey,
-  //     treasureChest: treasureChestAccount, //Just need Public Key
-  //     gatekeeper: treasureChestAccount.gatekeeper,
+  const playerMapVault = await findAssociatedTokenAddress(
+    player.wallet.publicKey,
+    treasureChestAccount.mints[0]
+  );
 
-  //     chestMapVault: treasureChestAccount.vaults[mintIndexes[MAP]],
-  //     mapVault: holderMapVault.publicKey,
+  console.log(playerMapVault.toString());
 
-  //     holder: mapHolder.publicKey,
-  //     tokenProgram: TOKEN_PROGRAM_ID,
-  //     rent: anchor.web3.SYSVAR_RENT_PUBKEY,
-  //   },
-  //   signers: [chestVaults[index], coach.wallet.Keypair],
-  //   instructions: [
-  //     await program.account.map.createInstruction(map, getMapSize()),
-  //     ...(await serumCmn.createTokenAccountInstrs(coach, holderMapVault.publicKey, mints[mintIndexes[MAP]], mapHolder.publicKey)),
-  //   ],
-  // });
+  let createAccountInstruction = [];
 
-  // console.log(`Map `, findMapTx);
+  try {
+    console.log("Already has account");
+    playerMapVaultAccount = await serumCmn.getTokenAccount(
+      player,
+      playerMapVault
+    );
+  } catch (error) {
+    console.log("Should create account ", error);
+    createAccountInstruction = await serumCmn.createTokenAccountInstrs(
+      player, 
+      playerMapVault, 
+      treasureChestAccount.mints[mintIndexes[MAP]], 
+      player.wallet.publicKey
+    );
+  }
+
+  console.log(playerMapVaultAccount);
+
+  // Create a Map Holder
+  let findMapTx = await program.rpc.findMap({
+    accounts: {
+      treasureChest: playerContextTreasureChest, //Just need Public Key
+      gatekeeper: treasureChestAccount.gatekeeper,
+
+      chestMapVault: treasureChestAccount.vaults[mintIndexes[MAP]],
+      playerMapVault: playerMapVault,
+
+      player: player.wallet.publicKey,
+      tokenProgram: TOKEN_PROGRAM_ID,
+      systemProgram: SystemProgram.programId,
+    },
+    signers: [player.wallet.Keypair],
+    instructions: [
+      ...createAccountInstruction
+    ],
+  });
+
+  console.log(`Map `, findMapTx);
+
+  // TICK TICK BOOM
+  treasureChestAccount = await program.account.treasureChest.fetch(treasureChest.publicKey);
+  for(var i = 0; i < amounts.length; i++){
+    // let index = amounts.length - i - 1; // Fill in reverse order
+    let index = i;
+    console.log(`Boom Account [${index}]: `, treasureChestAccount.vaults[i].toString());
+    console.log(`Boom Mint [${index}]: `, treasureChestAccount.mints[i].toString());
+    console.log('');
+
+
+    let boom = await program.rpc.tickTickBoom({
+      accounts: {
+        treasureChest: treasureChest.publicKey, //Main Account
+        gatekeeper: treasureChestAccount.gatekeeper,
+        chestVault: treasureChestAccount.vaults[index],
+        mint: treasureChestAccount.mints[index],
+        coach: coach.wallet.publicKey,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      },
+    });
+
+    treasureChestAccount = await program.account.treasureChest.fetch(treasureChest.publicKey);
+
+    console.log(`Boom Account [${index}]: `, treasureChestAccount.vaults[i].toString());
+    console.log(`Boom Mint [${index}]: `, treasureChestAccount.mints[i].toString());
+    console.log('');
+  }
+
+  treasureChestAccount = await program.account.treasureChest.fetch(treasureChest.publicKey);
+  console.log(treasureChestAccount);
 
   console.log("... to the moon! 🌑")
 }
