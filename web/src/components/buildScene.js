@@ -92,7 +92,7 @@ function Timer(props) {
 
             if(state < 5){
                 setMessage("Connect Wallet");
-                setColor("#03E2FF");
+                // setColor("#03E2FF");
             } else if(state < 10){
                 setMessage("Burn NFTs In...");
                 setColor("#DC1FFF");
