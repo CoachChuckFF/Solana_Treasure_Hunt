@@ -26,7 +26,7 @@ const orbit = 8;
 const msPerLoop = 13000;
 
 const maxFov = 180;
-const fov = 110;
+const fov = 120;
 const planeAspectRatio = 16 / 9;
 const yOffset = 1.89;
 const scaleChest = 1.21;

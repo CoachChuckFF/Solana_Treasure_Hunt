@@ -35,12 +35,11 @@ const grey = {
 
 const StyledInputElement = styled('input')(
   ({ theme }) => `
-  font-size: 1.3rem;
+  font-size: 1.34rem;
   font-family: IBM Plex Sans, sans-serif;
   font-weight: 400;
   text-align: center;
-  line-height: 1.5;
-  height: 3rem;
+  height: 5vh;
   width: 100%;
 
   color: ${grey[300]};
@@ -110,7 +109,7 @@ function TheButton(props) {
             variant="contained"
             sx={{
                 width: '100%',
-                height: '3.14rem',
+                height: '5vh',
                 margin: 0,
                 color: textColor,
             }}
@@ -128,7 +127,7 @@ function ResetButton(props) {
             variant="contained"
             sx={{
                 width: '100%',
-                height: '3.14rem',
+                height: '5vh',
                 margin: 0,
             }}
             disableElevation
@@ -287,10 +286,10 @@ export function CombinationMint(props) {
                     <Grid item xs={6}>
                         <CodeInput handleChange={handleChange} values={values.byte3} byte={byte3}/>
                     </Grid>
-                    <Grid item xs={10}>
+                    <Grid item xs={9}>
                         <TheButton handleClick={handleMint} loading={isWorking} isEnabled={isEnabled} message={message} wallet={props.wallet}/>
                     </Grid>
-                    <Grid item xs={2}>
+                    <Grid item xs={3}>
                         <ResetButton handleClick={refresh} />
                     </Grid>
                 </Grid>
