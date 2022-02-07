@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import SvgIcon from '@mui/material/SvgIcon';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-import { faPuzzlePiece, faBook, faUndo } from '@fortawesome/free-solid-svg-icons'
+import { faPuzzlePiece, faBook, faUndo, faWallet } from '@fortawesome/free-solid-svg-icons'
 import { faKeySkeleton } from '@fortawesome/pro-regular-svg-icons'
 
 const FontAwesomeSvgIcon = React.forwardRef((props, ref) => {
@@ -51,4 +51,8 @@ export function KeyIcon(props) {
 
 export function RefreshIcon(props) {
     return <FontAwesomeIcon icon={faUndo}/>
+}
+
+export function WalletIcon(props) {
+  return <FontAwesomeIcon icon={faWallet}/>
 }

@@ -90,12 +90,13 @@ function Timer(props) {
             setTime(Math.round(clock.getElapsedTime()));
             let state = time % 30;
 
-            if(state < 5){
-                setMessage("Connect Wallet");
-                // setColor("#03E2FF");
-            } else if(state < 10){
-                setMessage("Burn NFTs In...");
-                setColor("#DC1FFF");
+            if(state > 25){
+                if(props.wallet != null){
+                    setMessage("Burn NFTs In...");
+                    setColor("#DC1FFF");
+                } else {
+                    setMessage("Connect Wallet");
+                }
             } else {
                 setMessage(getTimeString(time));
                 setColor("#FFFFFF");
@@ -310,7 +311,7 @@ export function BuildScene(props) {
                 <pointLight position={[0, 6, -3]} intensity={0.21}/>
                 <pointLight position={[3, 5, -5]} intensity={0.21}/>
                 <pointLight position={[-3, 5, -5]} intensity={0.21}/>
-                <Timer bomb={addDays(Date.now(), 3)}/>
+                <Timer bomb={addDays(Date.now(), 3)} wallet={props.wallet}/>
                 <Clue0 />
                 <Suspense fallback={null}>
                     <Chest />

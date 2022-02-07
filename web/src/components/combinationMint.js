@@ -13,7 +13,7 @@ import { curtains } from './curtains';
 import './../App.css' 
 
 // Icons
-import { PuzzleIcon, HomeIcon, GuideIcon, RefreshIcon } from './icons';
+import { PuzzleIcon, WalletIcon, GuideIcon, RefreshIcon } from './icons';
 
 const blue = {
   200: '#80BFFF',
@@ -84,7 +84,14 @@ function TheButton(props) {
     let text = props.message;
     let color = props.loading || !props.isEnabled ? "disabled" : "primary";
     let textColor = props.loading || !props.isEnabled ?'#757575' : "#CDD2D6";
-    let icon = (<div  className={props.loading ? 'icon-spin' : ''}><GuideIcon sx={{ color: '#FFFFFF' }}/></div>);
+    let icon = (<div  className={props.loading ? 'icon-spin' : ''}><GuideIcon /></div>);
+
+    if(props.wallet == null){
+        color = 'primary';
+        textColor = "#CDD2D6";
+        text = "Connect Wallet";
+        icon = (<WalletIcon />);
+    }
     switch(props.state) {
         case 0: text= "Mint Map";
     }
@@ -240,7 +247,9 @@ export function CombinationMint(props) {
     };
 
     const handleMint = () => {
-        if(!isWorking && isEnabled){
+        if(props.wallet == null){
+            props.connect();
+        } else if(!isWorking && isEnabled){
             console.log(isWorking, " ", !isWorking)
             setTimeout(()=>{
                 refresh();
@@ -279,7 +288,7 @@ export function CombinationMint(props) {
                         <CodeInput handleChange={handleChange} values={values.byte3} byte={byte3}/>
                     </Grid>
                     <Grid item xs={10}>
-                        <TheButton handleClick={handleMint} loading={isWorking} isEnabled={isEnabled} message={message}/>
+                        <TheButton handleClick={handleMint} loading={isWorking} isEnabled={isEnabled} message={message} wallet={props.wallet}/>
                     </Grid>
                     <Grid item xs={2}>
                         <ResetButton handleClick={refresh} />
