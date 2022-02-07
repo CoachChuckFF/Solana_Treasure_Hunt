@@ -113,32 +113,7 @@ pub mod soltreasure {
         } 
 
         if burn_index == ctx.accounts.treasure_chest.vaults.len() - 1 {
-            let seed = Clock::get()?.unix_timestamp as u64;
-            let lammmys = ctx.accounts.treasure_chest.lamports as u64;
             let finders = ctx.accounts.treasure_chest.finders.len() as u64;
-            let xor = seed ^ lammmys ^ finders;
-            let start_state = ((xor >> 48 as u16) ^ (xor >> 32 as u16) ^ (xor >> 16 as u16) ^ (xor >> 0 as u16)) as u16;
-            // let Vec
-
-            // uint16_t start_state = 0xACE1u;  /* Any nonzero start state will work. */
-            // uint16_t lfsr = start_state;
-            // uint16_t bit;                    /* Must be 16-bit to allow bit<<15 later in the code */
-            // unsigned period = 0;
-        
-            // do
-            // {   /* taps: 16 14 13 11; feedback polynomial: x^16 + x^14 + x^13 + x^11 + 1 */
-            //     bit = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5)) & 1u;
-            //     lfsr = (lfsr >> 1) | (bit << 15);
-            //     ++period;
-            // }
-            // while (lfsr != start_state);
-        
-            // return period;
-
-            for n in 0..cmp::min(ctx.accounts.treasure_chest.max_winners as usize, ctx.accounts.treasure_chest.finders.len()) {
-
-            }
-
             if finders < ctx.accounts.treasure_chest.max_winners { 
                 burn_count = ctx.accounts.treasure_chest.max_winners - finders;
             } else {
