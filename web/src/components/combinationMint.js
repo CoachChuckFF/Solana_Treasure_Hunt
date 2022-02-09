@@ -9,6 +9,7 @@ import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import { curtains } from './curtains';
+import { Connection, PublicKey, clusterApiUrl} from '@solana/web3.js';
 
 import './../App.css' 
 
@@ -39,6 +40,7 @@ const StyledInputElement = styled('input')(
   font-family: IBM Plex Sans, sans-serif;
   font-weight: 400;
   text-align: center;
+  min-width: 3rem;
   height: 5vh;
   width: 100%;
 
@@ -155,7 +157,7 @@ export function CombinationMint(props) {
 
     const [isWorking, setIsWorking] = React.useState(false);
     const [isEnabled, setIsEnabled] = React.useState(false);
-    const [message, setMessage] = React.useState('Enter Codes');
+    const [message, setMessage] = React.useState('Enter Hex Codes');
     const [values, setValues] = React.useState({
         [byte0]: '',
         [byte1]: '',
@@ -184,6 +186,7 @@ export function CombinationMint(props) {
                 return char;
         }
 
+        alert('Only Valid Hex');
         return '';
     }
   
@@ -206,6 +209,7 @@ export function CombinationMint(props) {
             nibble0 = checkChar(nibble0.toUpperCase());
             nibble1 = checkChar(nibble1.toUpperCase());
         } else {
+            alert('2 Nibbles per input');
             nibble0 = checkChar(input[3]);
         }
 
@@ -275,16 +279,16 @@ export function CombinationMint(props) {
             <Box>
                 <Grid container spacing={2}>
                     <Grid item xs={6}>
-                        <CodeInput handleChange={handleChange} values={values.byte0} byte={byte0}/>
+                        <CodeInput handleChange={handleChange} values={values.byte0} byte={byte0} wallet={props.wallet}/>
                     </Grid>
                     <Grid item xs={6}>
-                        <CodeInput handleChange={handleChange} values={values.byte1} byte={byte1}/>
+                        <CodeInput handleChange={handleChange} values={values.byte1} byte={byte1} wallet={props.wallet}/>
                     </Grid>
                     <Grid item xs={6}>
-                        <CodeInput handleChange={handleChange} values={values.byte2} byte={byte2}/>
+                        <CodeInput handleChange={handleChange} values={values.byte2} byte={byte2} wallet={props.wallet}/>
                     </Grid>
                     <Grid item xs={6}>
-                        <CodeInput handleChange={handleChange} values={values.byte3} byte={byte3}/>
+                        <CodeInput handleChange={handleChange} values={values.byte3} byte={byte3} wallet={props.wallet}/>
                     </Grid>
                     <Grid item xs={9}>
                         <TheButton handleClick={handleMint} loading={isWorking} isEnabled={isEnabled} message={message} wallet={props.wallet}/>

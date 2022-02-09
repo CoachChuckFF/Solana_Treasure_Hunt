@@ -5,6 +5,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { MathUtils, Vector3 } from 'three';
 import { EffectComposer, Bloom } from '@react-three/postprocessing'
 import { Text } from "troika-three-text";
+import * as FSM from './fsm';
 
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry'
 import { extend } from '@react-three/fiber'
@@ -40,6 +41,78 @@ const addDays = (date, days) => {
 
 const getTheta = (clock) => {
     return ((clock.getElapsedTime() * 1000) / msPerLoop) * 2 * Math.PI;
+}
+
+function Error() {
+    return (           
+    <text position={[0, 5, 0]}
+        rotation={[0, 0, 0]}
+        fontSize={1}
+        maxWidth={300}
+        lineHeight={1}
+        letterSpacing={0}
+        text={"ERROR"}
+        font={fonts['Roboto']}
+        anchorX="center"
+        anchorY="middle"
+    >
+        <meshPhongMaterial attach="material" color={"#DC1FFF"} />
+    </text>
+    );
+}
+
+function Congratulations() {
+    return (           
+    <text position={[0, 2, 1.5]}
+        rotation={[-Math.PI / 8, Math.PI / 16, 0]}
+        fontSize={1}
+        maxWidth={500}
+        lineHeight={1}
+        letterSpacing={0}
+        text={"You did it!"}
+        font={fonts['Roboto']}
+        anchorX="center"
+        anchorY="middle"
+    >
+        <meshPhongMaterial attach="material" color={"#DC1FFF"} />
+    </text>
+    );
+}
+
+function FinalText() {
+    return (           
+    <text position={[0, 5, 0]}
+        rotation={[0, 0, 0]}
+        fontSize={1}
+        maxWidth={300}
+        lineHeight={1}
+        letterSpacing={0}
+        text={"You have it!"}
+        font={fonts['Roboto']}
+        anchorX="center"
+        anchorY="middle"
+    >
+        <meshPhongMaterial attach="material" color={"#DC1FFF"} />
+    </text>
+    );
+}
+
+function Question() {
+    return (           
+    <text position={[0, 2.89, 2]}
+        rotation={[0, 0, 0]}
+        fontSize={2}
+        maxWidth={300}
+        lineHeight={1}
+        letterSpacing={0}
+        text={"?"}
+        font={fonts['Roboto']}
+        anchorX="center"
+        anchorY="middle"
+    >
+        <meshPhongMaterial attach="material" color={"#FFFFFF"} />
+    </text>
+    );
 }
 
 // 42 6F 6D 62
@@ -79,6 +152,8 @@ function Clue0(props) {
     );
 }
 
+
+
 function Timer(props) {
     const bomb = props.bomb;
     const [time, setTime] = useState(0);
@@ -90,16 +165,23 @@ function Timer(props) {
             setTime(Math.round(clock.getElapsedTime()));
             let state = time % 30;
 
-            if(state > 25){
-                if(props.wallet != null){
-                    setMessage("Burn NFTs In...");
+            if(props.state != FSM.NotConnected) {
+                if(state > 29){
+                    setMessage("...");
+                    setColor("#DC1FFF");
+                } else if(state > 28) {
+                    setMessage("IN");
+                    setColor("#DC1FFF");
+                } else if(state > 27) {
+                    setMessage("BURNED");
+                    setColor("#DC1FFF");
+                } else if(state > 27) {
+                    setMessage("CONTENTS");
                     setColor("#DC1FFF");
                 } else {
-                    setMessage("Connect Wallet");
+                    setMessage(getTimeString(time));
+                    setColor("#FFFFFF");
                 }
-            } else {
-                setMessage(getTimeString(time));
-                setColor("#FFFFFF");
             }
         }
     });
@@ -161,12 +243,48 @@ function Lock0(props) {
     );
 }
 
+function Unlock0(props) {
+    const objRef = useRef();
+
+    const { scene } = useGLTF('models/green_unlock.glb');
+    return (
+        <primitive ref={objRef} object={ scene } scale={scaleLock / 3} position={[0.21, 3.11, 1.55]} rotation={[-Math.PI / 32, Math.PI / 8, Math.PI / 8]}/>
+    );
+}
+
+function Key0(props) {
+    const objRef = useRef();
+
+    const { scene } = useGLTF('models/green_key.glb');
+    return (
+        <primitive ref={objRef} object={ scene } scale={scaleLock / 2} position={[0.95, 2.6, 2.1]} rotation={[Math.PI + Math.PI / 32, -Math.PI/1.6, Math.PI / 32]}/>
+    );
+}
+
 function Lock1(props) {
     const objRef = useRef();
 
     const { scene } = useGLTF('models/blue_lock.glb');
     return (
         <primitive ref={objRef} object={ scene } scale={scaleLock / 3} position={[-0.34, 3.13, 1.55]} rotation={[-Math.PI / 32, -Math.PI / 16, -Math.PI / 8]}/>
+    );
+}
+
+function Unlock1(props) {
+    const objRef = useRef();
+
+    const { scene } = useGLTF('models/blue_unlock.glb');
+    return (
+        <primitive ref={objRef} object={ scene } scale={scaleLock / 3} position={[-0.51, 3.18, 1.55]} rotation={[-Math.PI / 32, -Math.PI / 16, -Math.PI / 8]}/>
+    );
+}
+
+function Key1(props) {
+    const objRef = useRef();
+
+    const { scene } = useGLTF('models/blue_key.glb');
+    return (
+        <primitive ref={objRef} object={ scene } scale={scaleLock / 2} position={[-0.85, 2.55, 2.25]} rotation={[-Math.PI, -Math.PI/2.8, 0]}/>
     );
 }
 
@@ -179,7 +297,34 @@ function Lock2(props) {
     );
 }
 
-const CameraControls = (props) => {
+function Unlock2(props) {
+    const objRef = useRef();
+
+    const { scene } = useGLTF('models/pink_unlock.glb');
+    return (
+        <primitive ref={objRef} object={ scene } scale={scaleLock / 3} position={[-0.15, 2.9, 1.65]} rotation={[-Math.PI / 32, 0, 0]}/>
+    );
+}
+
+function Key2(props) {
+    const objRef = useRef();
+
+    const { scene } = useGLTF('models/pink_key.glb');
+    return (
+        <primitive ref={objRef} object={ scene } scale={scaleLock / 2} position={[0.1, 2.15, 2.5]} rotation={[-Math.PI, -Math.PI / 1.9, -Math.PI/32]}/>
+    );
+}
+
+function Final(props) {
+    const objRef = useRef();
+
+    const { scene } = useGLTF('models/final.glb');
+    return (
+        <primitive ref={objRef} object={ scene } scale={scaleChest} position={[0, 1, 0]} rotation={[-Math.PI / 32,0,0]}/>
+    );
+}
+
+function CameraControls(props) {
     const target = [0, orbit / (yOffset * 3), 0];
     const startingPostion = [0, orbit / yOffset, orbit - 2.8];
     const ocTO = 5000;
@@ -299,6 +444,96 @@ const CameraControls = (props) => {
     return null;
 }
 
+function StateScene(props) {
+
+    switch(props.state) {
+        case FSM.NotConnected:
+        case FSM.MintGuide:
+            return (
+                <group>
+                    <Timer bomb={addDays(Date.now(), 3)} state={props.state}/>
+                    <Clue0 />
+                    <Question />
+                    <Suspense fallback={null}>
+                        <Chest />
+                        <Lock0 />
+                        <Lock1 />
+                        <Lock2 />
+                    </Suspense>
+                </group>
+            );   
+        case FSM.MintNFKey1:
+            return (
+                <group>
+                    <Timer bomb={addDays(Date.now(), 3)} state={props.state}/>
+                    <Suspense fallback={null}>
+                        <Chest />
+                        <Lock0 />
+                        <Lock1 />
+                        <Lock2 />
+                    </Suspense>
+                </group>
+            );  
+        case FSM.MintNFKey2:
+            return (
+                <group>
+                    <Timer bomb={addDays(Date.now(), 3)} state={props.state}/>
+                    <Suspense fallback={null}>
+                        <Chest />
+                        <Unlock0 />
+                        <Key0 />
+                        <Lock1 />
+                        <Lock2 />
+                    </Suspense>
+                </group>
+            );  
+        case FSM.MintNFKey3:
+            return (
+                <group>
+                    <Timer bomb={addDays(Date.now(), 3)} state={props.state}/>
+                    <Suspense fallback={null}>
+                        <Chest />
+                        <Unlock0 />
+                        <Key0 />
+                        <Unlock1 />
+                        <Key1 />
+                        <Lock2 />
+                    </Suspense>
+                </group>
+            );  
+        case FSM.OpenChest:
+            return (
+                <group>
+                    <Timer bomb={addDays(Date.now(), 3)} state={props.state}/>
+                    <Suspense fallback={null}>
+                        <Chest />
+                        <Unlock0 />
+                        <Key0 />
+                        <Unlock1 />
+                        <Key1 />
+                        <Unlock2 />
+                        <Key2 />
+                    </Suspense>
+                </group>
+            );  
+        case FSM.Done:
+            return (
+                <group>
+                    <Congratulations />
+                    <Final />
+                </group>
+            );  
+        case FSM.CheckYourWallet: 
+            return (
+                <group>
+                    <FinalText />
+                </group>
+            );  
+    }
+
+    return (<Error />)
+}
+
 export function BuildScene(props) {
     return (
         <div className="scene-container">
@@ -311,17 +546,7 @@ export function BuildScene(props) {
                 <pointLight position={[0, 6, -3]} intensity={0.21}/>
                 <pointLight position={[3, 5, -5]} intensity={0.21}/>
                 <pointLight position={[-3, 5, -5]} intensity={0.21}/>
-                <Timer bomb={addDays(Date.now(), 3)} wallet={props.wallet}/>
-                <Clue0 />
-                <Suspense fallback={null}>
-                    <Chest />
-                    <Lock0 />
-                    <Lock1 />
-                    <Lock2 />
-                    <EffectComposer multisampling={8} autoClear={false}>
-                        <Bloom intensity={0.08} luminanceThreshold={0.08} luminanceSmoothing={0} />
-                    </EffectComposer>
-                </Suspense>
+                <StateScene state={props.state} />
                 <Stars
                     radius={100} // Radius of the inner sphere (default=100)
                     depth={50} // Depth of area where stars should fit (default=50)
@@ -330,7 +555,9 @@ export function BuildScene(props) {
                     saturation={0.55} // Saturation 0-1 (default=0)
                     fade={true} // Faded dots (default=false)
                 />
-                {/* <OrbitControls /> */}
+                <EffectComposer multisampling={8} autoClear={false}>
+                    <Bloom intensity={0.08} luminanceThreshold={0.08} luminanceSmoothing={0} />
+                </EffectComposer>
                 <CameraControls curtains={props.curtains}/>
             </Canvas>
         </div>

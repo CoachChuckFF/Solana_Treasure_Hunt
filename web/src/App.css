@@ -18,9 +18,22 @@ body {
   position: absolute;
 }
 
+.state-container {
+  width: 89%;
+  position: absolute;
+  top: 3vh;
+  left: 0; 
+  right: 0; 
+  margin-left: auto; 
+  margin-right: auto; 
+  color: #383838;
+  text-align: center;
+  font-size: small;
+}
+
 .code-container {
   width: 89%;
-  max-width: 500px;
+  max-width: 1000px;
   position: absolute;
   bottom: 5vh;
   left: 0; 
@@ -34,6 +47,30 @@ body {
   width: 0;
   opacity: 0.0;
   pointer-events: none;
+}
+
+@keyframes fade-in {
+  0% {opacity: 1;}
+  30% {opacity: 1;}
+  /* Waiting time */
+  70% {opacity: 1;}
+  100% {opacity: 0;}
+}
+
+.connect-scene {
+  height: 100vh;
+  width: 100%;
+  margin: auto;
+  position: absolute;
+  left: 0; 
+  bottom: 0; 
+  z-index: 13;
+  display: block;
+  background-color: #000000;
+  pointer-events: all;
+  opacity: 1;
+  animation-name: fade-in;
+  animation-duration: 2s;
 }
 
 @keyframes scene-change {

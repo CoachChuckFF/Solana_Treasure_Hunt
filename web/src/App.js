@@ -4,12 +4,16 @@ import { BuildScene } from './components/buildScene';
 import { CombinationMint } from './components/combinationMint';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { curtains, Curtains } from './components/curtains';
+import { StateView } from './components/stateView';
 import TabsRouter from './components/router';
+import * as FSM from './components/fsm';
+
 
 import { Connection, PublicKey, clusterApiUrl} from '@solana/web3.js';
 import {
   Program, Provider, web3, BN
 } from '@project-serum/anchor';
+import { getNFTs } from './components/solScan';
 
 const theme = createTheme({
   palette: {
@@ -30,16 +34,22 @@ function ChestPage(props){
 
   return (
     <div>
-      <BuildScene curtains={props.curtains} wallet={props.wallet} wallet={props.wallet}/>
+      <StateView state={props.state}/>
+      <BuildScene curtains={props.curtains} wallet={props.wallet} wallet={props.wallet} state={props.state}/>
       <CombinationMint curtains={props.curtains} connect={props.connect} wallet={props.wallet}/>
     </div>
   );
 }
 
 function App() {
-  const [walletAddress, setWalletAddress] = useState(null);
+  const [wallet, setwallet] = useState(null);
   const [curtains, setCurtains] = useState([useRef(), useRef()]);
+  const [state, setState] = useState(FSM.NotConnected);
+  const [actionCounter, setActionCounter] = useState(0);
 
+  const [isLoading, setIsLoading] = useState(false);
+
+  const driveState = () => {setActionCounter(actionCounter + 1);}
   const checkIfWalletIsConnected = async () => {
     try {
       const { solana } = window;
@@ -53,7 +63,7 @@ function App() {
             response.publicKey.toString()
           );
 
-          setWalletAddress(response.publicKey.toString());
+          setwallet(response.publicKey);
         }
       } else {
         alert('Solana object not found! Get a Phantom Wallet 👻');
@@ -69,7 +79,7 @@ function App() {
     if (solana) {
       const response = await solana.connect();
       console.log('Connected with Public Key:', response.publicKey.toString());
-      setWalletAddress(response.publicKey.toString());
+      setwallet(response.publicKey);
     }
   };
 
@@ -82,17 +92,33 @@ function App() {
   }, []);
   
   useEffect(() => {
-    if (walletAddress) {
-      console.log(walletAddress);
+    if (wallet) {
+      console.log(wallet.toString());
+      setState(FSM.MintGuide);
+      driveState();
     }
-  }, [walletAddress]);
+  }, [wallet]);
+
+  useEffect(() => {
+    if(wallet){
+      getNFTs(wallet)
+      .then((state)=>{
+        setState(FSM.MapToState(state));
+      })
+      .catch(()=>{
+        setState(FSM.MintGuide);
+      });
+    } else {
+      setState(FSM.NotConnected);
+    }
+  }, [actionCounter]);
 
 
   return (
     <div className="App">
       <ThemeProvider theme={theme}>
         {/* <TabsRouter /> */}
-        <ChestPage curtains={curtains} connect={connectWallet} wallet={walletAddress}/>
+        <ChestPage curtains={curtains} connect={connectWallet} wallet={wallet} state={state}/>
         <Curtains curtains={curtains}/>
       </ThemeProvider>
     </div>
