@@ -22,11 +22,13 @@ const getURLData = (baseURL = '', path = '', params = {}) => {
 
 export const getNFTs = (walletAddress) => {
     return new Promise((resolve, reject) => {
+
         getURLData(
             "https://public-api.solscan.io",
             "/account/tokens",
             { account: `${walletAddress}`,},
         ).then((data)=>{
+            console.log("Got data");
             var stateMap = Object(FSM.ItemMap);
 
             data.forEach(token => {
@@ -35,6 +37,7 @@ export const getNFTs = (walletAddress) => {
                 }
             });
 
+            console.log("Parsed Info");
             resolve(stateMap);
         })
         .catch((error)=>{ reject(error); });

@@ -49,3 +49,35 @@ export function getNootCode(wallet, noot){
 
     return null;
 }
+
+export function getDronieCode(wallet, xorIndex){
+
+    if(wallet){
+        return codesToByteArray(
+            wallet,
+            PUBKEYSIZE - 1 - xorIndex,
+            0,
+            1, 
+            2,
+            3,
+        );
+    }
+
+    return null;
+}
+
+export function getDesolatesCode(wallet, r, g, b){
+
+    if(wallet){
+        return codesToByteArray(
+            wallet,
+            8,
+            r & 0x0F,
+            g & 0x0F,
+            b & 0x0F,
+            r & 0x0F + g & 0x0F + b & 0x0F,
+        );
+    }
+
+    return null;
+}

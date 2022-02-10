@@ -2,9 +2,9 @@ import { PublicKey } from '@solana/web3.js';
 
 export const NotConnected = "0. Connect your wallet";
 export const MintGuide = "1. Mint the guide";
-export const MintNFKey1 = "2. Find the fake in puzzle 1 to get the NFKey1 codes";
-export const MintNFKey2 = "3. Find the date in puzzle 2 to get the NFKey2 codes";
-export const MintNFKey3 = "4. Find the password in puzzle 3 to get the NFKey3 codes";
+export const MintNFKey1 = "2. Find the fake in puzzle 1 to get the NFKey 1 codes";
+export const MintNFKey2 = "3. Find the date in puzzle 2 to get the NFKey 2 codes";
+export const MintNFKey3 = "4. Find the password in puzzle 3 to get the NFKey 3 codes";
 export const OpenChest = "5. Open the chest!";
 export const Done = "X. Congratulations!";
 export const CheckYourWallet = "?. You've gotten the real prize! Hooray!";
@@ -47,7 +47,7 @@ export const MapToState = (map) => {
 
     console.log("Change FSM");
 
-    return MintNFKey2;
+    return MintNFKey3;
 
     return MintGuide;
 };

@@ -18,6 +18,7 @@ import {
   Program, Provider, web3, BN
 } from '@project-serum/anchor';
 import { getNFTs } from './components/solScan';
+import { DesolatePuzzlePage } from './components/desolates';
 
 const staticCodes = ['','','',''];
 
@@ -42,13 +43,18 @@ const theme = createTheme({
 });
 
 function Loader(props){
+
+
   return (
     <div>
       <Backdrop
-        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        sx={{ color: '#fff', opacity:1.0, zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={props.open}
       >
-        <CircularProgress color="inherit" />
+        <div>
+          <CircularProgress color="inherit" />
+          <p>Loading Puzzle State</p>
+        </div>
       </Backdrop>
     </div>
   );
@@ -71,6 +77,16 @@ function Puzzle2Page(props){
 
   return (
     <DroniesPuzzlePage wallet={props.wallet} puzzleCB={props.puzzleCB}></DroniesPuzzlePage>
+  );
+}
+
+function Puzzle3Page(props){
+
+  if(props.wallet == null) return null;
+  if(props.puzzle != FSM.MintNFKey3) return null;
+
+  return (
+    <DesolatePuzzlePage wallet={props.wallet} puzzleCB={props.puzzleCB}></DesolatePuzzlePage>
   );
 }
 
@@ -166,13 +182,16 @@ function App() {
   useEffect(() => {
     if(wallet){
       setIsLoading(true);
+      console.log("Fetching NFTs");
       getNFTs(wallet)
       .then((state)=>{
+        console.log("Got NFTs");
         setIsLoading(false);
         setState(FSM.MapToState(state));
         setActivePuzzle(null);
       })
       .catch(()=>{
+        console.log("Coult not get NFTs");
         setIsLoading(false);
         setState(FSM.MintGuide);
         setActivePuzzle(null);
@@ -193,6 +212,7 @@ function App() {
         {/* <TabsRouter /> */}
         <Puzzle1Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
         <Puzzle2Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
+        <Puzzle3Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
         <ChestPage mint={mint} puzzle={puzzle} curtains={curtains} connect={connectWallet} wallet={wallet} state={state} codes={codes} action={actionCounter} subAction={subActionCounter}/>
         <Curtains curtains={curtains}/>
       </ThemeProvider>
