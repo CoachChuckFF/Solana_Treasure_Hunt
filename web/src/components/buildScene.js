@@ -13,6 +13,7 @@ import { extend } from '@react-three/fiber'
 import fonts from "./fonts";
 
 import { curtains } from './curtains';
+import { getGuideCodes, codeToHexString } from "./hashes";
 
 
 extend({ TextGeometry })
@@ -117,6 +118,16 @@ function Question() {
 
 // 42 6F 6D 62
 function Clue0(props) {
+    let one = "0x?? 0x??";
+    let two = "0x?? 0x??";
+
+    let codes = getGuideCodes(props.wallet);
+
+    if(codes != null){
+        one = `${codeToHexString(codes[0])} ${codeToHexString(codes[1])}`;
+        two = `${codeToHexString(codes[2])} ${codeToHexString(codes[3])}`;
+    }
+
     return (
         <group>
             <text
@@ -126,7 +137,7 @@ function Clue0(props) {
                 maxWidth={300}
                 lineHeight={1}
                 letterSpacing={0}
-                text={"0x42 0x6F"}
+                text={one}
                 font={fonts['Roboto']}
                 anchorX="center"
                 anchorY="middle"
@@ -140,7 +151,7 @@ function Clue0(props) {
                 maxWidth={300}
                 lineHeight={1}
                 letterSpacing={0}
-                text={"0x6D 0x62"}
+                text={two}
                 font={fonts['Roboto']}
                 anchorX="center"
                 anchorY="middle"
@@ -175,8 +186,11 @@ function Timer(props) {
                 } else if(state > 27) {
                     setMessage("BURNED");
                     setColor("#DC1FFF");
-                } else if(state > 27) {
-                    setMessage("CONTENTS");
+                } else if(state > 26) {
+                    setMessage("SUPPLY");
+                    setColor("#DC1FFF");
+                } else if(state > 25) {
+                    setMessage("REMAINING");
                     setColor("#DC1FFF");
                 } else {
                     setMessage(getTimeString(time));
@@ -445,14 +459,14 @@ function CameraControls(props) {
 }
 
 function StateScene(props) {
-
+    
     switch(props.state) {
         case FSM.NotConnected:
         case FSM.MintGuide:
             return (
                 <group>
                     <Timer bomb={addDays(Date.now(), 3)} state={props.state}/>
-                    <Clue0 />
+                    <Clue0 wallet={props.wallet}/>
                     <Question />
                     <Suspense fallback={null}>
                         <Chest />
@@ -546,7 +560,7 @@ export function BuildScene(props) {
                 <pointLight position={[0, 6, -3]} intensity={0.21}/>
                 <pointLight position={[3, 5, -5]} intensity={0.21}/>
                 <pointLight position={[-3, 5, -5]} intensity={0.21}/>
-                <StateScene state={props.state} />
+                <StateScene state={props.state} wallet={props.wallet}/>
                 <Stars
                     radius={100} // Radius of the inner sphere (default=100)
                     depth={50} // Depth of area where stars should fit (default=50)

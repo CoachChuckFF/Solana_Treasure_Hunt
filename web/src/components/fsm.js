@@ -45,5 +45,9 @@ export const MapToState = (map) => {
     if(map[NFKey1.toString()]) return MintNFKey2;
     if(map[Guide.toString()]) return MintNFKey1;
 
+    console.log("Change FSM");
+
+    return MintNFKey1;
+
     return MintGuide;
 };

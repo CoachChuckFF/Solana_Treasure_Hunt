@@ -7,6 +7,9 @@ import { curtains, Curtains } from './components/curtains';
 import { StateView } from './components/stateView';
 import TabsRouter from './components/router';
 import * as FSM from './components/fsm';
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
+import { closePage, PuzzlePageOutline } from './components/page';
 
 
 import { Connection, PublicKey, clusterApiUrl} from '@solana/web3.js';
@@ -14,6 +17,8 @@ import {
   Program, Provider, web3, BN
 } from '@project-serum/anchor';
 import { getNFTs } from './components/solScan';
+
+const staticCodes = ['','','',''];
 
 const theme = createTheme({
   palette: {
@@ -25,18 +30,42 @@ const theme = createTheme({
     },
     disabled: {
       main: '#0D0D0D',
+    },
+    blue: {
+      main: '#03E2FF',
     }
   }
 });
 
+function Loader(props){
+  return (
+    <div>
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={props.open}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+    </div>
+  );
+}
+
+function Puzzle1Page(props){
+
+  if(props.wallet == null) return null;
+  if(props.puzzle != FSM.MintNFKey1) return null;
+
+  return (
+    <PuzzlePageOutline wallet={props.wallet} puzzleCB={props.puzzleCB}></PuzzlePageOutline>
+  );
+}
 
 function ChestPage(props){
-
   return (
     <div>
       <StateView state={props.state}/>
       <BuildScene curtains={props.curtains} wallet={props.wallet} wallet={props.wallet} state={props.state}/>
-      <CombinationMint curtains={props.curtains} connect={props.connect} wallet={props.wallet}/>
+      <CombinationMint mint={props.mint} action={props.action} curtains={props.curtains} connect={props.connect} wallet={props.wallet} codes={props.codes} state={props.state} puzzle={props.puzzle}/>
     </div>
   );
 }
@@ -45,9 +74,32 @@ function App() {
   const [wallet, setwallet] = useState(null);
   const [curtains, setCurtains] = useState([useRef(), useRef()]);
   const [state, setState] = useState(FSM.NotConnected);
+
+  const [activePuzzle, setActivePuzzle] = useState(null);
+
   const [actionCounter, setActionCounter] = useState(0);
 
+  const [codes, setCodes] = useState(staticCodes);
+
   const [isLoading, setIsLoading] = useState(false);
+
+  const mint = (codes) => {
+    setTimeout(()=>{
+      driveState();
+    }, 2000);
+  }
+
+  const puzzleCB = (codes) => {
+
+    setCodes(codes);
+    driveState();
+    setActivePuzzle(null);
+  }
+
+  const puzzle = (state) => {
+
+    setActivePuzzle(state);
+  }
 
   const driveState = () => {setActionCounter(actionCounter + 1);}
   const checkIfWalletIsConnected = async () => {
@@ -58,12 +110,8 @@ function App() {
         if (solana.isPhantom) {
           console.log('Phantom wallet found!');
           const response = await solana.connect({ onlyIfTrusted: true });
-          console.log(
-            'Connected with Public Key:',
-            response.publicKey.toString()
-          );
 
-          setwallet(response.publicKey);
+          setwallet(new PublicKey(response.publicKey.toString()));
         }
       } else {
         alert('Solana object not found! Get a Phantom Wallet 👻');
@@ -78,8 +126,8 @@ function App() {
   
     if (solana) {
       const response = await solana.connect();
-      console.log('Connected with Public Key:', response.publicKey.toString());
-      setwallet(response.publicKey);
+
+      setwallet(new PublicKey(response.publicKey.toString()));
     }
   };
 
@@ -93,22 +141,30 @@ function App() {
   
   useEffect(() => {
     if (wallet) {
-      console.log(wallet.toString());
       setState(FSM.MintGuide);
+      setActivePuzzle(null);
       driveState();
     }
   }, [wallet]);
 
   useEffect(() => {
     if(wallet){
+      setIsLoading(true);
       getNFTs(wallet)
       .then((state)=>{
+        setIsLoading(false);
         setState(FSM.MapToState(state));
+        setActivePuzzle(null);
       })
       .catch(()=>{
+        setIsLoading(false);
         setState(FSM.MintGuide);
+        setActivePuzzle(null);
       });
     } else {
+      setCodes(staticCodes);
+      setwallet(null);
+      setActivePuzzle(null);
       setState(FSM.NotConnected);
     }
   }, [actionCounter]);
@@ -117,8 +173,10 @@ function App() {
   return (
     <div className="App">
       <ThemeProvider theme={theme}>
+        <Loader open={isLoading}/>
         {/* <TabsRouter /> */}
-        <ChestPage curtains={curtains} connect={connectWallet} wallet={wallet} state={state}/>
+        <Puzzle1Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
+        <ChestPage mint={mint} puzzle={puzzle} curtains={curtains} connect={connectWallet} wallet={wallet} state={state} codes={codes} action={actionCounter}/>
         <Curtains curtains={curtains}/>
       </ThemeProvider>
     </div>

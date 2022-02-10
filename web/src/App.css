@@ -18,6 +18,90 @@ body {
   position: absolute;
 }
 
+@keyframes fade-in {
+  0% {opacity: 0;}
+  100% {opacity: 1;}
+}
+
+@keyframes fade-out {
+  0% {opacity: 1;}
+  100% {opacity: 0;}
+}
+
+.puzzle-page {
+  height: 100vh;
+  width: 100%;
+  z-index: 20;
+  position: absolute;
+  background-color: #000000;
+  opacity: 1;
+  animation-name: fade-in;
+  animation-duration: 0.55s;
+}
+
+.puzzle-page-out {
+  height: 100vh;
+  width: 100%;
+  z-index: 20;
+  position: absolute;
+  background-color: #000000;
+  opacity: 0;
+  animation-name: fade-out;
+  animation-duration: 0.55s;
+}
+
+.noot-grid {
+  display: block;
+  margin: auto;
+  max-width: 500px;
+  max-height: 100%;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-gap: 5px;
+}
+.noot-grid div {
+  aspect-ratio: 1;
+}
+.nft-image {
+  width: 90%;
+}
+
+.nft-image img:hover{
+  width: 90%;
+  transition: all 150ms ease;
+  border: 5px solid #79008F;
+}
+
+.nft-image img{
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  border: 5px solid #000;
+  border-radius: 13px;
+  width: 100%;
+  object-fit: contain;
+  transition: all 150ms ease;
+}
+
+.nft-selected {
+  width: 90%;
+}
+.nft-selected img{
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  border: 5px solid #DC1FFF;
+  border-radius: 13px;
+  width: 90%;
+  object-fit: contain;
+  transition: all 150ms ease;
+}
+.nft-selected img:hover {
+  border: 5px solid #F7CCFF;
+}
+
+
 .state-container {
   width: 89%;
   position: absolute;
@@ -29,6 +113,55 @@ body {
   color: #383838;
   text-align: center;
   font-size: small;
+}
+
+.puzzle-content {
+  /* background-color: #61dafb; */
+  margin: auto;
+  position: absolute;
+  top: 10%;
+  left: 5%;
+  width: 90%;
+  height: 60%;
+  color: #222222;
+  text-align: center;
+}
+
+.puzzle-header {
+  width: 100%;
+  top: 2vh;
+  position: absolute;
+  text-align: center;
+  font-size: x-large;
+  font-weight: bold;
+  color: #757575;
+  padding-bottom: 3vh;
+}
+
+.your-codes {
+  width: 100%;
+  text-align: center;
+  font-size: large;
+  color: #757575;
+  padding-bottom: 3vh;
+}
+
+.your-codes-header {
+  width: 100%;
+  text-align: center;
+  font-size: large;
+  color: #757575;
+  font-weight: bold;
+  padding-bottom: 3vh;
+}
+
+.your-codes-header a{
+  transition: all 150ms ease;
+  color: #FFF;
+}
+
+.your-codes-header a:hover{
+  color: #DC1FFF;
 }
 
 .code-container {
@@ -47,30 +180,6 @@ body {
   width: 0;
   opacity: 0.0;
   pointer-events: none;
-}
-
-@keyframes fade-in {
-  0% {opacity: 1;}
-  30% {opacity: 1;}
-  /* Waiting time */
-  70% {opacity: 1;}
-  100% {opacity: 0;}
-}
-
-.connect-scene {
-  height: 100vh;
-  width: 100%;
-  margin: auto;
-  position: absolute;
-  left: 0; 
-  bottom: 0; 
-  z-index: 13;
-  display: block;
-  background-color: #000000;
-  pointer-events: all;
-  opacity: 1;
-  animation-name: fade-in;
-  animation-duration: 2s;
 }
 
 @keyframes scene-change {
