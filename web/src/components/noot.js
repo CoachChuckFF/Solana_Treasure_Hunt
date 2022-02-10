@@ -83,7 +83,7 @@ function shuffleArray(array) {
     }
 }
 
-export function PuzzlePageOutline(props){
+export function NootPuzzlePage(props){
     const ref = useRef();
 
     const [activeNoot, setActiveNoot] = useState(0);

@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import SvgIcon from '@mui/material/SvgIcon';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-import { faPuzzlePiece, faBook, faUndo, faWallet, faTimes } from '@fortawesome/free-solid-svg-icons'
-import { faKeySkeleton } from '@fortawesome/pro-regular-svg-icons'
+import { faPuzzlePiece, faBook, faUndo, faWallet, faTimes, faPlay } from '@fortawesome/free-solid-svg-icons'
+import { faKeySkeleton, faTreasureChest, faTrash, faChevronSquareLeft, faChevronSquareRight } from '@fortawesome/pro-regular-svg-icons'
 
 const FontAwesomeSvgIcon = React.forwardRef((props, ref) => {
   const { icon } = props;
@@ -49,6 +49,10 @@ export function KeyIcon(props) {
     return <FontAwesomeIcon icon={faKeySkeleton} />
 }
 
+export function ChestIcon(props) {
+  return <FontAwesomeIcon icon={faTreasureChest} />
+}
+
 export function RefreshIcon(props) {
     return <FontAwesomeIcon icon={faUndo}/>
 }
@@ -59,4 +63,20 @@ export function WalletIcon(props) {
 
 export function CancelIcon(props) {
   return <FontAwesomeIcon icon={faTimes}/>
+}
+
+export function TrashIcon(props) {
+  return <FontAwesomeIcon icon={faTrash}/>
+}
+
+export function LeftIcon(props) {
+  return <FontAwesomeIcon icon={faChevronSquareLeft}/>
+}
+
+export function RightIcon(props) {
+  return <FontAwesomeIcon icon={faChevronSquareRight}/>
+}
+
+export function PlayIcon(props) {
+  return <FontAwesomeIcon icon={faPlay}/>
 }

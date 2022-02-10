@@ -15,7 +15,7 @@ import { Connection, PublicKey, clusterApiUrl} from '@solana/web3.js';
 import './../App.css' 
 
 // Icons
-import { PuzzleIcon, WalletIcon, GuideIcon, RefreshIcon, KeyIcon } from './icons';
+import { PuzzleIcon, WalletIcon, GuideIcon, ChestIcon, KeyIcon } from './icons';
 import { codeToHexString, getGuideCodes } from './hashes';
 
 const blue = {
@@ -134,10 +134,32 @@ function TheButton(props) {
             if(!props.hasCodes){
                 text = "Solve Puzzle ->";
             } else {
-                text = "Mint NFKey 0";
+                text = "Mint NFKey 1";
             }
 
             icon = (<KeyIcon />);
+            break;
+        case FSM.MintNFKey2:
+            if(!props.hasCodes){
+                text = "Solve Puzzle ->";
+            } else {
+                text = "Mint NFKey 2";
+            }
+
+            icon = (<KeyIcon />);
+            break;
+        case FSM.MintNFKey3:
+            if(!props.hasCodes){
+                text = "Solve Puzzle ->";
+            } else {
+                text = "Mint NFKey 3";
+            }
+
+            icon = (<KeyIcon />);
+            break;
+        case FSM.OpenChest:
+            text = "Open Chest!";
+            icon = (<ChestIcon />);
             break;
     }
     
@@ -222,6 +244,7 @@ export function CombinationMint(props) {
     const [isWorking, setIsWorking] = React.useState(false);
     const [state, setState] = React.useState(null);
     const [action, setAction] = React.useState(0);
+    const [subAction, setSubAction] = React.useState(0);
     const [codes, setCodes] = React.useState({
         [byte0]: '',
         [byte1]: '',
@@ -240,7 +263,7 @@ export function CombinationMint(props) {
             [byte2]: props.codes[2],
             [byte3]: props.codes[3],
         });
-    } else if(action != props.action) {
+    } else if(action != props.action || subAction != props.subAction) {
 
         if(
             props.codes[0] != '' &&
@@ -257,6 +280,7 @@ export function CombinationMint(props) {
         }
         
         setAction(props.action);
+        setSubAction(props.subAction);
         setIsWorking(false);
     }
 

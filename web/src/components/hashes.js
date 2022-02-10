@@ -3,7 +3,6 @@ import { PublicKey } from '@solana/web3.js';
 const PUBKEYSIZE = 32;
 
 function arrayToByte(wallet, puzzle, index){
-    // console.log(wallet.toBytes[PUBKEYSIZE - 1 - puzzle], ' ', wallet.toBytes[index], ' ', wallet.toBytes[PUBKEYSIZE - 1 - puzzle] ^ wallet.toBytes[index]);
     return wallet.toBytes()[PUBKEYSIZE - 1 - puzzle] ^ wallet.toBytes()[index];
 }
 function codesToByteArray(wallet, puzzle, zero, one, two, three){

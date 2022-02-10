@@ -9,7 +9,8 @@ import TabsRouter from './components/router';
 import * as FSM from './components/fsm';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
-import { closePage, PuzzlePageOutline } from './components/page';
+import { NootPuzzlePage } from './components/noot';
+import { DroniesPuzzlePage } from './components/dronie';
 
 
 import { Connection, PublicKey, clusterApiUrl} from '@solana/web3.js';
@@ -33,6 +34,9 @@ const theme = createTheme({
     },
     blue: {
       main: '#03E2FF',
+    },
+    green: {
+      main: '#00FFA3',
     }
   }
 });
@@ -56,7 +60,17 @@ function Puzzle1Page(props){
   if(props.puzzle != FSM.MintNFKey1) return null;
 
   return (
-    <PuzzlePageOutline wallet={props.wallet} puzzleCB={props.puzzleCB}></PuzzlePageOutline>
+    <NootPuzzlePage wallet={props.wallet} puzzleCB={props.puzzleCB}></NootPuzzlePage>
+  );
+}
+
+function Puzzle2Page(props){
+
+  if(props.wallet == null) return null;
+  if(props.puzzle != FSM.MintNFKey2) return null;
+
+  return (
+    <DroniesPuzzlePage wallet={props.wallet} puzzleCB={props.puzzleCB}></DroniesPuzzlePage>
   );
 }
 
@@ -64,8 +78,8 @@ function ChestPage(props){
   return (
     <div>
       <StateView state={props.state}/>
-      <BuildScene curtains={props.curtains} wallet={props.wallet} wallet={props.wallet} state={props.state}/>
-      <CombinationMint mint={props.mint} action={props.action} curtains={props.curtains} connect={props.connect} wallet={props.wallet} codes={props.codes} state={props.state} puzzle={props.puzzle}/>
+      <BuildScene curtains={props.curtains} wallet={props.wallet} wallet={props.wallet} state={props.state} />
+      <CombinationMint mint={props.mint} subAction={props.subAction} action={props.action} curtains={props.curtains} connect={props.connect} wallet={props.wallet} codes={props.codes} state={props.state} puzzle={props.puzzle}/>
     </div>
   );
 }
@@ -78,6 +92,7 @@ function App() {
   const [activePuzzle, setActivePuzzle] = useState(null);
 
   const [actionCounter, setActionCounter] = useState(0);
+  const [subActionCounter, setSubActionCounter] = useState(0);
 
   const [codes, setCodes] = useState(staticCodes);
 
@@ -92,7 +107,7 @@ function App() {
   const puzzleCB = (codes) => {
 
     setCodes(codes);
-    driveState();
+    driveSubState();
     setActivePuzzle(null);
   }
 
@@ -102,6 +117,7 @@ function App() {
   }
 
   const driveState = () => {setActionCounter(actionCounter + 1);}
+  const driveSubState = () => {setSubActionCounter(subActionCounter + 1);}
   const checkIfWalletIsConnected = async () => {
     try {
       const { solana } = window;
@@ -176,7 +192,8 @@ function App() {
         <Loader open={isLoading}/>
         {/* <TabsRouter /> */}
         <Puzzle1Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
-        <ChestPage mint={mint} puzzle={puzzle} curtains={curtains} connect={connectWallet} wallet={wallet} state={state} codes={codes} action={actionCounter}/>
+        <Puzzle2Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
+        <ChestPage mint={mint} puzzle={puzzle} curtains={curtains} connect={connectWallet} wallet={wallet} state={state} codes={codes} action={actionCounter} subAction={subActionCounter}/>
         <Curtains curtains={curtains}/>
       </ThemeProvider>
     </div>

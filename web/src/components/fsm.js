@@ -47,7 +47,7 @@ export const MapToState = (map) => {
 
     console.log("Change FSM");
 
-    return MintNFKey1;
+    return MintNFKey2;
 
     return MintGuide;
 };
