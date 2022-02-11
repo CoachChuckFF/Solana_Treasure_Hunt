@@ -95,7 +95,7 @@ function TheButton(props) {
 
     let enabled = !props.loading;
 
-    if(!props.hasCodes){
+    if(!props.hasCodes && props.state != FSM.OpenChest){
         color = disabledColor;
         textColor = disabledTextColor;
         enabled = false;     
@@ -132,7 +132,7 @@ function TheButton(props) {
             break;
         case FSM.MintNFKey1:
             if(!props.hasCodes){
-                text = "Solve Puzzle ->";
+                text = "Solve Puzzle 1 ->";
             } else {
                 text = "Mint NFKey 1";
             }
@@ -141,7 +141,7 @@ function TheButton(props) {
             break;
         case FSM.MintNFKey2:
             if(!props.hasCodes){
-                text = "Solve Puzzle ->";
+                text = "Solve Puzzle 2 ->";
             } else {
                 text = "Mint NFKey 2";
             }
@@ -150,7 +150,7 @@ function TheButton(props) {
             break;
         case FSM.MintNFKey3:
             if(!props.hasCodes){
-                text = "Solve Puzzle ->";
+                text = "Solve Puzzle 3 ->";
             } else {
                 text = "Mint NFKey 3";
             }
@@ -358,6 +358,9 @@ export function CombinationMint(props) {
                 parseInt(codes.byte2.substring(2), 16) ?? 0,
                 parseInt(codes.byte3.substring(2), 16) ?? 0
             ]);
+            setIsWorking(true);
+        } else if(props.state == FSM.OpenChest){
+            props.mint([0,0,0,0]);
             setIsWorking(true);
         }
     }

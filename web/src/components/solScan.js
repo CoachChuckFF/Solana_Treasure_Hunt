@@ -28,7 +28,6 @@ export const getNFTs = (walletAddress) => {
             "/account/tokens",
             { account: `${walletAddress}`,},
         ).then((data)=>{
-            console.log("Got data");
             var stateMap = Object(FSM.ItemMap);
 
             data.forEach(token => {
@@ -37,7 +36,6 @@ export const getNFTs = (walletAddress) => {
                 }
             });
 
-            console.log("Parsed Info");
             resolve(stateMap);
         })
         .catch((error)=>{ reject(error); });

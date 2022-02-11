@@ -67,6 +67,7 @@ const FILES = [
     "F2: Fun (totally unrelated) fact! ^ is the symbol for XOR",
     "F3: Melody is on to something...",
     "46343A2031737420636F6465203D202D2E2E2D202D2D2D202E2D2E203E202E2D2E202E2D2D202E2E2E2E2E203E202E2D2E202E2D2D202D2D2D2D2D",
+    "Stop. Bad. Only read files #'s 0-4",
     "463F3A20506179206E6F20617474656E74696F6E20746F20746865206D616E20626568696E6420746865206375727461696E2E",
     "463F3A20546170206F7574204E4F4F5420746F2067657420796F757220636F6465732E",
 ]
@@ -80,7 +81,7 @@ const ERRORS = [
 ];
 
 const HELP = [
-    ("Available commands: SOS, RF#, RW#, XOR, H2A"),
+    ("Available commands: SOS [CMD], RF# [# = 0-4], RW# [# = 0-9], XOR [RW#] [RW#], H2A [RF#]"),
     ("SOS: Gives info. Uses: SOS" + TERMINALSPLIT + "CMD"),
     ("RF#: Read data file #. RF0-RF4"),
     ("RW#: Read wallet byte #. RW0-RW9"),
@@ -138,8 +139,8 @@ function runEmulator(program, wallet, byteCB, winCB){
     if(codes[0].includes('RF')){
         if(codes[0].length == 3){
             let number = parseInt(codes[0].charAt(2));
-            if (isNaN(number)) return ERRORS[1];
-            if (number < 0 || number > 6) return ERRORS[1];
+            if (number < 0 ) return ERRORS[4];
+            if (number > 7 ) return ERRORS[4];
 
             return FILES[number];
         }
@@ -218,8 +219,9 @@ function runEmulator(program, wallet, byteCB, winCB){
                 if(codes[1].length == 3){
                     index = parseInt(codes[1].charAt(2));
                     if (isNaN(index)) return ERRORS[4];
-                    if (index < 0 || index > 6) return ERRORS[4];
-                    
+                    if (index < 0 ) return ERRORS[4];
+                    if (index > 7 ) return ERRORS[4];
+                
                     file = FILES[index];
                 } else {
                     return ERRORS[4];
@@ -238,7 +240,7 @@ function runEmulator(program, wallet, byteCB, winCB){
         return "NFKey 2 codes unlocked.";
     }
 
-    return ERRORS[0];
+    return ERRORS[0] + ` '${program}' is not valid`;
 }
 
 function DronieTerminal(props){
@@ -258,21 +260,23 @@ function DronieTerminal(props){
     }, []);
 
     useEffect(() => {
-        if(mounted.current){
-            setTimeout(()=>{
+        setTimeout(()=>{
+            if(mounted.current){
                 setBlink(!blink);
-            }, 555)
-        }
+            }
+        }, 555)
     }, [blink]);
 
     useEffect(() => {
-        if(mounted.current){
-            if(tap < program.length){
-                if(tapTimer == null){
+        if(tap < program.length){
+            if(tapTimer == null){
+                if(mounted.current){
                     setTapTimer(
                         setTimeout(()=>{
-                            setTapTimer(null);
-                            setTap(tap + 1);
+                            if(mounted.current){
+                                setTapTimer(null);
+                                setTap(tap + 1);
+                            }
                         }, 55)
                     );
                 }
@@ -306,8 +310,8 @@ function DronieTerminal(props){
         }
     }
 
-
     let prgm = props.program;
+    let color = props.omni ? '#03E2FF' : '#DC1FFF';
 
     if(tap < 0){ 
         prgm = '';
@@ -315,8 +319,10 @@ function DronieTerminal(props){
         prgm = prgm.substring(0, tap);
     } 
 
+    
+
     return (
-        <div className="dronie-terminal">
+        <div className="dronie-terminal" style={{color: color}}>
             {'> ' + prgm + (blink ? ' ' : ' ▐')}
         </div>
     )
@@ -335,17 +341,19 @@ function Terminal(props){
     }, []);
 
     useEffect(() => {
-        if(mounted.current){
-            setTimeout(()=>{
+        setTimeout(()=>{
+            if(mounted.current){
                 setBlink(!blink);
-            }, 555)
-        }
+            }
+        }, 555);
     }, [blink]);
 
 
     if(!didInit){
         setTimeout(()=>{
-            setBlink(!blink);
+            if(mounted.current){
+                setBlink(!blink);
+            }
         }, 555);
         setDidInit(true);
     }
@@ -364,6 +372,7 @@ export function DroniesPuzzlePage(props){
     const [codes, setCodes] = useState([-1,-1,-1,-1]);
     const [program, setProgram] = useState('');
     const [response, setResponse] = useState('* Real Bird Noises');
+    const [omniColor, setOmniColor] = useState(false);
     const [action, setAction] = useState(0);
     const [blink, setBlink] = useState(true);
 
@@ -388,7 +397,7 @@ export function DroniesPuzzlePage(props){
     }
 
 
-    const handleSpace = () => {
+    const handleSpace = (forEmulator) => {
         let temp = '';
 
         if(program.length == 0){
@@ -411,7 +420,11 @@ export function DroniesPuzzlePage(props){
         if(temp.length > 0){
             let code = morseToText(temp);
             if(code.length > 1){
-                return code;
+                if(forEmulator){
+                    return program;
+                } else {
+                    return code;
+                }
             } else {
                 return (program.substring(0, program.length - temp.length) + code);
             }
@@ -427,10 +440,60 @@ export function DroniesPuzzlePage(props){
         } else {
             switch(char){
                 case ' ':
-                    setProgram(handleSpace());
+                    setProgram(handleSpace(false));
                     break;
                 case '-':
                 case '.':
+
+                    switch(program + char){
+                        case '...---...':
+                            setOmniColor(true);
+                            setResponse("Coach Chuck here from the 4th wall! You need to BREAK inbetween charecters: [... BREAK --- BREAK ... RUN]");
+                            break;
+                        case '-....----.':
+                            setOmniColor(true);
+                            setResponse("Nice.");
+                            break;
+                        case '..-...--.-.-.-':
+                        case '.-......':
+                        case '-.....--.-.....':
+                            setOmniColor(true);
+                            setResponse("Naughty");
+                            break;
+                        case '-.-------':
+                            setOmniColor(true);
+                            setResponse("NOOT NOOT! 🐧");
+                            break;
+                        case '.-...-...-.....-':
+                            setOmniColor(true);
+                            setResponse("Ribbit Ribbit! 🐸");
+                            break;
+                        case '.....--....-':
+                            setOmniColor(true);
+                            setResponse("Suba Suba! 🐍");
+                            break;
+                        case '--.--':
+                            setOmniColor(true);
+                            setResponse("GM! ❤️");
+                            break;
+                        case '--.-.':
+                            setOmniColor(true);
+                            setResponse("NG! ❤️");
+                            break;
+                    }
+
+                    if(
+                        (program + char).includes('SOS.') || 
+                        (program + char).includes('SOS-') ||
+                        (program + char).includes('XOR.') ||
+                        (program + char).includes('XOR-') ||
+                        (program + char).includes('H2A.') ||
+                        (program + char).includes('H2A-')
+                    ){
+                        setOmniColor(true);
+                        setResponse("Coach Chuck's 4th Wall Quick Tip: double BREAK after a command");
+                    }
+
                     setProgram(program + char);
                     break;
             }
@@ -447,10 +510,11 @@ export function DroniesPuzzlePage(props){
     }
     const runProgram = () => {
         // response
-        let newResponse = (runEmulator(handleSpace(), props.wallet, bytesCB, winCB) ?? '');
+        let newResponse = (runEmulator(handleSpace(true), props.wallet, bytesCB, winCB) ?? '');
         if(newResponse === response){
             driveState();
         } else {
+            setOmniColor(false);
             setResponse(newResponse);
         }
         clearProgram();
@@ -651,7 +715,7 @@ export function DroniesPuzzlePage(props){
     return (
         <div ref={ref} className="puzzle-page">
             <div className="puzzle-header">
-                Memory Dump
+                Speak 'N Spell Dronie
             </div>
             <div className="puzzle-content">
                 <div className="puzzle-thrid" onClick={toTwitter}>
@@ -663,7 +727,7 @@ export function DroniesPuzzlePage(props){
                     />
                 </ div>
                 <div className="puzzle-thrid">
-                    <DronieTerminal program={response} action={action}/>
+                    <DronieTerminal program={response} action={action} omni={omniColor}/>
                 </ div>
                 <div className="puzzle-thrid">
                     <Terminal program={program}/>

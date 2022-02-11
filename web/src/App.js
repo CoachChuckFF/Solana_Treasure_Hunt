@@ -19,6 +19,7 @@ import {
 } from '@project-serum/anchor';
 import { getNFTs } from './components/solScan';
 import { DesolatePuzzlePage } from './components/desolates';
+import { getDesolatesCode, getDronieCode, getNootCode, getGuideCodes } from './components/hashes';
 
 const staticCodes = ['','','',''];
 
@@ -115,9 +116,42 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
 
   const mint = (codes) => {
+    let rightCodes = null;
+    let newState = state;
+
+    switch(state) {
+      case FSM.MintGuide:
+        rightCodes = getGuideCodes(wallet);
+        for(var i = 0; i < rightCodes.length; i++) if(codes[i] != rightCodes[i]){ console.log("Bad code ", state, rightCodes, codes); break; }
+        newState = FSM.MintNFKey1;
+      break;
+      case FSM.MintNFKey1:
+        rightCodes = getNootCode(wallet, 8);
+        for(var i = 0; i < rightCodes.length; i++) if(codes[i] != rightCodes[i]){ console.log("Bad code ", state, rightCodes, codes); break; }
+        newState = FSM.MintNFKey2;
+      break;
+      case FSM.MintNFKey2:
+        rightCodes = getDronieCode(wallet, 5);
+        for(var i = 0; i < rightCodes.length; i++) if(codes[i] != rightCodes[i]){ console.log("Bad code ", state, rightCodes, codes); break; }
+        newState = FSM.MintNFKey3;
+      break;
+      case FSM.MintNFKey3:
+        rightCodes = getDesolatesCode(wallet, 0xFF, 0x55, 0x33);
+        for(var i = 0; i < rightCodes.length; i++) if(codes[i] != rightCodes[i]){ console.log("Bad code ", state, rightCodes, codes); break; }
+        newState = FSM.OpenChest;
+      break;
+      case FSM.OpenChest:
+        newState = FSM.Done;
+      break;
+    }
+
     setTimeout(()=>{
+      if(newState != state){
+        setCodes(staticCodes);
+      }
+      setState(newState);
       driveState();
-    }, 2000);
+    }, 3400);
   }
 
   const puzzleCB = (codes) => {
@@ -140,16 +174,20 @@ function App() {
 
       if (solana) {
         if (solana.isPhantom) {
-          console.log('Phantom wallet found!');
-          const response = await solana.connect({ onlyIfTrusted: true });
+          try {
+            const response = await solana.connect({ onlyIfTrusted: true });
 
-          setwallet(new PublicKey(response.publicKey.toString()));
+            setwallet(new PublicKey(response.publicKey.toString()));
+          } catch (error) {
+            console.log("Error re-connecting to phantom. ", error);
+          }
+
         }
       } else {
         alert('Solana object not found! Get a Phantom Wallet 👻');
       }
     } catch (error) {
-      console.error(error);
+      console.log("Error re-connecting to phantom. ", error);
     }
   };
 
@@ -157,9 +195,13 @@ function App() {
     const { solana } = window;
   
     if (solana) {
-      const response = await solana.connect();
+      try {
+        const response = await solana.connect();
+        setwallet(new PublicKey(response.publicKey.toString()));
+      } catch (error) {
+        console.log("Error connecting to phantom");
+      }
 
-      setwallet(new PublicKey(response.publicKey.toString()));
     }
   };
 
@@ -182,17 +224,16 @@ function App() {
   useEffect(() => {
     if(wallet){
       setIsLoading(true);
-      console.log("Fetching NFTs");
       getNFTs(wallet)
       .then((state)=>{
-        console.log("Got NFTs");
         setIsLoading(false);
-        setState(FSM.MapToState(state));
+        // setState(FSM.MapToState(state));
         setActivePuzzle(null);
       })
       .catch(()=>{
         console.log("Coult not get NFTs");
         setIsLoading(false);
+        setwallet(null);
         setState(FSM.MintGuide);
         setActivePuzzle(null);
       });

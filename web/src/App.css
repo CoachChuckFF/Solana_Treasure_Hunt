@@ -205,8 +205,12 @@ body {
 }
 
 .puzzle-thrid {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
   height: 33%;
   width: 100%;
+  max-width: 555px;
   text-align: left;
 }
 
@@ -256,6 +260,7 @@ body {
 .terminal {
   height: 10vh;
   width: 100%;
+  max-width: 555px;
   overflow-wrap: break-word;
   text-align: left;
   font-size: x-large;
@@ -267,6 +272,7 @@ body {
 .dronie-terminal {
   height: 10vh;
   width: 100%;
+  max-width: 555px;
   overflow-wrap: break-word;
   text-align: left;
   font-size: x-large;

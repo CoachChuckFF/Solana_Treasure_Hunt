@@ -205,7 +205,7 @@ export function DesolatePuzzlePage(props){
     return (
         <div ref={ref} className="puzzle-page">
             <div className="puzzle-header">
-                Find the Color Code
+                Color Code in DESOLATEs #4615 ⤵️
             </div>
             <div className="puzzle-content">
                 <div className="puzzle-half" onClick={toDesolate}>
