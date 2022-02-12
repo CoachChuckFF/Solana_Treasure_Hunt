@@ -21,6 +21,7 @@ import { getNFTs } from './components/solScan';
 import { DesolatePuzzlePage } from './components/desolates';
 import { getDesolatesCode, getDronieCode, getNootCode, getGuideCodes } from './components/hashes';
 
+
 const staticCodes = ['','','',''];
 
 const theme = createTheme({
