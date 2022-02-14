@@ -2,7 +2,7 @@ import React, { Suspense, useRef, useState, useLayoutEffect } from "react";
 import { useGLTF, Stars, PointerLockControls, ScrollControls, Plane } from "@react-three/drei";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { MathUtils, Vector3, PerspectiveCamera, GridHelper, DirectionalLight, Shape, DoubleSide } from 'three';
+import { MathUtils, Vector3, Raycaster, PerspectiveCamera, GridHelper, DirectionalLight, Shape, DoubleSide } from 'three';
 import { EffectComposer, Bloom } from '@react-three/postprocessing'
 import { Text } from "troika-three-text";
 import * as FSM from './fsm';
@@ -55,9 +55,11 @@ const HubX = Math.cos(Thirty) * (TRI * HubRadius)
 
 const EyeLevel = 1.21;
 
+//Distances
+const superNovaDistance = 888
 const EdgeWidth = HubRadius
 
-const StartingCamera = {pos: [0, EyeLevel, 888], rot: [0, 0, 0]};
+const StartingCamera = {pos: [0, EyeLevel, superNovaDistance], rot: [0, 0, 0]};
 const TargetCamera = {pos: [0, EyeLevel, 0], rot: [0, 0, 0]};
 const HubIndex0 = {pos: [0, 0, -HubRadius], rot: [0, 0, 0], point: [0, -5, -HubRadius]};
 const HubIndex1 = {pos: [HubX, 0, -HubZ], rot: [0, -(HexTheta * 1), 0], point: [0, -5, -HubRadius]};
@@ -72,6 +74,8 @@ const scaleLock = 0.55;
 
 //Times
 const zoomInTime = 5000;
+
+
 
 // GLOBALS -----------------
 function BuildGLB(props){
@@ -207,10 +211,12 @@ function Floor(props){
         bevelEnabled: false
     }
 
+    console.log(props.wire);
+
     return (
         <mesh ref={props.fref} position={[0,0,0]} rotation={[PI/2, 0, props.startingTheta]}>
           <extrudeBufferGeometry attach="geometry" args={[shape, extrudeSettings]} />
-          <meshStandardMaterial wireframe={true} color="#EAEAEA"/>
+          <meshStandardMaterial wireframe={true} transparent={!props.wire} opacity={0.01} color="#EAEAEA"/>
         </mesh>
     );
 
@@ -231,14 +237,15 @@ function FloorSet(props){
         useRef(),
     ];
 
+    console.log(props.cameraIndex);
     return (
         <group>
-            <Floor fref={refs[0]} radius={props.radius} startingTheta={OffsetTheta * 0}/>
-            <Floor fref={refs[1]} radius={props.radius} startingTheta={OffsetTheta * 1}/>
-            <Floor fref={refs[2]} radius={props.radius} startingTheta={OffsetTheta * 2}/>
-            <Floor fref={refs[3]} radius={props.radius} startingTheta={OffsetTheta * 3}/>
-            <Floor fref={refs[4]} radius={props.radius} startingTheta={OffsetTheta * 4}/>
-            <Floor fref={refs[5]} radius={props.radius} startingTheta={OffsetTheta * 5}/>
+            <Floor wire={props.cameraIndex == 3} fref={refs[0]} radius={props.radius} startingTheta={OffsetTheta * 0}/>
+            <Floor wire={props.cameraIndex == 4} fref={refs[1]} radius={props.radius} startingTheta={OffsetTheta * 1}/>
+            <Floor wire={props.cameraIndex == 5} fref={refs[2]} radius={props.radius} startingTheta={OffsetTheta * 2}/>
+            <Floor wire={props.cameraIndex == 0} fref={refs[3]} radius={props.radius} startingTheta={OffsetTheta * 3}/>
+            <Floor wire={props.cameraIndex == 1} fref={refs[4]} radius={props.radius} startingTheta={OffsetTheta * 4}/>
+            <Floor wire={props.cameraIndex == 2} fref={refs[5]} radius={props.radius} startingTheta={OffsetTheta * 5}/>
         </group>
     );
 }
@@ -283,6 +290,31 @@ function HubRing(props){
     );
 }
 
+function getCameraIndex(camera){
+    const threshold = PI / 4;
+    const halfHold = threshold / 2;
+    const gap = (HexTheta - threshold);
+    const pos = halfHold + gap;
+
+    let vec = new Vector3();
+    camera.getWorldDirection(vec);
+    let theta = ((2*PI) - ((Math.atan2(vec.x, vec.z)) + PI));
+    let index = -1;
+    
+    if(theta > 2*PI - halfHold || theta < halfHold){
+        index = 0;
+    }
+
+    for(var i = 0; i < 5; i++){
+        if(theta > pos + (HexTheta * i) && theta < pos + threshold + (HexTheta * i)){
+            index = i + 1;
+            break;
+        }
+    }
+
+    return index;
+}
+
 function Controls(props){
     const { camera, gl: { domElement },} = useThree();
     const [controller, setController] = useState(null);
@@ -301,43 +333,30 @@ function Controls(props){
 
             controller.autoRotate = false;
 
+            let distance = targetPos.distanceTo(camera.position);
+            let tock = Math.pow(Math.min(1.0, tick / zoomInTime), 2);
+
             if(props.devMode){
                 ;;
-            } else if(time > SupernovaStart){
-                let scale = lerp(SupernovaMinScale, SupernovaMaxScale, Math.pow(Math.min((time - SupernovaStart) / SupernovaDuration, 1.0), 3));
-
-                controller.update();
-
-                // if(camera.position.distanceTo(targetPos) < 500){
-                //     camera.position.x = camera.position.x * 1.001;
-                //     camera.position.y = camera.position.y * 1.001;
-                //     camera.position.z = camera.position.z * 1.001;
-                // }
-                
-                // targetPos.addScalar(Math.max(scale, 1.0));
-                // camera.lookAt(
-                //     HubIndex0.pos[0], 
-                //     HubIndex0.pos[1], 
-                //     HubIndex0.pos[2]
-                // );
-                // camera.
-                // camera.position.x = targetPos.x;
-                // camera.position.y = targetPos.y;
-                // camera.position.z = targetPos.z;
-                // camera.updateProjectionMatrix();
-
             } else if(props.state === FSM.NotConnected){
                 controller.autoRotate = true;
                 controller.update();
+
+                if(distance < superNovaDistance - 5){
+                    camera.position.z = lerp(camera.position.z, superNovaDistance, tock);
+                }
+
             } else {
-                let distance = targetPos.distanceTo(camera.position);
-                let tock = Math.pow(Math.min(1.0, tick / zoomInTime), 2);
                 if(distance > 0.01){
                     camera.position.x = lerp(camera.position.x, TargetCamera.pos[0], tock);
                     camera.position.y = lerp(camera.position.y, TargetCamera.pos[1], tock);
                     camera.position.z = lerp(camera.position.z, TargetCamera.pos[2], tock);
-                }
-    
+                } else {
+                    let index = getCameraIndex(camera);
+                    if(props.cameraIndex != index){
+                        props.changeCameraIndex(index);
+                    }
+                }    
             }
         }
     });
@@ -372,8 +391,8 @@ export function BuildHub(props) {
                 {/* <directionalLight position={[orbit, orbit, orbit]} intensity={0.9}/> */}
                 <pointLight position={[0, 3, 0]} intensity={10}/>
                 <HubRing />
-                <Supernova time={time}/>
-                <FloorSet radius={HubRadius}/>
+                {/* <Supernova time={time}/> */}
+                <FloorSet radius={HubRadius} cameraIndex={props.cameraIndex}/>
                 <Stars
                     radius={100} // Radius of the inner sphere (default=100)
                     depth={50} // Depth of area where stars should fit (default=50)
@@ -385,7 +404,7 @@ export function BuildHub(props) {
                 <EffectComposer multisampling={8} autoClear={false}>
                     <Bloom intensity={0.08} luminanceThreshold={0.08} luminanceSmoothing={0} />
                 </EffectComposer>
-                <Controls state={state} time={time} devMode={false}/>
+                <Controls state={state} time={time} devMode={false} cameraIndex={props.cameraIndex} changeCameraIndex={props.changeCameraIndex}/>
             </Canvas>
         </div>
     );

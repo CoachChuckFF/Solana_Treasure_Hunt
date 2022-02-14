@@ -118,6 +118,14 @@ body {
   padding-bottom: 3vh;
 }
 
+.hub-controls {
+  background-color: #00FFA3;
+  width: 100%;
+  max-width: 555;
+  position: absolute;
+  bottom: 0;
+}
+
 .puzzle-controls {
   width: 89%;
   max-width: 555px;
@@ -129,14 +137,37 @@ body {
   margin-right: auto; 
   position: absolute;
   text-align: center;
+  pointer-events: none;
 }
 
 .puzzle-control-row {
   display: block;
   font-size: large;
   color: #EAEAEA;
+  pointer-events: all;
   width: 100%;
   height: 33%;
+  opacity: 1;
+  transition: all 150ms ease;
+}
+
+.puzzle-control-row-blank {
+  display: block;
+  font-size: large;
+  color: #EAEAEA;
+  width: 100%;
+  height: 33%;
+  opacity: 0;
+  transition: all 150ms ease;
+}
+
+.puzzle-control-row-blank {
+  display: block;
+  font-size: large;
+  color: #EAEAEA;
+  width: 100%;
+  height: 33%;
+  pointer-events: none;
 }
 
 .puzzle-code-header {

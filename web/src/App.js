@@ -21,7 +21,33 @@ import { getNFTs } from './components/solScan';
 import { DesolatePuzzlePage } from './components/desolates';
 import { getDesolatesCode, getDronieCode, getNootCode, getGuideCodes } from './components/hashes';
 
-const staticCodes = ['','','',''];
+const staticCodes = {
+  blue:  [-1,-1,-1,-1],
+  green: [-1,-1,-1,-1],
+  pink:  [-1,-1,-1,-1],
+  white: [-1,-1,-1,-1],
+};
+
+const blankPuzzle = {
+  state: {
+    connected: false,
+    loading: false,
+    activePuzzle: 0,
+    devMode: false,
+    cameraOverride: [null, null, null],
+  },
+  keys: {
+    blue: false,
+    green: false,
+    pink: false,
+    black: false,
+    white: false,
+  },
+  chests: {
+    regular: false,
+    secret: false,
+  }
+}
 
 const theme = createTheme({
   palette: {
@@ -44,8 +70,6 @@ const theme = createTheme({
 });
 
 function Loader(props){
-
-
   return (
     <div>
       <Backdrop
@@ -94,9 +118,9 @@ function Puzzle3Page(props){
 function ChestPage(props){
   return (
     <div>
-      <StateView state={props.state}/>
-      <BuildHub curtains={props.curtains} wallet={props.wallet} state={props.state} />
-      <CombinationMint mint={props.mint} subAction={props.subAction} action={props.action} curtains={props.curtains} connect={props.connect} wallet={props.wallet} codes={props.codes} state={props.state} puzzle={props.puzzle}/>
+      {/* <StateView state={props.state}/> */}
+      <BuildHub changeCameraIndex={props.changeCameraIndex} cameraIndex={props.cameraIndex} curtains={props.curtains} wallet={props.wallet} state={props.state} />
+      <CombinationMint cameraIndex={props.cameraIndex} mint={props.mint} subAction={props.subAction} action={props.action} curtains={props.curtains} connect={props.connect} wallet={props.wallet} codes={props.codes} state={props.state} puzzle={props.puzzle}/>
     </div>
   );
 }
@@ -112,58 +136,88 @@ function App() {
   const [subActionCounter, setSubActionCounter] = useState(0);
 
   const [codes, setCodes] = useState(staticCodes);
+  const [puzzleState, setPuzzleState] = useState(blankPuzzle)
+  const [cameraIndex, setCameraIndex] = useState(-1);
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const mint = (codes) => {
-    let rightCodes = null;
-    let newState = state;
+  const logout = () => {
+    setCodes(staticCodes);
+    setCameraIndex(-1);
+    setwallet(null);
+    setActivePuzzle(null);
+    setState(FSM.NotConnected);
+  }
 
-    switch(state) {
-      case FSM.MintGuide:
-        rightCodes = getGuideCodes(wallet);
-        for(var i = 0; i < rightCodes.length; i++) if(codes[i] != rightCodes[i]){ console.log("Bad code ", state, rightCodes, codes); break; }
-        newState = FSM.MintNFKey1;
-      break;
-      case FSM.MintNFKey1:
-        rightCodes = getNootCode(wallet, 8);
-        for(var i = 0; i < rightCodes.length; i++) if(codes[i] != rightCodes[i]){ console.log("Bad code ", state, rightCodes, codes); break; }
-        newState = FSM.MintNFKey2;
-      break;
-      case FSM.MintNFKey2:
-        rightCodes = getDronieCode(wallet, 5);
-        for(var i = 0; i < rightCodes.length; i++) if(codes[i] != rightCodes[i]){ console.log("Bad code ", state, rightCodes, codes); break; }
-        newState = FSM.MintNFKey3;
-      break;
-      case FSM.MintNFKey3:
-        rightCodes = getDesolatesCode(wallet, 0xFF, 0x55, 0x33);
-        for(var i = 0; i < rightCodes.length; i++) if(codes[i] != rightCodes[i]){ console.log("Bad code ", state, rightCodes, codes); break; }
-        newState = FSM.OpenChest;
-      break;
-      case FSM.OpenChest:
-        newState = FSM.Done;
-      break;
+  const mint = (codes, isSecret) => {
+    let rightCodes = null;
+
+    if(isSecret == true){
+
+    } else {
+      switch(cameraIndex) {
+        case 0: break;
+        case 2:
+          rightCodes = getNootCode(wallet, 8);
+          for(var i = 0; i < rightCodes.length; i++) if(codes.blue[i] != rightCodes[i]){ console.log("Bad code ", cameraIndex, rightCodes, codes); break; }
+          //TODO mint Blue Key
+          break;
+        case 3:
+          rightCodes = getDronieCode(wallet, 5);
+          for(var i = 0; i < rightCodes.length; i++) if(codes.green[i] != rightCodes[i]){ console.log("Bad code ", cameraIndex, rightCodes, codes); break; }
+          //TODO mint Green Key
+          break;
+        case 4:
+          rightCodes = getDesolatesCode(wallet, 0xFF, 0x55, 0x33);
+          for(var i = 0; i < rightCodes.length; i++) if(codes.pink[i] != rightCodes[i]){ console.log("Bad code ", cameraIndex, rightCodes, codes); break; }
+          //TODO mint Pink Key
+          break;
+        default:
+  
+          break;
+      }
     }
 
-    setTimeout(()=>{
-      if(newState != state){
-        setCodes(staticCodes);
-      }
-      setState(newState);
-      driveState();
-    }, 3400);
+    // setTimeout(()=>{
+    //   if(newState != state){
+    //     setCodes(staticCodes);
+    //   }
+    //   setState(newState);
+    //   driveState();
+    // }, 3400);
+  }
+
+  const changeCameraIndex = (index) => {
+    console.log(index);
+    setCameraIndex(index);
   }
 
   const puzzleCB = (codes) => {
 
-    setCodes(codes);
+    // setCodes(codes);
     driveSubState();
     setActivePuzzle(null);
   }
 
-  const puzzle = (state) => {
+  const puzzle = (index) => {
+    switch(index) {
+      case 0: 
+        logout();
+        console.log("logout");
+        break;
+      case 2:
+        setActivePuzzle(FSM.MintNFKey1);
+        break;
+      case 3:
+        setActivePuzzle(FSM.MintNFKey2);
+        break;
+      case 4:
+        setActivePuzzle(FSM.MintNFKey3);
+        break;
+      default:
 
-    setActivePuzzle(state);
+        break;
+    }
   }
 
   const driveState = () => {setActionCounter(actionCounter + 1);}
@@ -226,22 +280,18 @@ function App() {
       setIsLoading(true);
       getNFTs(wallet)
       .then((state)=>{
+        // puzzleState.
+        setPuzzleState()
         setIsLoading(false);
         // setState(FSM.MapToState(state));
         setActivePuzzle(null);
       })
       .catch(()=>{
         console.log("Coult not get NFTs");
-        setIsLoading(false);
-        setwallet(null);
-        setState(FSM.MintGuide);
-        setActivePuzzle(null);
+        logout();
       });
     } else {
-      setCodes(staticCodes);
-      setwallet(null);
-      setActivePuzzle(null);
-      setState(FSM.NotConnected);
+      logout();
     }
   }, [actionCounter]);
 
@@ -254,7 +304,7 @@ function App() {
         <Puzzle1Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
         <Puzzle2Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
         <Puzzle3Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
-        <ChestPage mint={mint} puzzle={puzzle} curtains={curtains} connect={connectWallet} wallet={wallet} state={state} codes={codes} action={actionCounter} subAction={subActionCounter}/>
+        <ChestPage mint={mint} puzzle={puzzle} cameraIndex={cameraIndex} changeCameraIndex={changeCameraIndex} curtains={curtains} connect={connectWallet} wallet={wallet} state={state} codes={codes} action={actionCounter} subAction={subActionCounter}/>
         <Curtains curtains={curtains}/>
       </ThemeProvider>
     </div>

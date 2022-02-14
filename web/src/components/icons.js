@@ -61,6 +61,10 @@ export function WalletIcon(props) {
   return <FontAwesomeIcon icon={faWallet}/>
 }
 
+export function LogoutIcon(props) {
+  return <FontAwesomeIcon icon={faWallet}/>
+}
+
 export function CancelIcon(props) {
   return <FontAwesomeIcon icon={faTimes}/>
 }

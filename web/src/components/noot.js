@@ -3,6 +3,7 @@ import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import { CancelIcon } from './icons';
+import { ConstCode, Header } from './commons';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import { getNootCode, codeToHexString } from "./hashes";
@@ -120,26 +121,23 @@ export function NootPuzzlePage(props){
 
     const PageButton = () => {
         return (
-            <Box>
-                <Button
-                    color={'primary'}
-                    onClick={closePageWithCodes}
-                    variant="contained"
-                    sx={{
-                        width: '100%',
-                        height: '5vh',
-                        margin: 0,
-                        color: "#CDD2D6",
-                    }}
-                    disableElevation
-                >Try Codes</Button>
-            </Box>
+            <Button
+                color={'primary'}
+                onClick={closePageWithCodes}
+                variant="contained"
+                sx={{
+                    width: '100%',
+                    height: '5vh',
+                    margin: 0,
+                    color: "#CDD2D6",
+                }}
+                disableElevation
+            >Try Codes</Button>
         );
     }
 
     const BackButton = () => {
         return (
-            <Box>
                 <Button
                     color={'disabled'}
                     onClick={closePageBack}
@@ -161,16 +159,7 @@ export function NootPuzzlePage(props){
                     <CancelIcon />
                 </div>
             </Button>
-            </Box>
         );
-    }
-
-    const ConstCode = (props) => {
-        return (
-            <div className="puzzle-code">
-                {props.code}
-            </div>
-        )
     }
 
     const SolScan = (props) => {
@@ -190,14 +179,6 @@ export function NootPuzzlePage(props){
                 > 
                 View on Solscan 👀
                 </a>
-            </div>
-        )
-    }
-
-    const Header = (props) => {
-        return (
-            <div className="puzzle-code-header">
-                Generated:
             </div>
         )
     }
