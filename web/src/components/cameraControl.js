@@ -150,6 +150,10 @@ class OrbitControls extends EventDispatcher {
 
 		};
 
+        this.setDolly = function (dolly) {
+            dollyOut(dolly);
+        }
+
 		// this method is exposed, but perhaps it would be better if we can make it private...
 		this.update = function () {
 
@@ -175,6 +179,13 @@ class OrbitControls extends EventDispatcher {
 
 				// angle from z-axis around y-axis
 				spherical.setFromVector3( offset );
+
+
+				if ( scope.autoRotate && state === STATE.NONE ) {
+
+					rotateLeft( getAutoRotationAngle() );
+
+				}
 
 				if ( scope.enableDamping ) {
 
@@ -778,6 +789,9 @@ class STControls extends OrbitControls {
 
 		this.touches.ONE = TOUCH.ROTATE;
 		this.touches.TWO = TOUCH.NONE;
+
+        this.autoRotate = true;
+        this.autoRotateSpeed = -0.2;
 
 	}
 

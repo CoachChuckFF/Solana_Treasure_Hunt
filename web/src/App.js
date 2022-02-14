@@ -95,7 +95,7 @@ function ChestPage(props){
   return (
     <div>
       <StateView state={props.state}/>
-      <BuildHub curtains={props.curtains} wallet={props.wallet} wallet={props.wallet} state={props.state} />
+      <BuildHub curtains={props.curtains} wallet={props.wallet} state={props.state} />
       <CombinationMint mint={props.mint} subAction={props.subAction} action={props.action} curtains={props.curtains} connect={props.connect} wallet={props.wallet} codes={props.codes} state={props.state} puzzle={props.puzzle}/>
     </div>
   );

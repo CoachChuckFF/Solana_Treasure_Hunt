@@ -1,5 +1,8 @@
 import { PublicKey } from '@solana/web3.js';
 
+export const Devmode = "-2. Devmode"
+export const Supernova = "-1. Supernova"
+
 export const NotConnected = "0. Connect your wallet";
 export const MintGuide = "1. Mint the guide";
 export const MintNFKey1 = "2. Solve puzzle 1 to get the NFKey 1 codes";

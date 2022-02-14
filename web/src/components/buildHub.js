@@ -37,16 +37,16 @@ const maxTO = ocTO * 1000;
 const origin = new Vector3(0,0,0);
 const targetVec = new Vector3(target[0],target[1],target[2]);
 
-const SupernovaStart = 1320;
+const SupernovaStart = 5;
 const SupernovaMinScale = 0.01;
-const SupernovaMaxScale = 320;
+const SupernovaMaxScale = 400;
 const SupernovaDuration = 60;
 
 // GLOBALS -----------------
 const PI = Math.PI;
 const TRI = Math.sqrt(3)/2;
 
-const HubRadius = 4;
+const HubRadius = 5.5;
 const HexTheta = (2*PI/6);
 const Thirty = HexTheta / 2;
 const HubZ = Math.sin(Thirty) * (TRI * HubRadius)
@@ -57,7 +57,8 @@ const EyeLevel = 1.21;
 
 const EdgeWidth = HubRadius
 
-const StartingCamera = {pos: [0, EyeLevel, 0], rot: [0, 0, 0]};
+const StartingCamera = {pos: [0, EyeLevel, 888], rot: [0, 0, 0]};
+const TargetCamera = {pos: [0, EyeLevel, 0], rot: [0, 0, 0]};
 const HubIndex0 = {pos: [0, 0, -HubRadius], rot: [0, 0, 0], point: [0, -5, -HubRadius]};
 const HubIndex1 = {pos: [HubX, 0, -HubZ], rot: [0, -(HexTheta * 1), 0], point: [0, -5, -HubRadius]};
 const HubIndex2 = {pos: [HubX, 0, HubZ], rot: [0, -(HexTheta * 2), 0], point: [0, -5, -HubRadius]};
@@ -65,8 +66,12 @@ const HubIndex3 = {pos: [0, 0, HubRadius], rot: [0, -(HexTheta * 3), 0], point: 
 const HubIndex4 = {pos: [-HubX, 0, HubZ], rot: [0, -(HexTheta * 4), 0], point: [0, -5, -HubRadius]};
 const HubIndex5 = {pos: [-HubX, 0, -HubZ], rot: [0, -(HexTheta * 5), 0], point: [0, -5, -HubRadius]};
 
+//Scales
 const scaleChest = 0.5;
 const scaleLock = 0.55;
+
+//Times
+const zoomInTime = 5000;
 
 // GLOBALS -----------------
 function BuildGLB(props){
@@ -238,6 +243,30 @@ function FloorSet(props){
     );
 }
 
+function Supernova(props){
+    const ref = useRef();
+    const [scale, setScale] = useState(SupernovaMinScale);
+
+    
+    useFrame(({ camera }) => {
+        let date = new Date();
+        let time = Math.abs(props.time - date) / 1000;
+
+
+        if(time > SupernovaStart){
+            ref.current.rotation.x = ref.current.rotation.y += 0.001
+            setScale(lerp(SupernovaMinScale, SupernovaMaxScale, Math.pow(Math.min((time - SupernovaStart) / SupernovaDuration, 1.0), 3)));
+        }
+    });
+
+    return (
+        <mesh position={HubIndex0.pos} ref={ref} scale={scale}>
+            <dodecahedronBufferGeometry args={[1, 1, 1]} attach="geometry" />
+            <meshPhongMaterial color={'#03E2FF'} attach="material" />
+        </mesh>
+    )
+}
+
 function HubRing(props){
     return (
         <group>
@@ -259,9 +288,68 @@ function Controls(props){
     const [controller, setController] = useState(null);
     const [didInit, setDidInit] = useState(false);
 
+    useFrame(({ camera }) => { 
+        if(controller){
+            let tick = Math.abs(Date.now() - props.time);
+            let time = tick / 1000;
+
+            let targetPos = new Vector3(
+                TargetCamera.pos[0],
+                TargetCamera.pos[1],
+                TargetCamera.pos[2],
+            );
+
+            controller.autoRotate = false;
+
+            if(props.devMode){
+                ;;
+            } else if(time > SupernovaStart){
+                let scale = lerp(SupernovaMinScale, SupernovaMaxScale, Math.pow(Math.min((time - SupernovaStart) / SupernovaDuration, 1.0), 3));
+
+                controller.update();
+
+                // if(camera.position.distanceTo(targetPos) < 500){
+                //     camera.position.x = camera.position.x * 1.001;
+                //     camera.position.y = camera.position.y * 1.001;
+                //     camera.position.z = camera.position.z * 1.001;
+                // }
+                
+                // targetPos.addScalar(Math.max(scale, 1.0));
+                // camera.lookAt(
+                //     HubIndex0.pos[0], 
+                //     HubIndex0.pos[1], 
+                //     HubIndex0.pos[2]
+                // );
+                // camera.
+                // camera.position.x = targetPos.x;
+                // camera.position.y = targetPos.y;
+                // camera.position.z = targetPos.z;
+                // camera.updateProjectionMatrix();
+
+            } else if(props.state === FSM.NotConnected){
+                controller.autoRotate = true;
+                controller.update();
+            } else {
+                let distance = targetPos.distanceTo(camera.position);
+                let tock = Math.pow(Math.min(1.0, tick / zoomInTime), 2);
+                if(distance > 0.01){
+                    camera.position.x = lerp(camera.position.x, TargetCamera.pos[0], tock);
+                    camera.position.y = lerp(camera.position.y, TargetCamera.pos[1], tock);
+                    camera.position.z = lerp(camera.position.z, TargetCamera.pos[2], tock);
+                }
+    
+            }
+        }
+    });
+
     if(!didInit){
         setDidInit(true);
-        setController(new STControls(camera, domElement, StartingCamera.pos));
+        setController(new STControls(camera, domElement, TargetCamera.pos));
+        camera.lookAt(new Vector3(
+            HubIndex0.pos[0],
+            HubIndex0.pos[1],
+            HubIndex0.pos[2],
+        ));
     }
     
     return null;
@@ -269,6 +357,7 @@ function Controls(props){
 
 export function BuildHub(props) {
     const [state, setState] = useState(props.state);
+    const [subState, setSubstate] = useState(FSM.Supernova);
     const [time, setTime] = useState(new Date());
 
     if(state != props.state){
@@ -279,10 +368,11 @@ export function BuildHub(props) {
     return (
         <div className="scene-container">
             <Canvas dpr={window.devicePixelRatio} camera={{position: StartingCamera.pos, rotation: StartingCamera.rot, fov: 90}}>
-                <ambientLight position={[0, 0, 0]} intensity={0.1}/>
+                {/* <ambientLight position={[0, 0, 0]} intensity={0.1}/> */}
                 {/* <directionalLight position={[orbit, orbit, orbit]} intensity={0.9}/> */}
-                <pointLight position={[0, 3, 0]} intensity={1}/>
+                <pointLight position={[0, 3, 0]} intensity={10}/>
                 <HubRing />
+                <Supernova time={time}/>
                 <FloorSet radius={HubRadius}/>
                 <Stars
                     radius={100} // Radius of the inner sphere (default=100)
@@ -295,7 +385,7 @@ export function BuildHub(props) {
                 <EffectComposer multisampling={8} autoClear={false}>
                     <Bloom intensity={0.08} luminanceThreshold={0.08} luminanceSmoothing={0} />
                 </EffectComposer>
-                <Controls />
+                <Controls state={state} time={time} devMode={false}/>
             </Canvas>
         </div>
     );
