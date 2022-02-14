@@ -410,7 +410,7 @@ export function CombinationMint(props) {
                 <div className='code-container'>
                     <Box>
                         <Grid container spacing={2}>
-                            <Grid item xs={6}>
+                            {/* <Grid item xs={6}>
                                 <CodeInput handleChange={handleChange} code={codes.byte0} byte={byte0} wallet={props.wallet} p/>
                             </Grid>
                             <Grid item xs={6}>
@@ -421,7 +421,7 @@ export function CombinationMint(props) {
                             </Grid>
                             <Grid item xs={6}>
                                 <CodeInput handleChange={handleChange} code={codes.byte3} byte={byte3} wallet={props.wallet}/>
-                            </Grid>
+                            </Grid> */}
                             <Grid item xs={9}>
                                 <TheButton handleClick={handleMint} loading={isWorking} codes={codes} state={props.state} hasCodes={checkCodes()} wallet={props.wallet}/>
                             </Grid>

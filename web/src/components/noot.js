@@ -84,7 +84,7 @@ function shuffleArray(array) {
 }
 
 export function NootPuzzlePage(props){
-    const ref = useRef();
+    const refs = [useRef(), useRef()];
 
     const [activeNoot, setActiveNoot] = useState(0);
     const [didShuffle, setDidShuffle] = useState(false);
@@ -102,7 +102,8 @@ export function NootPuzzlePage(props){
     }
 
     const closePage = (codes) => {
-        ref.current.className = "puzzle-page-out";
+        refs[0].current.className = "puzzle-page-out";
+        refs[1].current.className = "puzzle-frame-out";
         setTimeout(()=>{
             props.puzzleCB(codes);
         }, 555);
@@ -166,7 +167,7 @@ export function NootPuzzlePage(props){
 
     const ConstCode = (props) => {
         return (
-            <div className="your-codes">
+            <div className="puzzle-code">
                 {props.code}
             </div>
         )
@@ -182,12 +183,12 @@ export function NootPuzzlePage(props){
             }
         }
         return (
-            <div className="your-codes-header">
+            <div className="noot-solscan">
                 <a
                     target="_blank"
                     href={url}
                 > 
-                View on Solscan
+                View on Solscan 👀
                 </a>
             </div>
         )
@@ -195,7 +196,7 @@ export function NootPuzzlePage(props){
 
     const Header = (props) => {
         return (
-            <div className="your-codes-header">
+            <div className="puzzle-code-header">
                 Generated:
             </div>
         )
@@ -208,7 +209,7 @@ export function NootPuzzlePage(props){
         }
 
         return (
-            <div className={props.noot == props.nootID ? "nft-selected" : "nft-image"} onClick={setThisNoot} key={props.nootID.id}>
+            <div className={props.noot == props.nootID ? "noot-selected" : "noot-image"} onClick={setThisNoot} key={props.nootID.id}>
                 <NootImage 
                     nootSrc={props.nootSrc}
                     nootSetSrc={props.nootSetSrc}
@@ -240,19 +241,21 @@ export function NootPuzzlePage(props){
         setCodes(getNootCode(props.wallet, activeNoot))
     }, [activeNoot]);
 
-
     return (
-        <div ref={ref} className="puzzle-page">
+        <div ref={refs[0]} className="puzzle-page">
+            <div ref={refs[1]} style={{backgroundColor: '#03E2FF'}} className="puzzle-frame"></div>
             <div className="puzzle-header">
                 Find the Imposter NOOT
             </div>
-            <div className="puzzle-content">
+            <div className="puzzle-area">
                 <Penguins noot={activeNoot}/>
+                <SolScan noot={activeNoot}/>
             </div>
-            <div className='code-container'>
-                <Box>
+            <div className="puzzle-controls">
+                <Box className="puzzle-control-row">
+                </Box>
+                <Box className="puzzle-control-row">
                     <Grid container spacing={2}>
-                        <Grid item xs={12}><SolScan noot={activeNoot}/></Grid>
                         <Grid item xs={4}><Header/></Grid>
                         <Grid item xs={2}>
                             <ConstCode code={codeToHexString(codes[0])}/>
@@ -266,6 +269,10 @@ export function NootPuzzlePage(props){
                         <Grid item xs={2}>
                             <ConstCode code={codeToHexString(codes[3])}/>
                         </Grid>
+                    </Grid>
+                </Box>
+                <Box className="puzzle-control-row">
+                    <Grid container spacing={2}>
                         <Grid item xs={9}>
                             <PageButton />
                         </Grid>

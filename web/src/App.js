@@ -1,6 +1,7 @@
 import './App.css';
 import { useRef, useState, useEffect } from "react";
 import { BuildScene } from './components/buildScene';
+import { BuildHub } from './components/buildHub';
 import { CombinationMint } from './components/combinationMint';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { curtains, Curtains } from './components/curtains';
@@ -12,7 +13,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { NootPuzzlePage } from './components/noot';
 import { DroniesPuzzlePage } from './components/dronie';
 
-
 import { Connection, PublicKey, clusterApiUrl} from '@solana/web3.js';
 import {
   Program, Provider, web3, BN
@@ -20,7 +20,6 @@ import {
 import { getNFTs } from './components/solScan';
 import { DesolatePuzzlePage } from './components/desolates';
 import { getDesolatesCode, getDronieCode, getNootCode, getGuideCodes } from './components/hashes';
-
 
 const staticCodes = ['','','',''];
 
@@ -96,7 +95,7 @@ function ChestPage(props){
   return (
     <div>
       <StateView state={props.state}/>
-      <BuildScene curtains={props.curtains} wallet={props.wallet} wallet={props.wallet} state={props.state} />
+      <BuildHub curtains={props.curtains} wallet={props.wallet} wallet={props.wallet} state={props.state} />
       <CombinationMint mint={props.mint} subAction={props.subAction} action={props.action} curtains={props.curtains} connect={props.connect} wallet={props.wallet} codes={props.codes} state={props.state} puzzle={props.puzzle}/>
     </div>
   );
@@ -216,7 +215,7 @@ function App() {
   
   useEffect(() => {
     if (wallet) {
-      setState(FSM.MintGuide);
+      setState(FSM.MintNFKey1);
       setActivePuzzle(null);
       driveState();
     }
