@@ -22,11 +22,11 @@ body {
 
 @keyframes fade-in-frame {
   0% {opacity: 0;}
-  100% {opacity: 0.13;}
+  100% {opacity: 0.89;}
 }
 
 @keyframes fade-out-frame {
-  0% {opacity: 0.13;}
+  0% {opacity: 0.89;}
   100% {opacity: 0;}
 }
 
@@ -44,8 +44,9 @@ body {
   height: 100vh;
   width: 100%;
   z-index: -20;
+  background-color: #000000;
   position: absolute;
-  opacity: 0.13;
+  opacity: 0.89;
   animation-name: fade-in-frame;
   animation-duration: 0.55s;
 }
@@ -55,7 +56,7 @@ body {
   width: 100%;
   z-index: -20;
   position: absolute;
-  background-color: #00FFA3;
+  background-color: #000000;
   opacity: 0;
   animation-name: fade-out-frame;
   animation-duration: 0.55s;
@@ -90,8 +91,8 @@ body {
   max-width: 555px;
   margin-left: auto; 
   margin-right: auto; 
-  padding-top: 1vh;
-  height: 5vh;
+  padding-top: 2vh;
+  height: 4vh;
   padding-bottom: 2vh;
   position: absolute;
   text-align: center;
@@ -104,7 +105,7 @@ body {
   /* background-color: red; */
   width: 89%;
   max-width: 555px;
-  height: 71vh;
+  height: 67vh;
   top: 8vh;
   left: 0; 
   right: 0; 
@@ -119,7 +120,6 @@ body {
 }
 
 .hub-controls {
-  background-color: #00FFA3;
   width: 100%;
   max-width: 555;
   position: absolute;
@@ -129,7 +129,7 @@ body {
 .puzzle-controls {
   width: 89%;
   max-width: 555px;
-  height: 23vh;
+  height: 25vh;
   bottom: 0;
   left: 0; 
   right: 0; 
@@ -173,10 +173,12 @@ body {
 .puzzle-code-header {
   width: 100%;
   font-weight: bold;
+  text-shadow: 3px 3px 5px black;
 }
 
 .puzzle-code {
   width: 100%;
+  text-shadow: 3px 3px 5px black;
 }
 
 /* ------------ NOOT Puzzle ------------------ */
@@ -243,7 +245,54 @@ body {
   color: #03E2FF;
 }
 
-/*  */
+/* Dronie */
+
+.dronie-top {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  height: 33%;
+  width: 100%;
+  max-width: 555px;
+  text-align: left;
+}
+
+.dronie-top img{
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  border: 5px solid #000;
+  border-radius: 13px;
+  height: 90%;
+  object-fit: contain;
+  transition: all 150ms ease;
+}
+
+.dronie-top img:hover{
+  border: 5px solid #DC1FFF;
+}
+
+.dronie-terminal-space {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  height: 50%;
+  width: 100%;
+  max-width: 555px;
+  text-align: left;
+}
+
+.dronie-user-terminal-space {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  height: 50%;
+  width: 100%;
+  max-width: 555px;
+  text-align: left;
+}
+
+/* Dronie */
 
 .nft-image {
   width: 90%;
@@ -374,6 +423,16 @@ body {
 
 .puzzle-half img:hover{
   border: 5px solid #00FFA3;
+}
+
+.puzzle-thrid {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  height: 33%;
+  width: 100%;
+  max-width: 555px;
+  text-align: left;
 }
 
 .puzzle-thrid {

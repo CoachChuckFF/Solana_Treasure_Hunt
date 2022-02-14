@@ -120,7 +120,7 @@ function ChestPage(props){
     <div>
       {/* <StateView state={props.state}/> */}
       <BuildHub changeCameraIndex={props.changeCameraIndex} cameraIndex={props.cameraIndex} curtains={props.curtains} wallet={props.wallet} state={props.state} />
-      <CombinationMint cameraIndex={props.cameraIndex} mint={props.mint} subAction={props.subAction} action={props.action} curtains={props.curtains} connect={props.connect} wallet={props.wallet} codes={props.codes} state={props.state} puzzle={props.puzzle}/>
+      <CombinationMint activePuzzle={props.activePuzzle} cameraIndex={props.cameraIndex} mint={props.mint} subAction={props.subAction} action={props.action} curtains={props.curtains} connect={props.connect} wallet={props.wallet} codes={props.codes} state={props.state} puzzle={props.puzzle}/>
     </div>
   );
 }
@@ -188,22 +188,31 @@ function App() {
   }
 
   const changeCameraIndex = (index) => {
-    console.log(index);
     setCameraIndex(index);
   }
 
-  const puzzleCB = (codes) => {
+  const puzzleCB = (newCodes) => {
 
-    // setCodes(codes);
-    driveSubState();
+    switch(activePuzzle){
+      case FSM.MintNFKey1:
+        setCodes(Object.assign({}, {...codes, blue: [...newCodes]}));
+        break;
+      case FSM.MintNFKey2:
+        setCodes(Object.assign({}, {...codes, green: [...newCodes]}));
+        break;
+      case FSM.MintNFKey3:
+        setCodes(Object.assign({}, {...codes, pink: [...newCodes]}));
+        break;
+    }
+
     setActivePuzzle(null);
   }
+
 
   const puzzle = (index) => {
     switch(index) {
       case 0: 
         logout();
-        console.log("logout");
         break;
       case 2:
         setActivePuzzle(FSM.MintNFKey1);
@@ -276,6 +285,12 @@ function App() {
   }, [wallet]);
 
   useEffect(() => {
+    console.log("hi");
+    console.log(codes);
+    console.log("byte");
+  }, [codes]);
+
+  useEffect(() => {
     if(wallet){
       setIsLoading(true);
       getNFTs(wallet)
@@ -304,7 +319,7 @@ function App() {
         <Puzzle1Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
         <Puzzle2Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
         <Puzzle3Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
-        <ChestPage mint={mint} puzzle={puzzle} cameraIndex={cameraIndex} changeCameraIndex={changeCameraIndex} curtains={curtains} connect={connectWallet} wallet={wallet} state={state} codes={codes} action={actionCounter} subAction={subActionCounter}/>
+        <ChestPage mint={mint} activePuzzle={activePuzzle} puzzle={puzzle} cameraIndex={cameraIndex} changeCameraIndex={changeCameraIndex} curtains={curtains} connect={connectWallet} wallet={wallet} state={state} codes={codes} action={actionCounter} subAction={subActionCounter}/>
         <Curtains curtains={curtains}/>
       </ThemeProvider>
     </div>

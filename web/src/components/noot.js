@@ -3,10 +3,10 @@ import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import { CancelIcon } from './icons';
-import { ConstCode, Header } from './commons';
+import { ConstCode, Header, codeToHex } from './commons';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
-import { getNootCode, codeToHexString } from "./hashes";
+import { getNootCode } from "./hashes";
 
 
 const NOOTS = [
@@ -110,12 +110,12 @@ export function NootPuzzlePage(props){
         }, 555);
     }
     const closePageWithCodes = () => {closePage([
-        codeToHexString(codes[0]),
-        codeToHexString(codes[1]),
-        codeToHexString(codes[2]),
-        codeToHexString(codes[3]),
+        codes[0],
+        codes[1],
+        codes[2],
+        codes[3],
     ]);}
-    const closePageBack = () => {closePage(['','','','']);}
+    const closePageBack = () => {closePage([-1, -1, -1, -1]);}
 
 
 
@@ -224,7 +224,7 @@ export function NootPuzzlePage(props){
 
     return (
         <div ref={refs[0]} className="puzzle-page">
-            <div ref={refs[1]} style={{backgroundColor: '#03E2FF'}} className="puzzle-frame"></div>
+            <div ref={refs[1]} className="puzzle-frame"></div>
             <div className="puzzle-header">
                 Find the Imposter NOOT
             </div>
@@ -233,35 +233,37 @@ export function NootPuzzlePage(props){
                 <SolScan noot={activeNoot}/>
             </div>
             <div className="puzzle-controls">
-                <Box className="puzzle-control-row">
-                </Box>
-                <Box className="puzzle-control-row">
-                    <Grid container spacing={2}>
-                        <Grid item xs={4}><Header/></Grid>
-                        <Grid item xs={2}>
-                            <ConstCode code={codeToHexString(codes[0])}/>
+                <div className="puzzle-controls">
+                    <Box className="puzzle-control-row">
+                    </Box>
+                    <Box className="puzzle-control-row">
+                        <Grid container spacing={2}>
+                            <Grid item xs={4}><Header/></Grid>
+                            <Grid item xs={2}>
+                                <ConstCode code={codeToHex(codes[0])}/>
+                            </Grid>
+                            <Grid item xs={2}>
+                                <ConstCode code={codeToHex(codes[1])}/>
+                            </Grid>
+                            <Grid item xs={2}>
+                                <ConstCode code={codeToHex(codes[2])}/>
+                            </Grid>
+                            <Grid item xs={2}>
+                                <ConstCode code={codeToHex(codes[3])}/>
+                            </Grid>
                         </Grid>
-                        <Grid item xs={2}>
-                            <ConstCode code={codeToHexString(codes[1])}/>
+                    </Box>
+                    <Box className="puzzle-control-row">
+                        <Grid container spacing={2}>
+                            <Grid item xs={9}>
+                                <PageButton />
+                            </Grid>
+                            <Grid item xs={3}>
+                                <BackButton />
+                            </Grid>
                         </Grid>
-                        <Grid item xs={2}>
-                            <ConstCode code={codeToHexString(codes[2])}/>
-                        </Grid>
-                        <Grid item xs={2}>
-                            <ConstCode code={codeToHexString(codes[3])}/>
-                        </Grid>
-                    </Grid>
-                </Box>
-                <Box className="puzzle-control-row">
-                    <Grid container spacing={2}>
-                        <Grid item xs={9}>
-                            <PageButton />
-                        </Grid>
-                        <Grid item xs={3}>
-                            <BackButton />
-                        </Grid>
-                    </Grid>
-                </Box>
+                    </Box>
+                </div>
             </div>
         </div>
     );

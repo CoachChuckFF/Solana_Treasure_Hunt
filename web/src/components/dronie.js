@@ -6,6 +6,8 @@ import { CancelIcon, PlayIcon } from './icons';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import { getNootCode, codeToHexString, getDronieCode } from "./hashes";
+import { ConstCode, Header, codeToHex } from './commons';
+
 
 const TERMINALSPLIT = '▹';
 const ERRORMSG = 'ERROR. Use SOS for help.';
@@ -368,7 +370,7 @@ function Terminal(props){
 
 export function DroniesPuzzlePage(props){
     const ref = useRef();
-
+    const refs = [useRef(), useRef()];
     const [codes, setCodes] = useState([-1,-1,-1,-1]);
     const [program, setProgram] = useState('');
     const [response, setResponse] = useState('* Real Bird Noises');
@@ -379,18 +381,19 @@ export function DroniesPuzzlePage(props){
     const driveState = () => {setAction(action + 1);}
 
     const closePage = (codes) => {
-        ref.current.className = "puzzle-page-out";
+        refs[0].current.className = "puzzle-page-out";
+        refs[1].current.className = "puzzle-frame-out";
         setTimeout(()=>{
             props.puzzleCB(codes);
         }, 555);
     }
     const closePageWithCodes = () => {closePage([
-        codeToHexString(codes[0] == -1 ? 0 : codes[0]),
-        codeToHexString(codes[1] == -1 ? 0 : codes[1]),
-        codeToHexString(codes[2] == -1 ? 0 : codes[2]),
-        codeToHexString(codes[3] == -1 ? 0 : codes[3]),
+        codes[0],
+        codes[1],
+        codes[2],
+        codes[3],
     ]);}
-    const closePageBack = () => {closePage(['','','','']);}
+    const closePageBack = () => {closePage([-1, -1, -1, -1]);}
 
     const clearProgram = () => {
         setProgram('');
@@ -676,49 +679,19 @@ export function DroniesPuzzlePage(props){
         );
     }
 
-    const ConstCode = (props) => {
-        return (
-            <div className="your-codes">
-                {props.code}
-            </div>
-        )
-    }
-
-    const Response = (props) => {
-        return (
-            <div className="your-codes-header">
-                Commands: H = 'help' 
-            </div>
-        )
-    }
-
-    const Commands = (props) => {
-        return (
-            <div className="your-codes-header">
-                Commands: H = 'help' 
-            </div>
-        )
-    }
-
-    const Header = (props) => {
-        return (
-            <div className="your-codes-header">
-                Generated:
-            </div>
-        )
-    }
 
     const toTwitter = () => {
         window.open('https://twitter.com/CoachChuckFF', '_blank');
     }
 
     return (
-        <div ref={ref} className="puzzle-page">
+        <div ref={refs[0]} className="puzzle-page">
+            <div ref={refs[1]} className="puzzle-frame"></div>
             <div className="puzzle-header">
-                Speak 'N Spell Dronie
+                Dronie Terminal
             </div>
-            <div className="puzzle-content">
-                <div className="puzzle-thrid" onClick={toTwitter}>
+            <div className="puzzle-area">
+                <div className="dronie-top" onClick={toTwitter}>
                     <img
                         src={'/img/dronie.png'}
                         srcSet={'/img/dronie.png'}
@@ -726,51 +699,60 @@ export function DroniesPuzzlePage(props){
                         loading="lazy"
                     />
                 </ div>
-                <div className="puzzle-thrid">
+                <div className="dronie-terminal-space">
                     <DronieTerminal program={response} action={action} omni={omniColor}/>
                 </ div>
-                <div className="puzzle-thrid">
+                <div className="dronie-user-terminal-space">
                     <Terminal program={program}/>
+                    <Box className="puzzle-control-row">
+                        <Grid container spacing={2}>
+                            <Grid item xs={3}>
+                                <Run />
+                            </Grid>
+                            <Grid item xs={3}>
+                                <Dot />
+                            </Grid>
+                            <Grid item xs={3}>
+                                <Dash />
+                            </Grid>
+                            <Grid item xs={3}>
+                                <Space />
+                            </Grid>
+                        </Grid>
+                    </Box>
                 </ div>
             </div>
-            <div className='code-container'>
-                <Box>
-                    <Grid container spacing={2}>
-                        <Grid item xs={3}>
-                            <Run />
+            <div className="puzzle-controls">
+                <div className="puzzle-controls">
+                <Box className="puzzle-control-row-blank"></Box>
+                <Box className="puzzle-control-row">
+                        <Grid container spacing={2}>
+                            <Grid item xs={4}><Header/></Grid>
+                            <Grid item xs={2}>
+                                <ConstCode code={codeToHex(codes[0])}/>
+                            </Grid>
+                            <Grid item xs={2}>
+                                <ConstCode code={codeToHex(codes[1])}/>
+                            </Grid>
+                            <Grid item xs={2}>
+                                <ConstCode code={codeToHex(codes[2])}/>
+                            </Grid>
+                            <Grid item xs={2}>
+                                <ConstCode code={codeToHex(codes[3])}/>
+                            </Grid>
                         </Grid>
-                        <Grid item xs={3}>
-                            <Dot />
+                    </Box>
+                    <Box className="puzzle-control-row">
+                        <Grid container spacing={2}>
+                            <Grid item xs={9}>
+                                <PageButton />
+                            </Grid>
+                            <Grid item xs={3}>
+                                <BackButton />
+                            </Grid>
                         </Grid>
-                        <Grid item xs={3}>
-                            <Dash />
-                        </Grid>
-                        <Grid item xs={3}>
-                            <Space />
-                        </Grid>
-                        <Grid item xs={4}>
-                            <Header />
-                        </Grid>
-                        <Grid item xs={2}>
-                            <ConstCode code={codes[0] == -1 ? '0x??' : codeToHexString(codes[0])}/>
-                        </Grid>
-                        <Grid item xs={2}>
-                            <ConstCode code={codes[1] == -1 ? '0x??' : codeToHexString(codes[1])}/>
-                        </Grid>
-                        <Grid item xs={2}>
-                            <ConstCode code={codes[2] == -1 ? '0x??' : codeToHexString(codes[2])}/>
-                        </Grid>
-                        <Grid item xs={2}>
-                            <ConstCode code={codes[3] == -1 ? '0x??' : codeToHexString(codes[3])}/>
-                        </Grid>
-                        <Grid item xs={9}>
-                            <PageButton />
-                        </Grid>
-                        <Grid item xs={3}>
-                            <BackButton />
-                        </Grid>
-                    </Grid>
-                </Box>
+                    </Box>
+                </div>
             </div>
         </div>
     );

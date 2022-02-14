@@ -211,7 +211,6 @@ function Floor(props){
         bevelEnabled: false
     }
 
-    console.log(props.wire);
 
     return (
         <mesh ref={props.fref} position={[0,0,0]} rotation={[PI/2, 0, props.startingTheta]}>
@@ -237,7 +236,6 @@ function FloorSet(props){
         useRef(),
     ];
 
-    console.log(props.cameraIndex);
     return (
         <group>
             <Floor wire={props.cameraIndex == 3} fref={refs[0]} radius={props.radius} startingTheta={OffsetTheta * 0}/>

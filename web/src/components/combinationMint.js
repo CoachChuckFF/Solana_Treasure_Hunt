@@ -103,6 +103,7 @@ export function CombinationMint(props) {
             iconTileColor: "primary",
             iconColor: "#03E2FF",
             codes: [-1,-1,-1,-1],
+            codeColor: "#EAEAEA",
             puzzle: "",
         }
     );
@@ -167,38 +168,47 @@ export function CombinationMint(props) {
                 break;
             case 2:
                 display = [true, true];
-                buttonInfo.enabled = true;
+                buttonInfo.enabled = !props.codes.blue.includes(-1);
                 buttonInfo.icon = (<KeyIcon />);
-                buttonInfo.text = "Mint NFKey 1";
+                buttonInfo.text = "Try NFKey 1";
                 buttonInfo.title = "Codes:";
                 buttonInfo.iconButtonIcon = (<PuzzleIcon />);
                 buttonInfo.iconTileColor = "blue";
                 buttonInfo.iconColor = pinkColor;
                 buttonInfo.codes = props.codes.blue;
+                buttonInfo.codeColor = blueColor;
                 break;
             case 3:
                 display = [true, true];
-                buttonInfo.enabled = true;
+                buttonInfo.enabled = !props.codes.green.includes(-1);
                 buttonInfo.icon = (<KeyIcon />);
-                buttonInfo.text = "Mint NFKey 2";
+                buttonInfo.text = "Try NFKey 2";
                 buttonInfo.title = "Codes:";
                 buttonInfo.iconButtonIcon = (<PuzzleIcon />);
                 buttonInfo.iconTileColor = "green";
                 buttonInfo.iconColor = pinkColor;
                 buttonInfo.codes = props.codes.green;
+                buttonInfo.codeColor = greenColor;
                 break;
             case 4:
                 display = [true, true];
-                buttonInfo.enabled = true;
+                buttonInfo.enabled = !props.codes.pink.includes(-1);
                 buttonInfo.icon = (<KeyIcon />);
-                buttonInfo.text = "Mint NFKey 3";
+                buttonInfo.text = "Try NFKey 3";
                 buttonInfo.title = "Codes:";
                 buttonInfo.iconButtonIcon = (<PuzzleIcon />);
                 buttonInfo.iconTileColor = "primary";
                 buttonInfo.iconColor = blueColor;
                 buttonInfo.codes = props.codes.pink;
+                buttonInfo.codeColor = pinkColor;
                 break;
             default: 
+        }
+
+
+        if(props.activePuzzle != null){
+            display[0] = false;
+            display[1] = false;
         }
 
         if(refs[0].current){
@@ -210,6 +220,7 @@ export function CombinationMint(props) {
 
     if(props.state === FSM.NotConnected) return <ConnectWalletButton />;
 
+    // console.log(props.codes.blue);
     changeButtonInfo();
 
     return (
@@ -234,7 +245,7 @@ export function CombinationMint(props) {
                             </Grid>
                         </Grid>
                     </Box>
-                    <Box ref={refs[1]} className="puzzle-control-row-blank">
+                    <Box ref={refs[1]} className="puzzle-control-row">
                         <Grid container spacing={2}>
                             <Grid item xs={9}>
                                 <TheButton handleClick={handleMint} loading={false}  info={buttonInfo}/>
