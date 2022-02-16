@@ -1,0 +1,33 @@
+{
+    "name": "DESOLATEs Puzzle Title",
+    "symbol": "ST-DPT",
+    "description": "I like logic puzzles!",
+    "seller_fee_basis_points": 0,
+    "collection": {
+      "name": "V1",
+      "family": "Sol Treasure"
+    },
+    "image": "https://soltreasure.s3.amazonaws.com/desolates/Puzzle/puzzle_title.png?ext=png",
+    "attributes": [
+      {
+        "trait_type": "Answer",
+        "value": "[AA BB CC]"
+      }
+    ],
+    "external_url": "https://twitter.com/CoachChuckFF",
+    "properties": {
+      "files": [
+        {
+          "uri": "https://soltreasure.s3.amazonaws.com/desolates/Puzzle/puzzle_title.png?ext=png",
+          "type": "image/png"
+        }
+      ],
+      "category": "image",
+      "creators": [
+        {
+          "address": "HAzgWmFC2TGw1Ry6C3h2i2eAnnbrD91wDremBSxXBgCB",
+          "share": 100
+        }
+      ]
+    }
+}

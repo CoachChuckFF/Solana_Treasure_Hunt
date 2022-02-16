@@ -1,0 +1,33 @@
+{
+  "name": "DESOLATEs Puzzle Clue 3",
+  "symbol": "ST-DPC3",
+  "description": "I like logic puzzles!",
+  "seller_fee_basis_points": 0,
+  "collection": {
+    "name": "V1",
+    "family": "Sol Treasure"
+  },
+  "image": "https://soltreasure.s3.amazonaws.com/desolates/Puzzle/puzzle_clue_3.png?ext=png",
+  "attributes": [
+    {
+      "trait_type": "Clue",
+      "value": "3. Each BLUE nibble is divisible by the total number of Noots in puzzle 1."
+    }
+  ],
+  "external_url": "https://twitter.com/CoachChuckFF",
+  "properties": {
+    "files": [
+      {
+        "uri": "https://soltreasure.s3.amazonaws.com/desolates/Puzzle/puzzle_clue_3.png?ext=png",
+        "type": "image/png"
+      }
+    ],
+    "category": "image",
+    "creators": [
+      {
+        "address": "HAzgWmFC2TGw1Ry6C3h2i2eAnnbrD91wDremBSxXBgCB",
+        "share": 100
+      }
+    ]
+  }
+}
