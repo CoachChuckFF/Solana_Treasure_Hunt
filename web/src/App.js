@@ -158,22 +158,23 @@ function App() {
     if(isSecret == true){
 
     } else {
+
       switch(cameraIndex) {
         case 0: break;
         case 2:
           rightCodes = getNootCode(wallet, 8);
-          for(var i = 0; i < rightCodes.length; i++) if(codes.blue[i] != rightCodes[i]){ console.log("Bad code ", cameraIndex, rightCodes, inputCodes); break; }
+          for(var i = 0; i < rightCodes.length; i++) if(codes.blue[i] != rightCodes[i]){ alert("Nope."); console.log("Bad code ", cameraIndex, rightCodes, inputCodes); return; }
           alert("Correct!");
           break;
         case 3:
           rightCodes = getDronieCode(wallet, 5);
-          for(var i = 0; i < rightCodes.length; i++) if(codes.green[i] != rightCodes[i]){ console.log("Bad code ", cameraIndex, rightCodes, inputCodes); break; }
+          for(var i = 0; i < rightCodes.length; i++) if(codes.green[i] != rightCodes[i]){ alert("Nope."); console.log("Bad code ", cameraIndex, rightCodes, inputCodes); return; }
           //TODO mint Green Key
           alert("Correct!");
           break;
         case 4:
           rightCodes = getDesolatesCode(wallet, 0xFF, 0x55, 0x33);
-          for(var i = 0; i < rightCodes.length; i++) if(codes.pink[i] != rightCodes[i]){ console.log("Bad code ", cameraIndex, rightCodes, inputCodes); break; }
+          for(var i = 0; i < rightCodes.length; i++) if(codes.pink[i] != rightCodes[i]){ alert("Nope."); console.log("Bad code ", cameraIndex, rightCodes, inputCodes); return; }
           //TODO mint Pink Key
           alert("Correct!");
           break;
