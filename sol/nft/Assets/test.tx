@@ -25,3 +25,9 @@ dw - BHwkxHhz6Tg87TieTLZxFUnj26iaP3z8aYQDE6qM3PMh
 
 spl-token transfer 98LMSXMzUP4myGehpbHmLQmhByPiMyjm8nzRJBKBtJz5 99999 7DhUR2sgQCtCGYZw1RWvzKPJCDu2Qp2N9nkiGZZUMCfN --fund-recipient
 
+
+
+
+Guixyy4rQUMcuZqNNDD92VkwgmfYmVDNLcihU5z7aKaA
+
+cargo run metadata-create -v --creators HAzgWmFC2TGw1Ry6C3h2i2eAnnbrD91wDremBSxXBgCB:0 pEsKYABNARLiDFYrjbjHDieD5h6gHrvYf9Vru62NX9k:40 ppTeamTpw1cbC8ybJpppbnoL7xXD9froJNFb5uvoPvb:60  --fee-payer ~/.config/solana/id.json -u mainnet-beta --name "Pesky Penguins #448 (NOOT)" --output json --seller-fee-basis-points 500 --symbol "NOOT" --uri https://arweave.net/05Ljk4tY6KQpmKJJV3Z9OLX6WzkmSUVFUIP7g4_aRhI Guixyy4rQUMcuZqNNDD92VkwgmfYmVDNLcihU5z7aKaA

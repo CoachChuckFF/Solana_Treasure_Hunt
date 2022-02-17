@@ -8,7 +8,6 @@ import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import { getNootCode } from "./hashes";
 
-
 const NOOTS = [
     {
         img: 'https://www.arweave.net/fDFF8koBC-RG7qf0g5Pof5Thj7fbDe3ZI0qccgIHuNs?ext=png',
@@ -20,7 +19,7 @@ const NOOTS = [
         img: 'https://www.arweave.net/EImqZ7GmraVINv5xcsHlmSdTN77WJSLwrtHJFSdwXkU?ext=png',
         title: 'NOOT',
         id: 1,
-        url: "https://solscan.io/token/2ct6MNqzxoAv2guPoZQtrKd9pznfcAgd7MYaXHxNr5cW",
+        url: "https://solscan.io/token/HZy1GBpjJcsEJkJCEytqzu4nRgEwrU3S9AbwgAqpGDd#metadata",
     },
     {
         img: 'https://www.arweave.net/RQxAsrAphaUbfTjbt1IdTZdq5md7mynMQCuGzaWjm3s?ext=png',

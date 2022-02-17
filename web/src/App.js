@@ -162,7 +162,7 @@ function App() {
       switch(cameraIndex) {
         case 0: break;
         case 2:
-          rightCodes = getNootCode(wallet, 8);
+          rightCodes = getNootCode(wallet, 1);
           for(var i = 0; i < rightCodes.length; i++) if(codes.blue[i] != rightCodes[i]){ alert("Nope."); console.log("Bad code ", cameraIndex, rightCodes, inputCodes); return; }
           alert("Correct!");
           break;

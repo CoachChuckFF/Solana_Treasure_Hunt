@@ -403,9 +403,24 @@ body {
 }
 
 .puzzle-half {
+  position: relative;
   height: 33%;
   width: 100%;
-  text-align: left;
+  text-align: center;
+}
+
+.puzzle-half-centered {
+  position: absolute;
+  color: #0E1922;
+  font-size: xxx-large;
+  top: 50%;
+  left: 50%;
+  transition: all 150ms ease;
+  transform: translate(-50%, -50%);
+}
+
+.puzzle-half-centered:hover {
+  color: #14F195;
 }
 
 .puzzle-half img{
