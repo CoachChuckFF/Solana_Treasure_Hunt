@@ -32,12 +32,21 @@ export function DesolatePuzzlePage(props){
     const closePageBack = () => {closePage([-1, -1, -1, -1]);}
 
 
-    const PageButton = () => {
+    const PageButton = (props) => {
+        let text = "Try Codes";
+        let click = closePageWithCodes;
+        let color = 'primary';
+
+        if(props.colorCodes[0] == 0xAA && props.colorCodes[1] == 0xBB && props.colorCodes[2] == 0xCC){
+            text = "Nice Try ;)";
+            click = ()=>{};
+            color = 'disabled';
+        }
         return (
             <Box>
                 <Button
-                    color={'primary'}
-                    onClick={closePageWithCodes}
+                    color={color}
+                    onClick={click}
                     variant="contained"
                     sx={{
                         width: '100%',
@@ -46,7 +55,7 @@ export function DesolatePuzzlePage(props){
                         color: "#CDD2D6",
                     }}
                     disableElevation
-                >Try Codes</Button>
+                >{text}</Button>
             </Box>
         );
     }
@@ -224,13 +233,13 @@ export function DesolatePuzzlePage(props){
                         <div className="color-change-box">
                             <Grid container spacing={2}>
                                 <Grid item xs={4}>
-                                    <UpButton index={0} color={'#DC1FFF'}/>
+                                    <UpButton index={0} color={'#9945FF'}/>
                                 </Grid>
                                 <Grid item xs={4}>
-                                    <UpButton index={1} color={'#00FFA3'}/>
+                                    <UpButton index={1} color={'#14F195'}/>
                                 </Grid>
                                 <Grid item xs={4}>
-                                    <UpButton index={2} color={'#03E2FF'}/>
+                                    <UpButton index={2} color={'#4FA5C4'}/>
                                 </Grid>
                                 <Grid item xs={4}>
                                     <ColorText hex={'0x' + colorCodes[0].toString(16).toUpperCase().padStart(2, '0')}/>
@@ -242,13 +251,13 @@ export function DesolatePuzzlePage(props){
                                     <ColorText hex={'0x' + colorCodes[2].toString(16).toUpperCase().padStart(2, '0')}/>
                                 </Grid>
                                 <Grid item xs={4}>
-                                    <DownButton index={0} color={'#DC1FFF'}/>
+                                    <DownButton index={0} color={'#9945FF'}/>
                                 </Grid>
                                 <Grid item xs={4}>
-                                    <DownButton index={1} color={'#00FFA3'}/>
+                                    <DownButton index={1} color={'#14F195'}/>
                                 </Grid>
                                 <Grid item xs={4}>
-                                    <DownButton index={2} color={'#03E2FF'}/>
+                                    <DownButton index={2} color={'#4FA5C4'}/>
                                 </Grid>
                             </Grid>
                         </div>
@@ -279,7 +288,7 @@ export function DesolatePuzzlePage(props){
                     <Box className="puzzle-control-row">
                         <Grid container spacing={2}>
                             <Grid item xs={9}>
-                                <PageButton />
+                                <PageButton colorCodes={colorCodes}/>
                             </Grid>
                             <Grid item xs={3}>
                                 <BackButton />
@@ -291,99 +300,4 @@ export function DesolatePuzzlePage(props){
         </div>
     );
 
-    // return (
-    //     <div ref={ref} className="puzzle-page">
-    //         <div className="puzzle-header">
-    //             RGB in DESOLATEs #4615 ⤵️
-    //         </div>
-    //         <div className="puzzle-content">
-    //             <div className="puzzle-half" onClick={toDesolate}>
-    //                 <img
-    //                     src={'/img/desolates.png'}
-    //                     srcSet={'/img/desolates.png'}
-    //                     alt={'Coach Chuck'}
-    //                     loading="lazy"
-    //                 />
-    //             </ div>
-    //             <div className="puzzle-quarter">
-    //                 <div className="middle-box">
-    //                     <div 
-    //                         className="color-box"
-    //                         style={{
-    //                             backgroundColor: toColorCode(),
-    //                         }}
-    //                     >
-    //                         <div className="color-box-text">
-    //                             <div className="color-box-text-center">
-    //                                 {toColorCode()}
-    //                             </div>
-    //                         </div>
-    //                     </div>
-    //                 </div>
-    //             </ div>
-    //             <div className="puzzle-quarter">
-    //                 <div className="middle-box">
-    //                     <div 
-    //                         className="color-change-box"
-    //                     >
-    //                         <Grid container spacing={2}>
-    //                             <Grid item xs={4}>
-    //                                 <UpButton index={0} color={'#DC1FFF'}/>
-    //                             </Grid>
-    //                             <Grid item xs={4}>
-    //                                 <UpButton index={1} color={'#00FFA3'}/>
-    //                             </Grid>
-    //                             <Grid item xs={4}>
-    //                                 <UpButton index={2} color={'#03E2FF'}/>
-    //                             </Grid>
-    //                             <Grid item xs={4}>
-    //                                 <ColorText hex={'0x' + colorCodes[0].toString(16).toUpperCase().padStart(2, '0')}/>
-    //                             </Grid>
-    //                             <Grid item xs={4}>
-    //                                 <ColorText hex={'0x' + colorCodes[1].toString(16).toUpperCase().padStart(2, '0')}/>
-    //                             </Grid>
-    //                             <Grid item xs={4}>
-    //                                 <ColorText hex={'0x' + colorCodes[2].toString(16).toUpperCase().padStart(2, '0')}/>
-    //                             </Grid>
-    //                             <Grid item xs={4}>
-    //                                 <DownButton index={0} color={'#DC1FFF'}/>
-    //                             </Grid>
-    //                             <Grid item xs={4}>
-    //                                 <DownButton index={1} color={'#00FFA3'}/>
-    //                             </Grid>
-    //                             <Grid item xs={4}>
-    //                                 <DownButton index={2} color={'#03E2FF'}/>
-    //                             </Grid>
-    //                         </Grid>
-    //                     </div>
-    //                 </div>
-    //             </ div>
-    //         </div>
-    //         <div className='code-container'>
-    //             <Box>
-    //                 <Grid container spacing={2}>
-    //                     <Grid item xs={4}><Header/></Grid>
-    //                     <Grid item xs={2}>
-    //                         <ConstCode code={codeToHexString(codes[0])}/>
-    //                     </Grid>
-    //                     <Grid item xs={2}>
-    //                         <ConstCode code={codeToHexString(codes[1])}/>
-    //                     </Grid>
-    //                     <Grid item xs={2}>
-    //                         <ConstCode code={codeToHexString(codes[2])}/>
-    //                     </Grid>
-    //                     <Grid item xs={2}>
-    //                         <ConstCode code={codeToHexString(codes[3])}/>
-    //                     </Grid>
-    //                     <Grid item xs={9}>
-    //                         <PageButton />
-    //                     </Grid>
-    //                     <Grid item xs={3}>
-    //                         <BackButton />
-    //                     </Grid>
-    //                 </Grid>
-    //             </Box>
-    //         </div>
-    //     </div>
-    // );
 }

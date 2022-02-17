@@ -57,9 +57,9 @@ function TheButton(props) {
     );
 }
 
-const greenColor = "#00FFA3";
-const blueColor = "#03E2FF";
-const pinkColor = "#DC1FFF";
+const greenColor = "#14F195";
+const blueColor = "#4FA5C4";
+const pinkColor = "#9945FF";
 const whiteColor = "#EAEAEA";
 function PuzzleButton(props) {
     let color = props.info.iconTileColor;
@@ -101,7 +101,7 @@ export function CombinationMint(props) {
             title: "Generated:",
             iconButtonIcon: (<WalletIcon />),
             iconTileColor: "primary",
-            iconColor: "#03E2FF",
+            iconColor: "#4FA5C4",
             codes: [-1,-1,-1,-1],
             codeColor: "#EAEAEA",
             puzzle: "",
@@ -114,6 +114,7 @@ export function CombinationMint(props) {
     }
     const handleMint = () => {
         // setIsWorking(true);
+        console.log(props.codes);
         props.mint();
     }
 

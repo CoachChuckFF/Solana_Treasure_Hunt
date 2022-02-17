@@ -619,7 +619,10 @@ class OrbitControls extends EventDispatcher {
 
 			event.preventDefault();
 
-			// scope.dispatchEvent( _startEvent );
+			scope.dispatchEvent( { 
+				type: 'scroll',
+				event: event
+			} );
 
 			// handleMouseWheel( event );
 

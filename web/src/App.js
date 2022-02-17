@@ -52,22 +52,24 @@ const blankPuzzle = {
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#DC1FFF'
+      main: '#9945FF'
     },
     secondary: {
-      main: '#03E2FF'
+      main: '#4FA5C4'
     },
     disabled: {
       main: '#0D0D0D',
     },
     blue: {
-      main: '#03E2FF',
+      main: '#4FA5C4',
     },
     green: {
-      main: '#00FFA3',
+      main: '#14F195',
     }
   }
 });
+
+const Bomb = Date.now() + 1000 * 60 * 60 * 24;
 
 function Loader(props){
   return (
@@ -119,8 +121,8 @@ function ChestPage(props){
   return (
     <div>
       {/* <StateView state={props.state}/> */}
-      <BuildHub changeCameraIndex={props.changeCameraIndex} cameraIndex={props.cameraIndex} curtains={props.curtains} wallet={props.wallet} state={props.state} />
-      <CombinationMint activePuzzle={props.activePuzzle} cameraIndex={props.cameraIndex} mint={props.mint} subAction={props.subAction} action={props.action} curtains={props.curtains} connect={props.connect} wallet={props.wallet} codes={props.codes} state={props.state} puzzle={props.puzzle}/>
+      <BuildHub bomb={props.bomb} changeCameraIndex={props.changeCameraIndex} cameraIndex={props.cameraIndex} curtains={props.curtains} wallet={props.wallet} state={props.state} />
+      <CombinationMint bomb={props.bomb} activePuzzle={props.activePuzzle} cameraIndex={props.cameraIndex} mint={props.mint} subAction={props.subAction} action={props.action} curtains={props.curtains} connect={props.connect} wallet={props.wallet} codes={props.codes} state={props.state} puzzle={props.puzzle}/>
     </div>
   );
 }
@@ -131,6 +133,8 @@ function App() {
   const [state, setState] = useState(FSM.NotConnected);
 
   const [activePuzzle, setActivePuzzle] = useState(null);
+
+  const [bomb, setBomb] = useState(Date.now() + 1000 * 60 * 60 *24);
 
   const [actionCounter, setActionCounter] = useState(0);
   const [subActionCounter, setSubActionCounter] = useState(0);
@@ -149,9 +153,8 @@ function App() {
     setState(FSM.NotConnected);
   }
 
-  const mint = (codes, isSecret) => {
+  const mint = (inputCodes, isSecret) => {
     let rightCodes = null;
-
     if(isSecret == true){
 
     } else {
@@ -159,24 +162,27 @@ function App() {
         case 0: break;
         case 2:
           rightCodes = getNootCode(wallet, 8);
-          for(var i = 0; i < rightCodes.length; i++) if(codes.blue[i] != rightCodes[i]){ console.log("Bad code ", cameraIndex, rightCodes, codes); break; }
-          //TODO mint Blue Key
+          for(var i = 0; i < rightCodes.length; i++) if(codes.blue[i] != rightCodes[i]){ console.log("Bad code ", cameraIndex, rightCodes, inputCodes); break; }
+          alert("Correct!");
           break;
         case 3:
           rightCodes = getDronieCode(wallet, 5);
-          for(var i = 0; i < rightCodes.length; i++) if(codes.green[i] != rightCodes[i]){ console.log("Bad code ", cameraIndex, rightCodes, codes); break; }
+          for(var i = 0; i < rightCodes.length; i++) if(codes.green[i] != rightCodes[i]){ console.log("Bad code ", cameraIndex, rightCodes, inputCodes); break; }
           //TODO mint Green Key
+          alert("Correct!");
           break;
         case 4:
           rightCodes = getDesolatesCode(wallet, 0xFF, 0x55, 0x33);
-          for(var i = 0; i < rightCodes.length; i++) if(codes.pink[i] != rightCodes[i]){ console.log("Bad code ", cameraIndex, rightCodes, codes); break; }
+          for(var i = 0; i < rightCodes.length; i++) if(codes.pink[i] != rightCodes[i]){ console.log("Bad code ", cameraIndex, rightCodes, inputCodes); break; }
           //TODO mint Pink Key
+          alert("Correct!");
           break;
         default:
-  
+          alert("Nope.");
           break;
       }
     }
+
 
     // setTimeout(()=>{
     //   if(newState != state){
@@ -319,7 +325,7 @@ function App() {
         <Puzzle1Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
         <Puzzle2Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
         <Puzzle3Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
-        <ChestPage mint={mint} activePuzzle={activePuzzle} puzzle={puzzle} cameraIndex={cameraIndex} changeCameraIndex={changeCameraIndex} curtains={curtains} connect={connectWallet} wallet={wallet} state={state} codes={codes} action={actionCounter} subAction={subActionCounter}/>
+        <ChestPage bomb={bomb} mint={mint} activePuzzle={activePuzzle} puzzle={puzzle} cameraIndex={cameraIndex} changeCameraIndex={changeCameraIndex} curtains={curtains} connect={connectWallet} wallet={wallet} state={state} codes={codes} action={actionCounter} subAction={subActionCounter}/>
         <Curtains curtains={curtains}/>
       </ThemeProvider>
     </div>

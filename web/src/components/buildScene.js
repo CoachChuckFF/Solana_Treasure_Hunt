@@ -70,7 +70,7 @@ function Error() {
         anchorX="center"
         anchorY="middle"
     >
-        <meshPhongMaterial attach="material" color={"#DC1FFF"} />
+        <meshPhongMaterial attach="material" color={"#9945FF"} />
     </text>
     );
 }
@@ -88,7 +88,7 @@ function Congratulations() {
         anchorX="center"
         anchorY="middle"
     >
-        <meshPhongMaterial attach="material" color={"#DC1FFF"} />
+        <meshPhongMaterial attach="material" color={"#9945FF"} />
     </text>
     );
 }
@@ -123,7 +123,7 @@ function Supernova(props){
     return (
         <mesh position={[0, 0, 0]} ref={ref} scale={scale}>
             <dodecahedronBufferGeometry args={[1, 1, 1]} attach="geometry" />
-            <meshPhongMaterial color={'#03E2FF'} attach="material" />
+            <meshPhongMaterial color={'#4FA5C4'} attach="material" />
         </mesh>
     )
 }
@@ -141,7 +141,7 @@ function FinalText() {
         anchorX="center"
         anchorY="middle"
     >
-        <meshPhongMaterial attach="material" color={"#DC1FFF"} />
+        <meshPhongMaterial attach="material" color={"#9945FF"} />
     </text>
     );
 }
@@ -160,7 +160,7 @@ function Question() {
                 anchorX="center"
                 anchorY="middle"
             >
-                <meshPhongMaterial attach="material" color={"#DC1FFF"} />
+                <meshPhongMaterial attach="material" color={"#9945FF"} />
             </text>
             <text position={[1, 2.89, 2]}
                 rotation={[0, 0, Math.PI/8]}
@@ -173,7 +173,7 @@ function Question() {
                 anchorX="center"
                 anchorY="middle"
             >
-                <meshPhongMaterial attach="material" color={"#00FFA3"} />
+                <meshPhongMaterial attach="material" color={"#14F195"} />
             </text>
             <text position={[-1, 2.89, 2]}
                 rotation={[0, 0, -Math.PI/8]}
@@ -186,7 +186,7 @@ function Question() {
                 anchorX="center"
                 anchorY="middle"
             >
-                <meshPhongMaterial attach="material" color={"#03E2FF"} />
+                <meshPhongMaterial attach="material" color={"#4FA5C4"} />
             </text>
         </group>         
 
@@ -256,19 +256,19 @@ function Timer(props) {
             if(props.state != FSM.NotConnected) {
                 if(state > 29){
                     setMessage("...");
-                    setColor("#DC1FFF");
+                    setColor("#9945FF");
                 } else if(state > 28) {
                     setMessage("IN");
-                    setColor("#DC1FFF");
+                    setColor("#9945FF");
                 } else if(state > 27) {
                     setMessage("BURNED");
-                    setColor("#DC1FFF");
+                    setColor("#9945FF");
                 } else if(state > 26) {
                     setMessage("SUPPLY");
-                    setColor("#DC1FFF");
+                    setColor("#9945FF");
                 } else if(state > 25) {
                     setMessage("REMAINING");
-                    setColor("#DC1FFF");
+                    setColor("#9945FF");
                 } else {
                     setMessage(getTimeString(time));
                     setColor("#FFFFFF");

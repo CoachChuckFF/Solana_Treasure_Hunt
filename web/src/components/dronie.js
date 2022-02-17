@@ -313,7 +313,7 @@ function DronieTerminal(props){
     }
 
     let prgm = props.program;
-    let color = props.omni ? '#03E2FF' : '#DC1FFF';
+    let color = props.omni ? '#4FA5C4' : '#9945FF';
 
     if(tap < 0){ 
         prgm = '';
