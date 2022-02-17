@@ -2,15 +2,13 @@ import { PublicKey } from '@solana/web3.js';
 
 export const Devmode = "-2. Devmode"
 export const Supernova = "-1. Supernova"
-
 export const NotConnected = "0. Connect your wallet";
-export const MintGuide = "1. Mint the guide";
-export const MintNFKey1 = "2. Solve puzzle 1 to get the NFKey 1 codes";
-export const MintNFKey2 = "3. Solve puzzle 2 to get the NFKey 2 codes";
-export const MintNFKey3 = "4.Solve puzzle 3 to get the NFKey 3 codes";
-export const OpenChest = "5. Open the chest!";
-export const Done = "X. Congratulations!";
-export const CheckYourWallet = "?. You've gotten the real prize! Hooray!";
+export const Playing = "1. Playing";
+
+export const Puzzle1 = "Noots";
+export const Puzzle2 = "Terminal";
+export const Puzzle3 = "Desolates";
+export const Puzzle4 = "Trees";
 
 export const Guide = new PublicKey('2dm1VxKGnTHfN9SDpL9EAH8MtQ4ZMuXGM5jXugkVCPqU');
 export const NFKeyB = new PublicKey('98LMSXMzUP4myGehpbHmLQmhByPiMyjm8nzRJBKBtJz5');
@@ -19,6 +17,30 @@ export const NFKey2 = new PublicKey('13A6UfHnpcTGheHFrhMp6mTuatbKEUifhbtu5DvhTbF
 export const NFKey3 = new PublicKey('9uoKy1frKFFjKKhjpnKLjHRMGiq7RxZ2jdtTLBYkvVUh');
 export const Treasure = new PublicKey('JB3SZLbMn7fZQ2fSdg8pc2y5exDCzNZfUs16wnkXsNjT');
 export const Mystery = new PublicKey('BtkPvSzfF9tMh9hHgKLUQ453BVJdWG92n46WRCkgX69h');
+
+export const staticCodes = {
+    blue:  [-1,-1,-1,-1],
+    green: [-1,-1,-1,-1],
+    purple:  [-1,-1,-1,-1],
+    white: [-1,-1,-1,-1],
+};
+
+export const blankPuzzle = {
+    blue: false,
+    green: false,
+    purple: false,
+    broken: false,
+    black: false,
+    white: false,
+    regular: false,
+    secret: false,
+    replay: false,
+};
+
+export const canOpenChest = (puzzleState) => {
+    if(!puzzleState) return false;
+    return puzzleState.blue && puzzleState.green && puzzleState.purple && !puzzleState.regular;
+}
 
 export const Items = [
     Guide,
@@ -41,12 +63,12 @@ export const ItemMap = {
 };
 
 export const MapToState = (map) => {
-    if(map[Mystery.toString()]) return CheckYourWallet;
-    if(map[Treasure.toString()]) return Done;
-    if(map[NFKey3.toString()]) return OpenChest;
-    if(map[NFKey2.toString()]) return MintNFKey3;
-    if(map[NFKey1.toString()]) return MintNFKey2;
-    if(map[Guide.toString()]) return MintNFKey1;
+    // if(map[Mystery.toString()]) return CheckYourWallet;
+    // if(map[Treasure.toString()]) return Done;
+    // if(map[NFKey3.toString()]) return OpenChest;
+    // if(map[NFKey2.toString()]) return MintNFKey3;
+    // if(map[NFKey1.toString()]) return MintNFKey2;
+    // if(map[Guide.toString()]) return MintNFKey1;
 
-    return MintGuide;
+    return Playing;
 };

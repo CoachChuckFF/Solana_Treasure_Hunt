@@ -59,7 +59,7 @@ function TheButton(props) {
 
 const greenColor = "#14F195";
 const blueColor = "#4FA5C4";
-const pinkColor = "#9945FF";
+const purpleColor = "#9945FF";
 const whiteColor = "#EAEAEA";
 function PuzzleButton(props) {
     let color = props.info.iconTileColor;
@@ -96,6 +96,7 @@ export function CombinationMint(props) {
     const [buttonInfo, setButtonInfo] = useState(
         {
             enabled: false,
+            overrideColor: null,
             icon: (<WalletIcon />),
             text: "Connect Wallet",
             title: "Generated:",
@@ -159,9 +160,9 @@ export function CombinationMint(props) {
         switch(props.cameraIndex){
             case 0:
                 display = [false, true];
-                buttonInfo.enabled = false;
+                buttonInfo.enabled = FSM.canOpenChest(props.puzzleState);
                 buttonInfo.icon = (<ChestIcon />);
-                buttonInfo.text = "Open Chest";
+                buttonInfo.text = props.puzzleState.regular ? "You did it!" : "Open Chest";
                 buttonInfo.title = "Locks:";
                 buttonInfo.iconButtonIcon = (<WalletIcon />);
                 buttonInfo.iconTileColor = "primary";
@@ -171,11 +172,12 @@ export function CombinationMint(props) {
                 display = [true, true];
                 buttonInfo.enabled = !props.codes.blue.includes(-1);
                 buttonInfo.icon = (<KeyIcon />);
-                buttonInfo.text = "Try NFKey 1";
+                buttonInfo.overrideColor = props.puzzleState.blue ? 'disabled' : null;
+                buttonInfo.text = props.puzzleState.blue ? "Mint Broken NFKey" : (buttonInfo.enabled ? "Try NFKey 1" : "Puzzle 1 ->");
                 buttonInfo.title = "Codes:";
                 buttonInfo.iconButtonIcon = (<PuzzleIcon />);
                 buttonInfo.iconTileColor = "blue";
-                buttonInfo.iconColor = pinkColor;
+                buttonInfo.iconColor = purpleColor;
                 buttonInfo.codes = props.codes.blue;
                 buttonInfo.codeColor = blueColor;
                 break;
@@ -183,25 +185,27 @@ export function CombinationMint(props) {
                 display = [true, true];
                 buttonInfo.enabled = !props.codes.green.includes(-1);
                 buttonInfo.icon = (<KeyIcon />);
-                buttonInfo.text = "Try NFKey 2";
+                buttonInfo.overrideColor = props.puzzleState.green ? 'disabled' : null;
+                buttonInfo.text = props.puzzleState.green ? "Mint Broken NFKey" : (buttonInfo.enabled ? "Try NFKey 2" : "Puzzle 2 ->");
                 buttonInfo.title = "Codes:";
                 buttonInfo.iconButtonIcon = (<PuzzleIcon />);
                 buttonInfo.iconTileColor = "green";
-                buttonInfo.iconColor = pinkColor;
+                buttonInfo.iconColor = purpleColor;
                 buttonInfo.codes = props.codes.green;
                 buttonInfo.codeColor = greenColor;
                 break;
             case 4:
                 display = [true, true];
-                buttonInfo.enabled = !props.codes.pink.includes(-1);
+                buttonInfo.enabled = !props.codes.purple.includes(-1);
                 buttonInfo.icon = (<KeyIcon />);
-                buttonInfo.text = "Try NFKey 3";
+                buttonInfo.overrideColor = props.puzzleState.purple ? 'disabled' : null;
+                buttonInfo.text = props.puzzleState.purple ? "Mint Broken NFKey" : (buttonInfo.enabled ? "Try NFKey 3" : "Puzzle 3 ->");
                 buttonInfo.title = "Codes:";
                 buttonInfo.iconButtonIcon = (<PuzzleIcon />);
                 buttonInfo.iconTileColor = "primary";
                 buttonInfo.iconColor = blueColor;
-                buttonInfo.codes = props.codes.pink;
-                buttonInfo.codeColor = pinkColor;
+                buttonInfo.codes = props.codes.purple;
+                buttonInfo.codeColor = purpleColor;
                 break;
             default: 
         }

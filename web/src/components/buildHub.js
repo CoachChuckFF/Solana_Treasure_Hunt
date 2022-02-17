@@ -160,21 +160,20 @@ function Inventory(props) {
     ];
 
     const animation = (clock, camera) => {
-        for(var i = 0; i < refs.length; i++){    
-            refs[i].current.position.copy( camera.position );
-            refs[i].current.rotation.copy( camera.rotation );
-            refs[i].current.updateMatrix();
-            refs[i].current.translateZ( -0.3 );
-            refs[i].current.translateY( 0.155 );
-            refs[i].current.translateX( -0.06 + (i / (refs.length - 1) * 0.12));
-            refs[i].current.rotateZ(-PI/2);
-            refs[i].current.rotateY(-PI/8);
-            refs[i].current.rotateX(clock.getElapsedTime() / 2 - (i * PI/5));
-
-            if(props.state === FSM.NotConnected){
-                refs[i].current.visable = false;
+        let inventory = Object.entries(props.puzzleState);
+        for(var i = 0; i < refs.length; i++){  
+            if(inventory[i][1] && props.state === FSM.Playing){
+                refs[i].current.position.copy( camera.position );
+                refs[i].current.rotation.copy( camera.rotation );
+                refs[i].current.updateMatrix();
+                refs[i].current.translateZ( -0.3 );
+                refs[i].current.translateY( 0.155 );
+                refs[i].current.translateX( -0.06 + (i / (refs.length - 1) * 0.12));
+                refs[i].current.rotateZ(-PI/2);
+                refs[i].current.rotateY(-PI/8);
+                refs[i].current.rotateX(clock.getElapsedTime() / 2 - (i * PI/5));
             } else {
-                refs[i].current.visable = true;
+                refs[i].current.visable = false;
             }
         }
     };
@@ -192,6 +191,7 @@ function Inventory(props) {
     const hover4 = () => onHover(4);
     const hover5 = () => onHover(5);
 
+
     return (
         <group>
             <BuildGLB 
@@ -201,7 +201,7 @@ function Inventory(props) {
                 animation={animation}
                 objRef={ refs[0]  }
                 scale={keyScale}
-                visable={false}
+                visable={(props.puzzleState.blue && props.state === FSM.Playing)}
                 position={HubIndex0.pos}
                 rotation={HubIndex0.rot}
             />
@@ -212,7 +212,7 @@ function Inventory(props) {
                 animation={animation}
                 objRef={ refs[1]  }
                 scale={keyScale}
-                visable={false}
+                visable={(props.puzzleState.green && props.state === FSM.Playing)}
                 position={HubIndex0.pos}
                 rotation={HubIndex0.rot}
             />
@@ -223,7 +223,7 @@ function Inventory(props) {
                 animation={animation}
                 objRef={ refs[2]  }
                 scale={keyScale}
-                visable={false}
+                visable={(props.puzzleState.purple && props.state === FSM.Playing)}
                 position={HubIndex0.pos}
                 rotation={HubIndex0.rot}
             />
@@ -234,7 +234,7 @@ function Inventory(props) {
                 animation={animation}
                 objRef={ refs[3]  }
                 scale={keyScale}
-                visable={false}
+                visable={(props.puzzleState.broken && props.state === FSM.Playing)}
                 position={HubIndex0.pos}
                 rotation={HubIndex0.rot}
             />
@@ -245,7 +245,7 @@ function Inventory(props) {
                 animation={animation}
                 objRef={ refs[4]  }
                 scale={keyScale}
-                visable={false}
+                visable={(props.puzzleState.black && props.state === FSM.Playing)}
                 position={HubIndex0.pos}
                 rotation={HubIndex0.rot}
             />
@@ -256,7 +256,7 @@ function Inventory(props) {
                 animation={animation}
                 objRef={ refs[5]  }
                 scale={keyScale}
-                visable={false}
+                visable={(props.puzzleState.white && props.state === FSM.Playing)}
                 position={HubIndex0.pos}
                 rotation={HubIndex0.rot}
             />
@@ -312,7 +312,7 @@ function Leaderboard(props) {
         <group >
         <text
             ref={refs[0]}
-            position={[HubX, EyeLevel + diff, -HubZ]}
+            position={[HubX, (EyeLevel + 0.5) + diff, -HubZ]}
             rotation={HubIndex1.rot}
             fontSize={0.2}
             maxWidth={2.34}
@@ -327,7 +327,7 @@ function Leaderboard(props) {
         </text>
             <text
                 ref={refs[1]}
-                position={[HubX, EyeLevel, -HubZ]}
+                position={[HubX, (EyeLevel + 0.5), -HubZ]}
                 rotation={HubIndex1.rot}
                 fontSize={0.15}
                 maxWidth={2.34}
@@ -368,7 +368,7 @@ function GreenLock() {
     const objRef = useRef();
 
     const animation = (clock, camera) => {
-        objRef.current.position.y = Math.sin(clock.getElapsedTime()) * 0.1
+        objRef.current.position.y = Math.sin(clock.getElapsedTime() + PI/16) * 0.1
     };
 
     return (<BuildGLB 
@@ -385,7 +385,7 @@ function PurpleLock() {
     const objRef = useRef();
 
     const animation = (clock, camera) => {
-        objRef.current.position.y = Math.sin(clock.getElapsedTime()) * 0.1
+        objRef.current.position.y = Math.sin(clock.getElapsedTime() + PI/8) * 0.1
     };
 
     return (<BuildGLB 
@@ -534,7 +534,7 @@ function Story(props) {
         <group >
         <text
             ref={refs[0]}
-            position={[-HubX, EyeLevel + diff, -HubZ]}
+            position={[-HubX, (EyeLevel + 0.8) + diff, -HubZ]}
             rotation={HubIndex5.rot}
             fontSize={0.2}
             maxWidth={2.34}
@@ -549,7 +549,7 @@ function Story(props) {
         </text>
         <text
             ref={refs[1]}
-            position={[-HubX, EyeLevel, -HubZ]}
+            position={[-HubX, (EyeLevel + 0.8), -HubZ]}
             rotation={HubIndex5.rot}
             fontSize={0.15}
             maxWidth={2.34}
@@ -658,15 +658,11 @@ function Supernova(props){
 }
 
 function HubRing(props){
-    let inventory = (<Inventory state={props.state} onHover={props.onHover}/>);
-    if(props.state === FSM.NotConnected){
-        inventory = null;
-    }
 
     return (
         <group>
             <Suspense fallback={null}>
-                {inventory}
+                <Inventory state={props.state} onHover={props.onHover} puzzleState={props.puzzleState}/>
                 <Timer bomb={props.bomb}/>
                 <Chest />
                 <Leaderboard deltaY={props.deltaY}/>
@@ -807,7 +803,7 @@ export function BuildHub(props) {
                 <directionalLight position={[0, EyeLevel, 0]} intensity={1} rotation={0, 0, 0}/>
                 <pointLight position={[0, -(EyeLevel * 2), 0]} intensity={0.21}/>
                 <pointLight position={[0, EyeLevel, 0]} intensity={0.05}/>
-                <HubRing deltaY={deltaY} bomb={props.bomb} state={state} onHover={onHover}/>
+                <HubRing puzzleState={props.puzzleState} deltaY={deltaY} bomb={props.bomb} state={state} onHover={onHover}/>
                 {/* <Supernova time={time}/> */}
                 <Title state={props.state}/>
                 <FloorSet radius={HubRadius} cameraIndex={props.cameraIndex}/>

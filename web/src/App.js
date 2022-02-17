@@ -19,35 +19,7 @@ import {
 } from '@project-serum/anchor';
 import { getNFTs } from './components/solScan';
 import { DesolatePuzzlePage } from './components/desolates';
-import { getDesolatesCode, getDronieCode, getNootCode, getGuideCodes } from './components/hashes';
-
-const staticCodes = {
-  blue:  [-1,-1,-1,-1],
-  green: [-1,-1,-1,-1],
-  pink:  [-1,-1,-1,-1],
-  white: [-1,-1,-1,-1],
-};
-
-const blankPuzzle = {
-  state: {
-    connected: false,
-    loading: false,
-    activePuzzle: 0,
-    devMode: false,
-    cameraOverride: [null, null, null],
-  },
-  keys: {
-    blue: false,
-    green: false,
-    pink: false,
-    black: false,
-    white: false,
-  },
-  chests: {
-    regular: false,
-    secret: false,
-  }
-}
+import { getDesolatesCode, getDronieCode, getNootCode } from './components/hashes';
 
 const theme = createTheme({
   palette: {
@@ -90,7 +62,7 @@ function Loader(props){
 function Puzzle1Page(props){
 
   if(props.wallet == null) return null;
-  if(props.puzzle != FSM.MintNFKey1) return null;
+  if(props.puzzle != FSM.Puzzle1) return null;
 
   return (
     <NootPuzzlePage wallet={props.wallet} puzzleCB={props.puzzleCB}></NootPuzzlePage>
@@ -100,7 +72,7 @@ function Puzzle1Page(props){
 function Puzzle2Page(props){
 
   if(props.wallet == null) return null;
-  if(props.puzzle != FSM.MintNFKey2) return null;
+  if(props.puzzle != FSM.Puzzle2) return null;
 
   return (
     <DroniesPuzzlePage wallet={props.wallet} puzzleCB={props.puzzleCB}></DroniesPuzzlePage>
@@ -110,7 +82,7 @@ function Puzzle2Page(props){
 function Puzzle3Page(props){
 
   if(props.wallet == null) return null;
-  if(props.puzzle != FSM.MintNFKey3) return null;
+  if(props.puzzle != FSM.Puzzle3) return null;
 
   return (
     <DesolatePuzzlePage wallet={props.wallet} puzzleCB={props.puzzleCB}></DesolatePuzzlePage>
@@ -121,8 +93,8 @@ function ChestPage(props){
   return (
     <div>
       {/* <StateView state={props.state}/> */}
-      <BuildHub bomb={props.bomb} changeCameraIndex={props.changeCameraIndex} cameraIndex={props.cameraIndex} curtains={props.curtains} wallet={props.wallet} state={props.state} />
-      <CombinationMint bomb={props.bomb} activePuzzle={props.activePuzzle} cameraIndex={props.cameraIndex} mint={props.mint} subAction={props.subAction} action={props.action} curtains={props.curtains} connect={props.connect} wallet={props.wallet} codes={props.codes} state={props.state} puzzle={props.puzzle}/>
+      <BuildHub puzzleState={props.puzzleState} bomb={props.bomb} changeCameraIndex={props.changeCameraIndex} cameraIndex={props.cameraIndex} curtains={props.curtains} wallet={props.wallet} state={props.state} />
+      <CombinationMint puzzleState={props.puzzleState} bomb={props.bomb} activePuzzle={props.activePuzzle} cameraIndex={props.cameraIndex} mint={props.mint} subAction={props.subAction} action={props.action} curtains={props.curtains} connect={props.connect} wallet={props.wallet} codes={props.codes} state={props.state} puzzle={props.puzzle}/>
     </div>
   );
 }
@@ -139,52 +111,82 @@ function App() {
   const [actionCounter, setActionCounter] = useState(0);
   const [subActionCounter, setSubActionCounter] = useState(0);
 
-  const [codes, setCodes] = useState(staticCodes);
-  const [puzzleState, setPuzzleState] = useState(blankPuzzle)
+  const [codes, setCodes] = useState(FSM.staticCodes);
+  const [puzzleState, setPuzzleState] = useState(FSM.blankPuzzle)
   const [cameraIndex, setCameraIndex] = useState(-1);
 
   const [isLoading, setIsLoading] = useState(false);
 
   const logout = () => {
-    setCodes(staticCodes);
+    setCodes(FSM.staticCodes);
     setCameraIndex(-1);
     setwallet(null);
     setActivePuzzle(null);
     setState(FSM.NotConnected);
   }
 
-  const mint = (inputCodes, isSecret) => {
+  const mint = (inputCodes) => {
+    let isCorrect = true;
     let rightCodes = null;
-    if(isSecret == true){
 
-    } else {
-
-      switch(cameraIndex) {
-        case 0: break;
-        case 2:
+    switch(cameraIndex) {
+      case 0:
+        if(puzzleState.blue && puzzleState.green && puzzleState.purple && !puzzleState.regular){
+          isCorrect = true;
+          setPuzzleState(Object.assign({}, {...puzzleState, regular: true}));
+        } else {
+          isCorrect = false;
+        }
+        break;
+      case 2:
+        if(puzzleState.blue){
+          isCorrect = false;
+        } else {
           rightCodes = getNootCode(wallet, 1);
-          for(var i = 0; i < rightCodes.length; i++) if(codes.blue[i] != rightCodes[i]){ alert("Nope."); console.log("Bad code ", cameraIndex, rightCodes, inputCodes); return; }
-          alert("Correct!");
-          break;
-        case 3:
+          for(var i = 0; i < rightCodes.length; i++) if(codes.blue[i] != rightCodes[i]){ isCorrect = false; }
+          if(isCorrect) setPuzzleState(Object.assign({}, {...puzzleState, blue: true}));
+        }
+        break;
+      case 3:
+        if(puzzleState.green){
+          isCorrect = false;
+        } else {
           rightCodes = getDronieCode(wallet, 5);
-          for(var i = 0; i < rightCodes.length; i++) if(codes.green[i] != rightCodes[i]){ alert("Nope."); console.log("Bad code ", cameraIndex, rightCodes, inputCodes); return; }
-          //TODO mint Green Key
-          alert("Correct!");
-          break;
-        case 4:
+          for(var i = 0; i < rightCodes.length; i++) if(codes.green[i] != rightCodes[i]){ isCorrect = false; }
+          if(isCorrect) setPuzzleState(Object.assign({}, {...puzzleState, green: true}));
+        }
+        break;
+      case 4:
+        if(puzzleState.purple){
+          isCorrect = false;
+        } else {
           rightCodes = getDesolatesCode(wallet, 0xFF, 0x55, 0x33);
-          for(var i = 0; i < rightCodes.length; i++) if(codes.pink[i] != rightCodes[i]){ alert("Nope."); console.log("Bad code ", cameraIndex, rightCodes, inputCodes); return; }
-          //TODO mint Pink Key
-          alert("Correct!");
+          for(var i = 0; i < rightCodes.length; i++) if(codes.purple[i] != rightCodes[i]){ isCorrect = false; }
+          if(isCorrect) setPuzzleState(Object.assign({}, {...puzzleState, purple: true}));
+        }
+        break;
+      case 0x10:
+          isCorrect = false;
           break;
-        default:
-          alert("Nope.");
+      case 0x11:
+          isCorrect = false;
           break;
-      }
+      case 0x12:
+          isCorrect = false;
+          break;
+      case 0x13:
+          isCorrect = false;
+          break;
+      default:
+        isCorrect = false;
+        break;
     }
 
-
+    if(isCorrect){
+      alert('Correct!');
+    } else {
+      alert('Nope.');
+    }
     // setTimeout(()=>{
     //   if(newState != state){
     //     setCodes(staticCodes);
@@ -201,14 +203,17 @@ function App() {
   const puzzleCB = (newCodes) => {
 
     switch(activePuzzle){
-      case FSM.MintNFKey1:
+      case FSM.Puzzle1:
         setCodes(Object.assign({}, {...codes, blue: [...newCodes]}));
         break;
-      case FSM.MintNFKey2:
+      case FSM.Puzzle2:
         setCodes(Object.assign({}, {...codes, green: [...newCodes]}));
         break;
-      case FSM.MintNFKey3:
-        setCodes(Object.assign({}, {...codes, pink: [...newCodes]}));
+      case FSM.Puzzle3:
+        setCodes(Object.assign({}, {...codes, purple: [...newCodes]}));
+        break;
+      case FSM.Puzzle4:
+        setCodes(Object.assign({}, {...codes, white: [...newCodes]}));
         break;
     }
 
@@ -222,13 +227,16 @@ function App() {
         logout();
         break;
       case 2:
-        setActivePuzzle(FSM.MintNFKey1);
+        setActivePuzzle(FSM.Puzzle1);
         break;
       case 3:
-        setActivePuzzle(FSM.MintNFKey2);
+        setActivePuzzle(FSM.Puzzle2);
         break;
       case 4:
-        setActivePuzzle(FSM.MintNFKey3);
+        setActivePuzzle(FSM.Puzzle3);
+        break;
+      case 0x11:
+        setActivePuzzle(FSM.Puzzle4);
         break;
       default:
 
@@ -285,28 +293,20 @@ function App() {
   
   useEffect(() => {
     if (wallet) {
-      setState(FSM.MintNFKey1);
-      setActivePuzzle(null);
       driveState();
     }
   }, [wallet]);
 
-  useEffect(() => {
-    console.log("hi");
-    console.log(codes);
-    console.log("byte");
-  }, [codes]);
 
   useEffect(() => {
     if(wallet){
       setIsLoading(true);
       getNFTs(wallet)
       .then((state)=>{
-        // puzzleState.
-        setPuzzleState()
-        setIsLoading(false);
-        // setState(FSM.MapToState(state));
+        setState(FSM.Playing);
         setActivePuzzle(null);
+        // setPuzzleState();
+        setIsLoading(false);
       })
       .catch(()=>{
         console.log("Coult not get NFTs");
@@ -326,7 +326,7 @@ function App() {
         <Puzzle1Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
         <Puzzle2Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
         <Puzzle3Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
-        <ChestPage bomb={bomb} mint={mint} activePuzzle={activePuzzle} puzzle={puzzle} cameraIndex={cameraIndex} changeCameraIndex={changeCameraIndex} curtains={curtains} connect={connectWallet} wallet={wallet} state={state} codes={codes} action={actionCounter} subAction={subActionCounter}/>
+        <ChestPage bomb={bomb} mint={mint} activePuzzle={activePuzzle} puzzle={puzzle} cameraIndex={cameraIndex} changeCameraIndex={changeCameraIndex} curtains={curtains} connect={connectWallet} wallet={wallet} state={state} codes={codes} puzzleState={puzzleState} action={actionCounter} subAction={subActionCounter}/>
         <Curtains curtains={curtains}/>
       </ThemeProvider>
     </div>
