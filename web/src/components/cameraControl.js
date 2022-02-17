@@ -796,7 +796,9 @@ class STControls extends OrbitControls {
         this.autoRotate = true;
         this.autoRotateSpeed = -0.2;
 
-		this.enableDamping = true;
+		this.rotateSpeed = 1.5;
+
+		// this.enableDamping = true;
 
 	}
 

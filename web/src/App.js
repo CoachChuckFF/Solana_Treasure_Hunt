@@ -4,7 +4,7 @@ import { BuildScene } from './components/buildScene';
 import { BuildHub } from './components/buildHub';
 import { CombinationMint } from './components/combinationMint';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { curtains, Curtains } from './components/curtains';
+import { drawCurtains, Curtains } from './components/curtains';
 import { StateView } from './components/stateView';
 import TabsRouter from './components/router';
 import * as FSM from './components/fsm';
@@ -93,8 +93,8 @@ function ChestPage(props){
   return (
     <div>
       {/* <StateView state={props.state}/> */}
-      <BuildHub puzzleState={props.puzzleState} bomb={props.bomb} changeCameraIndex={props.changeCameraIndex} cameraIndex={props.cameraIndex} curtains={props.curtains} wallet={props.wallet} state={props.state} />
-      <CombinationMint puzzleState={props.puzzleState} bomb={props.bomb} activePuzzle={props.activePuzzle} cameraIndex={props.cameraIndex} mint={props.mint} subAction={props.subAction} action={props.action} curtains={props.curtains} connect={props.connect} wallet={props.wallet} codes={props.codes} state={props.state} puzzle={props.puzzle}/>
+      <BuildHub run={props.run} puzzleState={props.puzzleState} bomb={props.bomb} changeCameraIndex={props.changeCameraIndex} cameraIndex={props.cameraIndex} curtains={props.curtains} wallet={props.wallet} state={props.state} />
+      <CombinationMint run={props.run} puzzleState={props.puzzleState} bomb={props.bomb} activePuzzle={props.activePuzzle} cameraIndex={props.cameraIndex} mint={props.mint} subAction={props.subAction} action={props.action} curtains={props.curtains} connect={props.connect} wallet={props.wallet} codes={props.codes} state={props.state} puzzle={props.puzzle}/>
     </div>
   );
 }
@@ -107,6 +107,7 @@ function App() {
   const [activePuzzle, setActivePuzzle] = useState(null);
 
   const [bomb, setBomb] = useState(Date.now() + 1000 * 60 * 60 *24);
+  const [run, setRun] = useState([-1, -1, -1]);
 
   const [actionCounter, setActionCounter] = useState(0);
   const [subActionCounter, setSubActionCounter] = useState(0);
@@ -133,7 +134,11 @@ function App() {
       case 0:
         if(puzzleState.blue && puzzleState.green && puzzleState.purple && !puzzleState.regular){
           isCorrect = true;
-          setPuzzleState(Object.assign({}, {...puzzleState, regular: true}));
+
+          drawCurtains(curtains, "...", ()=>{
+            setRun([run[0], Date.now(), run[1]]);
+            setPuzzleState(Object.assign({}, {...puzzleState, regular: true}));
+          });
         } else {
           isCorrect = false;
         }
@@ -144,7 +149,11 @@ function App() {
         } else {
           rightCodes = getNootCode(wallet, 1);
           for(var i = 0; i < rightCodes.length; i++) if(codes.blue[i] != rightCodes[i]){ isCorrect = false; }
-          if(isCorrect) setPuzzleState(Object.assign({}, {...puzzleState, blue: true}));
+          if(isCorrect){
+            drawCurtains(curtains, "Click.", ()=>{
+              setPuzzleState(Object.assign({}, {...puzzleState, blue: true}));
+            });
+          }
         }
         break;
       case 3:
@@ -153,7 +162,11 @@ function App() {
         } else {
           rightCodes = getDronieCode(wallet, 5);
           for(var i = 0; i < rightCodes.length; i++) if(codes.green[i] != rightCodes[i]){ isCorrect = false; }
-          if(isCorrect) setPuzzleState(Object.assign({}, {...puzzleState, green: true}));
+          if(isCorrect){
+            drawCurtains(curtains, "Click.", ()=>{
+              setPuzzleState(Object.assign({}, {...puzzleState, green: true}));
+            });
+          }
         }
         break;
       case 4:
@@ -162,7 +175,11 @@ function App() {
         } else {
           rightCodes = getDesolatesCode(wallet, 0xFF, 0x55, 0x33);
           for(var i = 0; i < rightCodes.length; i++) if(codes.purple[i] != rightCodes[i]){ isCorrect = false; }
-          if(isCorrect) setPuzzleState(Object.assign({}, {...puzzleState, purple: true}));
+          if(isCorrect){
+            drawCurtains(curtains, "Click.", ()=>{
+              setPuzzleState(Object.assign({}, {...puzzleState, purple: true}));
+            });
+          }
         }
         break;
       case 0x10:
@@ -183,9 +200,11 @@ function App() {
     }
 
     if(isCorrect){
-      alert('Correct!');
+      // alert('Correct!');
     } else {
-      alert('Nope.');
+      drawCurtains(curtains, "SNAP!", ()=>{
+        setPuzzleState(Object.assign({}, {...puzzleState, broken: true}));
+      });
     }
     // setTimeout(()=>{
     //   if(newState != state){
@@ -293,6 +312,7 @@ function App() {
   
   useEffect(() => {
     if (wallet) {
+      setRun([Date.now(), 0, 0]);
       driveState();
     }
   }, [wallet]);
@@ -326,7 +346,7 @@ function App() {
         <Puzzle1Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
         <Puzzle2Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
         <Puzzle3Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
-        <ChestPage bomb={bomb} mint={mint} activePuzzle={activePuzzle} puzzle={puzzle} cameraIndex={cameraIndex} changeCameraIndex={changeCameraIndex} curtains={curtains} connect={connectWallet} wallet={wallet} state={state} codes={codes} puzzleState={puzzleState} action={actionCounter} subAction={subActionCounter}/>
+        <ChestPage run={run} bomb={bomb} mint={mint} activePuzzle={activePuzzle} puzzle={puzzle} cameraIndex={cameraIndex} changeCameraIndex={changeCameraIndex} curtains={curtains} connect={connectWallet} wallet={wallet} state={state} codes={codes} puzzleState={puzzleState} action={actionCounter} subAction={subActionCounter}/>
         <Curtains curtains={curtains}/>
       </ThemeProvider>
     </div>

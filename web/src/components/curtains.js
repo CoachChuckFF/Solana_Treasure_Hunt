@@ -2,10 +2,14 @@ import * as React from 'react';
 import './../App.css' 
 
 
-export function curtains(curtains, message) {
+export function drawCurtains(curtains, message, cb) {
     curtains[0].current.className = "scene-change";
 
     curtains[1].current.innerText = message ?? "";
+
+    setTimeout(()=>{
+        if(cb) cb();
+    }, 999);
 
     setTimeout(()=>{
         curtains[0].current.className = "scene-overlay";

@@ -83,10 +83,31 @@ const keyScale = 0.013;
 
 //Times
 const zoomInTime = 5000;
+const cheaterTime = 1000 * 60 * 10;
 
 
 
 // GLOBALS -----------------
+const _second = 1000;
+const _minute = _second * 60;
+const _hour = _minute * 60;
+const _day = _hour * 24;
+
+function getTimeString (time){
+
+    var hours = Math.floor((time) / _hour);
+    var minutes = Math.floor((time % _hour) / _minute);
+    var seconds = Math.floor((time % _minute) / _second);
+    var ms = Math.floor((time % _second));
+
+    if(hours === 0){
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}:${String(ms).padStart(3, '0')}`;
+    } else {
+        return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
+}
+
 function BuildGLB(props){
     const { scene } = useGLTF(props.file);
 
@@ -96,7 +117,44 @@ function BuildGLB(props){
 }
 
 // GLB FILES ---------------
-function Chest() { 
+function OpenedChest(props) {
+    const refs = [
+        useRef(),
+        useRef(),
+    ];
+
+    useFrame(({ clock, camera }) => {
+        refs[0].current.position.x = HubIndex0.pos[0] + Math.sin(clock.getElapsedTime()) * 0.021
+        refs[0].current.position.y = HubIndex0.pos[1] + Math.sin(clock.getElapsedTime()/2) * 0.021
+        // refs[0].current.position.y = 0.8 + Math.sin(clock.getElapsedTime() + PI/4) * 0.089;
+        refs[1].current.position.x = HubIndex0.pos[0] + Math.sin(clock.getElapsedTime()) * 0.021
+        refs[1].current.position.y = HubIndex0.pos[1] + Math.sin(clock.getElapsedTime()/2) * 0.021 + 1
+        refs[1].current.rotation.y += PI / 300;
+        // refs[2].current.position.y = 0.4 + Math.sin(clock.getElapsedTime() + PI/8) * 0.089;
+    });
+
+    return (
+        <group>
+            <Timer bomb={props.bomb} opened={true} run={props.run} state={props.state} puzzleState={props.puzzleState}/>
+            <BuildGLB 
+                file={'models/sol/chest_opened.glb'}
+                objRef={ refs[0] }
+                scale={scaleChest}
+                position={HubIndex0.pos}
+                rotation={HubIndex0.rot}
+            /> 
+            <BuildGLB 
+                file={'models/sol/replay_token.glb'}
+                objRef={ refs[1] }
+                scale={scaleChest}
+                position={HubIndex0.pos}
+                rotation={HubIndex0.rot}
+            /> 
+        </group>
+    );
+}
+
+function Chest(props) { 
     const refs = [
         useRef(),
         useRef(),
@@ -104,42 +162,78 @@ function Chest() {
         useRef(),
     ];
 
-    const animation = (clock, camera) => {
+    useFrame(({ clock, camera }) => {
+        refs[3].current.position.x = HubIndex0.pos[0] + Math.sin(clock.getElapsedTime()) * 0.021
+        refs[3].current.position.y = HubIndex0.pos[1] + Math.sin(clock.getElapsedTime()/2) * 0.021
+
+        refs[0].current.position.x = -0.21 + Math.sin(clock.getElapsedTime()) * 0.021
+        refs[0].current.position.y =  0.8 + Math.sin(clock.getElapsedTime() + PI/4) * 0.089 + Math.sin(clock.getElapsedTime()/2) * 0.021
+
+        refs[1].current.position.x = 0.21 + Math.sin(clock.getElapsedTime()) * 0.021
+        refs[1].current.position.y = 0.8 + Math.sin(clock.getElapsedTime() + PI/6) * 0.089 + Math.sin(clock.getElapsedTime()/2) * 0.021
+
+        refs[2].current.position.x = 0 + Math.sin(clock.getElapsedTime()) * 0.021
+        refs[2].current.position.y = 0.4 + Math.sin(clock.getElapsedTime() + PI/8) * 0.089 + Math.sin(clock.getElapsedTime()/2) * 0.021
+
         refs[0].current.position.y = 0.8 + Math.sin(clock.getElapsedTime() + PI/4) * 0.089;
         refs[1].current.position.y = 0.8 + Math.sin(clock.getElapsedTime() + PI/6) * 0.089;
         refs[2].current.position.y = 0.4 + Math.sin(clock.getElapsedTime() + PI/8) * 0.089;
-    };
+    });
 
     return (
         <group>
             <pointLight position={HubIndex0.light} intensity={PointLightIntensity}/>
-            <BuildGLB 
-                file={'models/sol/blue_lock_chest.glb'}
-                animation={animation}
-                objRef={ refs[0] }
-                scale={scaleMiniLock}
-                position={[-0.21, 0.8, -HubRadius + 0.89]}
-                rotation={[0,0,0]}
-            />
-            <BuildGLB 
-                file={'models/sol/green_lock_chest.glb'}
-                animation={animation}
-                objRef={ refs[1]  }
-                scale={scaleMiniLock}
-                position={[0.21, 0.8, -HubRadius + 0.85]}
-                rotation={[0,0,0]}
-            />
-            <BuildGLB 
-                file={'models/sol/purple_lock_chest.glb'}
-                animation={animation}
-                objRef={ refs[2]  }
-                scale={scaleMiniLock}
-                position={[0, 0.4, -HubRadius + 0.89]}
-                rotation={[0,0,0]}
-            />
+            <Timer bomb={props.bomb} opened={false} run={props.run} state={props.state} puzzleState={props.puzzleState}/>
+            {(props.puzzleState.blue) ? 
+                <BuildGLB 
+                    file={'models/sol/blue_unlock_chest.glb'}
+                    objRef={ refs[0] }
+                    scale={scaleMiniLock}
+                    position={[-0.21, 0.8, -HubRadius + 0.89]}
+                    rotation={[0,0,0]}
+                /> : 
+                <BuildGLB 
+                    file={'models/sol/blue_lock_chest.glb'}
+                    objRef={ refs[0] }
+                    scale={scaleMiniLock}
+                    position={[-0.21, 0.8, -HubRadius + 0.89]}
+                    rotation={[0,0,0]}
+                />
+            }
+            {(props.puzzleState.green) ? 
+                <BuildGLB 
+                    file={'models/sol/green_unlock_chest.glb'}
+                    objRef={ refs[1]  }
+                    scale={scaleMiniLock}
+                    position={[0.21, 0.8, -HubRadius + 0.85]}
+                    rotation={[0,0,0]}
+                /> :
+                <BuildGLB 
+                    file={'models/sol/green_lock_chest.glb'}
+                    objRef={ refs[1]  }
+                    scale={scaleMiniLock}
+                    position={[0.21, 0.8, -HubRadius + 0.85]}
+                    rotation={[0,0,0]}
+                />
+            }
+            {(props.puzzleState.purple) ? 
+                <BuildGLB 
+                    file={'models/sol/purple_unlock_chest.glb'}
+                    objRef={ refs[2]  }
+                    scale={scaleMiniLock}
+                    position={[0, 0.4, -HubRadius + 0.89]}
+                    rotation={[0,0,0]}
+                /> :
+                <BuildGLB 
+                    file={'models/sol/purple_lock_chest.glb'}
+                    objRef={ refs[2]  }
+                    scale={scaleMiniLock}
+                    position={[0, 0.4, -HubRadius + 0.89]}
+                    rotation={[0,0,0]}
+                />
+            }   
             <BuildGLB 
                 file={'models/sol/chest_closed.glb'}
-                animation={animation}
                 objRef={ refs[3]  }
                 scale={scaleChest}
                 position={HubIndex0.pos}
@@ -177,6 +271,7 @@ function Inventory(props) {
             }
         }
     };
+
 
     const leaveHover = () => {
         props.onHover(null);
@@ -349,7 +444,7 @@ function BlueLock(props) {
     const objRef = useRef();
 
     const animation = (clock, camera) => {
-        objRef.current.position.y = Math.sin(clock.getElapsedTime()) * 0.1
+        objRef.current.position.y = Math.sin(clock.getElapsedTime()) * 0.1 + 0.34;
     };
 
     return (
@@ -364,11 +459,31 @@ function BlueLock(props) {
     );
 }
 
+function BlueUnlock(props) { 
+    const objRef = useRef();
+
+    const animation = (clock, camera) => {
+        objRef.current.position.y = Math.sin(clock.getElapsedTime()) * 0.1 + 0.34;
+        objRef.current.rotation.y += (Math.PI * 2) / 500;
+    };
+
+    return (
+        <BuildGLB 
+            file={'models/sol/blue_unlock.glb'}
+            animation={props.animation ?? animation}
+            objRef={ objRef }
+            scale={props.scale ?? scaleLock}
+            position={props.pos ?? HubIndex2.pos}
+            rotation={props.rot ?? HubIndex2.rot}
+        />
+    );
+}
+
 function GreenLock() { 
     const objRef = useRef();
 
     const animation = (clock, camera) => {
-        objRef.current.position.y = Math.sin(clock.getElapsedTime() + PI/16) * 0.1
+        objRef.current.position.y = Math.sin(clock.getElapsedTime() + PI/16) * 0.1 + 0.34;
     };
 
     return (<BuildGLB 
@@ -381,11 +496,29 @@ function GreenLock() {
     />);
 }
 
+function GreenUnlock() { 
+    const objRef = useRef();
+
+    const animation = (clock, camera) => {
+        objRef.current.position.y = Math.sin(clock.getElapsedTime() + PI/16) * 0.1 + 0.34;
+        objRef.current.rotation.y += (Math.PI * 2) / 500;
+    };
+
+    return (<BuildGLB 
+        file={'models/sol/green_unlock.glb'}
+        animation={animation}
+        objRef={ objRef }
+        scale={scaleLock}
+        position={HubIndex3.pos}
+        rotation={HubIndex3.rot}
+    />);
+}
+
 function PurpleLock() { 
     const objRef = useRef();
 
     const animation = (clock, camera) => {
-        objRef.current.position.y = Math.sin(clock.getElapsedTime() + PI/8) * 0.1
+        objRef.current.position.y = Math.sin(clock.getElapsedTime() + PI/8) * 0.1 + 0.34;
     };
 
     return (<BuildGLB 
@@ -398,66 +531,86 @@ function PurpleLock() {
     />);
 }
 
+function PurpleUnlock() { 
+    const objRef = useRef();
+
+    const animation = (clock, camera) => {
+        objRef.current.position.y = Math.sin(clock.getElapsedTime() + PI/8) * 0.1 + 0.34;
+        objRef.current.rotation.y += (Math.PI * 2) / 500;
+    };
+
+    return (<BuildGLB 
+        file={'models/sol/purple_unlock.glb'}
+        animation={animation}
+        objRef={ objRef }
+        scale={scaleLock}
+        position={HubIndex4.pos}
+        rotation={HubIndex4.rot}
+    />);
+}
+
 function Timer(props) {
-    const bomb = props.bomb;
-    const [time, setTime] = useState(0);
     const [message, setMessage] = useState('Connect Wallet');
     const [color, setColor] = useState('#FFFFFF');
 
 
     useFrame(({ clock }) => {
-        if(Math.round(clock.getElapsedTime()) != time){
-            setTime(Math.round(clock.getElapsedTime()));
-            let state = time % 30;
+        if(props.state === FSM.Reconstruction){
+            if(props.puzzleState.regular){
+                setMessage(getTimeString(props.run[1] - props.run[0]));
+                setColor("#4FA5C4");
+            } else {
+                setMessage(getTimeString(Date.now() - props.run[0]));
+                setColor("#FFFFFF");
+            }
+        } else {
+            let time = props.bomb - Date.now();
+            let state = Math.round(time / 1000) % 30;
 
             if(props.state != FSM.NotConnected) {
-                if(state > 29){
-                    setMessage("...");
-                    setColor("#9945FF");
-                } else if(state > 28) {
-                    setMessage("IN");
-                    setColor("#9945FF");
+                if(state > 28){
+                    setMessage("SUPERNOVA");
+                    setColor("#4FA5C4");
                 } else if(state > 27) {
-                    setMessage("BURNED");
-                    setColor("#9945FF");
+                    setMessage("IMMINENT");
+                    setColor("#4FA5C4");
                 } else if(state > 26) {
-                    setMessage("SUPPLY");
-                    setColor("#9945FF");
-                } else if(state > 25) {
                     setMessage("REMAINING");
+                    setColor("#4FA5C4");
+                } else if(state > 25) {
+                    setMessage("SUPPLY");
+                    setColor("#4FA5C4");
+                } else if(state > 24) {
+                    setMessage("BURNED");
+                    setColor("#4FA5C4");
+                } else if(state > 23) {
+                    setMessage("IN");
+                    setColor("#4FA5C4");
+                } else if(state > 22) {
+                    setMessage("...");
+                    setColor("#4FA5C4");
+                } else if(state === 10 && props.puzzleState.regular) {
+                    setMessage("YOU");
+                    setColor("#9945FF");
+                } else if(state === 9 && props.puzzleState.regular) {
+                    setMessage("DID");
+                    setColor("#9945FF");
+                } else if(state === 8 && props.puzzleState.regular) {
+                    setMessage("IT!");
                     setColor("#9945FF");
                 } else {
-                    setMessage(getTimeString(time));
+                    setMessage(getTimeString(Math.max(0.0, time)));
                     setColor("#FFFFFF");
                 }
             }
         }
+
     });
-
-    var _second = 1000;
-    var _minute = _second * 60;
-    var _hour = _minute * 60;
-    var _day = _hour * 24;
-    var timer;
-
-    function getTimeString (_){
-        var now = new Date();
-        var distance = bomb - now;
-        if (distance < 0) {
-
-            return "BOOM!";
-        }
-        var hours = Math.floor((distance) / _hour);
-        var minutes = Math.floor((distance % _hour) / _minute);
-        var seconds = Math.floor((distance % _minute) / _second);
-
-        return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-    }
 
     return (
         <text
-            ref={timer}
-            position={[0, EyeLevel + 0.69, -HubRadius]}
+            // ref={timer}
+            position={[0, EyeLevel + ((props.opened) ? 1 : 0.69), -HubRadius]}
             rotation={[0,PI/32,0]}
             fontSize={0.5}
             maxWidth={200}
@@ -505,12 +658,39 @@ function Title(props) {
     );
 }
 
+function getStory(puzzleState, state, run){
+    let normalRun = Math.abs(run[0] - run[1]);
+    let fullRun = Math.abs(run[0] - run[2]);
+
+    if(puzzleState.secret){
+        if(fullRun < cheaterTime * 1.5 && state === FSM.Playing){
+            return "You peaked at ALL the answers, didn't you?!";
+        } else {
+            return "Congrats! You 100%'d this thing! AND you did it in " + getTimeString(fullRun);
+        }
+    }
+
+    if(puzzleState.regular){
+        if(normalRun < cheaterTime && state === FSM.Playing){
+            return "You peaked at the answers, didn't you...";
+        } else {
+            return "Congrats! You've opened the chest! AND you did it in " + getTimeString(normalRun) + '. Give yourself a pat on the back! Oh, and remember to ignore the red herring... \n\nLove,\nCoach Chuck';
+        }
+    }
+
+    if(state === FSM.Reconstruction){
+        return "Welcome! The supernova has already happened... Hoever, if you're playing this right now, you're actually playing a digitally recreated world saved within a replay token or an OG sol-treasure account. You won't be able to mint anything, however, you can see how fast you can solve the puzzles! Happy Speedrunning!\n\nLove,\nCoach Chuck";
+    }
+
+    return "The object is simple. Mint each key for each lock. Do this BEFORE the supernova... Once this happens all unclaimed SFTs will be burned. Each key will cost a total of 0.05 SOL - if you input a wrong answer, you'll mint a broken key at 0.03. You'll need a total of ~0.255 Sol to 100% this thing... Happy Hunting! \n\n Love,\n Coach Chuck";
+
+}
 function Story(props) { 
     const [deltaY, setDeltaY] = useState(0);
     const [didUpdate, setDidUpdate] = useState(false);
     const refs = [useRef(),useRef()];
 
-    const story = "The object is simple. Mint each key for each lock. Do this BEFORE the supernova... Once this happens all unclaimed SFTs will be burned. Each key will cost a total of 0.05 SOL - if you input a wrong answer, you'll mint a broken key at 0.03. You'll need a total of ~0.255 Sol to 100% this thing... Happy Hunting! \n\n Love,\n Coach Chuck";
+    let story = getStory(props.puzzleState, props.state, props.run);
 
     const diff = 0.5;
     useFrame(({ clock, camera }) => { 
@@ -540,7 +720,7 @@ function Story(props) {
             maxWidth={2.34}
             lineHeight={1.55}
             letterSpacing={0}
-            text={"RULES"}
+            text={"INFO"}
             font={fonts['Roboto']}
             anchorX="center"
             anchorY="top"
@@ -663,13 +843,12 @@ function HubRing(props){
         <group>
             <Suspense fallback={null}>
                 <Inventory state={props.state} onHover={props.onHover} puzzleState={props.puzzleState}/>
-                <Timer bomb={props.bomb}/>
-                <Chest />
+                {props.puzzleState.regular ? <OpenedChest run={props.run} bomb={props.bomb} puzzleState={props.puzzleState}/> : <Chest puzzleState={props.puzzleState} bomb={props.bomb} puzzleState={props.puzzleState}/>}
                 <Leaderboard deltaY={props.deltaY}/>
-                <BlueLock />
-                <GreenLock />
-                <PurpleLock />
-                <Story deltaY={props.deltaY}/>
+                {props.puzzleState.blue ? <BlueUnlock /> : <BlueLock />}
+                {props.puzzleState.green ? <GreenUnlock /> : <GreenLock />}
+                {props.puzzleState.purple ? <PurpleUnlock /> : <PurpleLock />}
+                <Story run={props.run} deltaY={props.deltaY} puzzleState={props.puzzleState} state={props.state}/>
             </Suspense>
         </group>
     );
@@ -781,11 +960,11 @@ export function BuildHub(props) {
     const [hovered, onHover] = useState(null)
     const selected = hovered ? [hovered] : undefined
 
-    if(selected){
-        if(selected.length > 0){
-            console.log(selected[0].current.position);
-        }
-    }
+    // if(selected){
+    //     // if(selected.length > 0){
+    //     //     console.log(selected[0].current.position);
+    //     // }
+    // }
 
     if(state != props.state){
         setTime(new Date());
@@ -803,7 +982,7 @@ export function BuildHub(props) {
                 <directionalLight position={[0, EyeLevel, 0]} intensity={1} rotation={0, 0, 0}/>
                 <pointLight position={[0, -(EyeLevel * 2), 0]} intensity={0.21}/>
                 <pointLight position={[0, EyeLevel, 0]} intensity={0.05}/>
-                <HubRing puzzleState={props.puzzleState} deltaY={deltaY} bomb={props.bomb} state={state} onHover={onHover}/>
+                <HubRing run={props.run} puzzleState={props.puzzleState} deltaY={deltaY} bomb={props.bomb} state={state} onHover={onHover}/>
                 {/* <Supernova time={time}/> */}
                 <Title state={props.state}/>
                 <FloorSet radius={HubRadius} cameraIndex={props.cameraIndex}/>

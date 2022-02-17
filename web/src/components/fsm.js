@@ -1,9 +1,10 @@
 import { PublicKey } from '@solana/web3.js';
 
-export const Devmode = "-2. Devmode"
-export const Supernova = "-1. Supernova"
+export const Devmode = "-2. Devmode";
+export const Supernova = "-1. Supernova";
 export const NotConnected = "0. Connect your wallet";
 export const Playing = "1. Playing";
+export const Reconstruction = "2. Reconstruction";
 
 export const Puzzle1 = "Noots";
 export const Puzzle2 = "Terminal";

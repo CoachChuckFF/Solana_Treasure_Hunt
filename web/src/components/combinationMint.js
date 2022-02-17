@@ -38,6 +38,10 @@ function TheButton(props) {
         textColor = disabledTextColor;
     }
 
+    if(props.info.overrideColor){
+        color = props.info.overrideColor;
+    }
+
     let iconDiv = (<div  className={props.loading ? 'icon-spin' : ''}>{props.info.icon}</div>);
 
     return (
@@ -162,6 +166,7 @@ export function CombinationMint(props) {
                 display = [false, true];
                 buttonInfo.enabled = FSM.canOpenChest(props.puzzleState);
                 buttonInfo.icon = (<ChestIcon />);
+                buttonInfo.overrideColor = null;
                 buttonInfo.text = props.puzzleState.regular ? "You did it!" : "Open Chest";
                 buttonInfo.title = "Locks:";
                 buttonInfo.iconButtonIcon = (<WalletIcon />);
