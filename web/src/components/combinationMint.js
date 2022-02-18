@@ -16,7 +16,7 @@ import { Connection, PublicKey, clusterApiUrl} from '@solana/web3.js';
 import './../App.css' 
 
 // Icons
-import { PuzzleIcon, WalletIcon, GuideIcon, ChestIcon, KeyIcon } from './icons';
+import { PuzzleIcon, WalletIcon, GuideIcon, ChestIcon, KeyIcon, LeftIcon } from './icons';
 import { codeToHexString, getGuideCodes } from './hashes';
 
 const disabledColor = "disabled";
@@ -119,7 +119,6 @@ export function CombinationMint(props) {
     }
     const handleMint = () => {
         // setIsWorking(true);
-        console.log(props.codes);
         props.mint();
     }
 
@@ -157,6 +156,37 @@ export function CombinationMint(props) {
         );
     }
 
+    const LeaveDevMode = () => {props.setDevMode(false);}
+    const LeaveDevModeButton = () => {
+        return (
+            <div className="hub-controls">
+                <div className='puzzle-controls'>
+                    <div className="puzzle-controls">
+                        <Box className="puzzle-control-row-blank"></Box>
+                        <Box className="puzzle-control-row-blank">
+                            <Grid container spacing={2}></Grid>
+                        </Box>
+                        <Box className="puzzle-control-row">
+                            <Grid container spacing={2}>
+                                <Grid item xs={12}>
+                                    <TheButton 
+                                        handleClick={LeaveDevMode} 
+                                        loading={false} 
+                                        info={{
+                                            enabled: true, 
+                                            icon: (<LeftIcon />), 
+                                            text: "Leave Dev Mode"
+                                        }}
+                                    />
+                                </Grid>
+                            </Grid>
+                        </Box>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     const changeButtonInfo = () => {
         let display = [false, false];
         buttonInfo.enabled = false;
@@ -164,10 +194,10 @@ export function CombinationMint(props) {
         switch(props.cameraIndex){
             case 0:
                 display = [false, true];
-                buttonInfo.enabled = FSM.canOpenChest(props.puzzleState);
+                buttonInfo.enabled = FSM.canOpenChest(props.puzzleState, props.run, props.state) && !FSM.isCheater(props.run, props.state, props.puzzleState);
                 buttonInfo.icon = (<ChestIcon />);
                 buttonInfo.overrideColor = null;
-                buttonInfo.text = props.puzzleState.regular ? "You did it!" : "Open Chest";
+                buttonInfo.text = props.puzzleState.regular ? "You did it!" : ((FSM.isCheater(props.run, props.state, props.puzzleState)) ? `Pumkin Eater...` : "Open Chest");
                 buttonInfo.title = "Locks:";
                 buttonInfo.iconButtonIcon = (<WalletIcon />);
                 buttonInfo.iconTileColor = "primary";
@@ -229,6 +259,8 @@ export function CombinationMint(props) {
     }
 
     if(props.state === FSM.NotConnected) return <ConnectWalletButton />;
+    if(props.state === FSM.DevMode && props.cameraIndex === -1) return <LeaveDevModeButton />;
+
 
     // console.log(props.codes.blue);
     changeButtonInfo();

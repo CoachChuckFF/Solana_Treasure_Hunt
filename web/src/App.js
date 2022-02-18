@@ -1,7 +1,7 @@
 import './App.css';
 import { useRef, useState, useEffect } from "react";
 import { BuildScene } from './components/buildScene';
-import { BuildHub } from './components/buildHub';
+import { BuildHub, TargetCamera  } from './components/buildHub';
 import { CombinationMint } from './components/combinationMint';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { drawCurtains, Curtains } from './components/curtains';
@@ -75,7 +75,7 @@ function Puzzle2Page(props){
   if(props.puzzle != FSM.Puzzle2) return null;
 
   return (
-    <DroniesPuzzlePage wallet={props.wallet} puzzleCB={props.puzzleCB}></DroniesPuzzlePage>
+    <DroniesPuzzlePage puzzleState={props.puzzleState} cameraPosCB={props.cameraPosCB} state={props.state} setDevMode={props.setDevMode} wallet={props.wallet} puzzleCB={props.puzzleCB}></DroniesPuzzlePage>
   );
 }
 
@@ -85,7 +85,7 @@ function Puzzle3Page(props){
   if(props.puzzle != FSM.Puzzle3) return null;
 
   return (
-    <DesolatePuzzlePage wallet={props.wallet} puzzleCB={props.puzzleCB}></DesolatePuzzlePage>
+    <DesolatePuzzlePage puzzleState={props.puzzleState} cameraPosCB={props.cameraPosCB} wallet={props.wallet} puzzleCB={props.puzzleCB}></DesolatePuzzlePage>
   );
 }
 
@@ -93,8 +93,8 @@ function ChestPage(props){
   return (
     <div>
       {/* <StateView state={props.state}/> */}
-      <BuildHub run={props.run} puzzleState={props.puzzleState} bomb={props.bomb} changeCameraIndex={props.changeCameraIndex} cameraIndex={props.cameraIndex} curtains={props.curtains} wallet={props.wallet} state={props.state} />
-      <CombinationMint run={props.run} puzzleState={props.puzzleState} bomb={props.bomb} activePuzzle={props.activePuzzle} cameraIndex={props.cameraIndex} mint={props.mint} subAction={props.subAction} action={props.action} curtains={props.curtains} connect={props.connect} wallet={props.wallet} codes={props.codes} state={props.state} puzzle={props.puzzle}/>
+      <BuildHub cameraPos={props.cameraPos} run={props.run} puzzleState={props.puzzleState} bomb={props.bomb} changeCameraIndex={props.changeCameraIndex} cameraIndex={props.cameraIndex} curtains={props.curtains} wallet={props.wallet} state={props.state} />
+      <CombinationMint setDevMode={props.setDevMode} run={props.run} puzzleState={props.puzzleState} bomb={props.bomb} activePuzzle={props.activePuzzle} cameraIndex={props.cameraIndex} mint={props.mint} subAction={props.subAction} action={props.action} curtains={props.curtains} connect={props.connect} wallet={props.wallet} codes={props.codes} state={props.state} puzzle={props.puzzle}/>
     </div>
   );
 }
@@ -107,7 +107,7 @@ function App() {
   const [activePuzzle, setActivePuzzle] = useState(null);
 
   const [bomb, setBomb] = useState(Date.now() + 1000 * 60 * 60 *24);
-  const [run, setRun] = useState([-1, -1, -1]);
+  const [run, setRun] = useState([Date.now(), -1, -1]);
 
   const [actionCounter, setActionCounter] = useState(0);
   const [subActionCounter, setSubActionCounter] = useState(0);
@@ -115,6 +115,8 @@ function App() {
   const [codes, setCodes] = useState(FSM.staticCodes);
   const [puzzleState, setPuzzleState] = useState(FSM.blankPuzzle)
   const [cameraIndex, setCameraIndex] = useState(-1);
+  // const [cameraPos, setCameraPos] = useState(TargetCamera.pos);
+  const [cameraPos, setCameraPos] = useState(TargetCamera.pos);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -124,6 +126,14 @@ function App() {
     setwallet(null);
     setActivePuzzle(null);
     setState(FSM.NotConnected);
+  }
+
+  const setDevMode = (mode) => {
+    setState(mode ? FSM.DevMode : (bomb > Date.now() ? FSM.Playing : FSM.Reconstruction));
+  }
+
+  const cameraPosCB = (pos) => {
+    setCameraPos(pos);
   }
 
   const mint = (inputCodes) => {
@@ -322,8 +332,9 @@ function App() {
     if(wallet){
       setIsLoading(true);
       getNFTs(wallet)
-      .then((state)=>{
-        setState(FSM.Playing);
+      .then((newState)=>{
+
+        setState(state === FSM.NotConnected ? FSM.Playing : state);
         setActivePuzzle(null);
         // setPuzzleState();
         setIsLoading(false);
@@ -344,9 +355,9 @@ function App() {
         <Loader open={isLoading}/>
         {/* <TabsRouter /> */}
         <Puzzle1Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
-        <Puzzle2Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
+        <Puzzle2Page puzzleState={puzzleState} cameraPosCB={cameraPosCB} setDevMode={setDevMode} puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle} state={state}/>
         <Puzzle3Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
-        <ChestPage run={run} bomb={bomb} mint={mint} activePuzzle={activePuzzle} puzzle={puzzle} cameraIndex={cameraIndex} changeCameraIndex={changeCameraIndex} curtains={curtains} connect={connectWallet} wallet={wallet} state={state} codes={codes} puzzleState={puzzleState} action={actionCounter} subAction={subActionCounter}/>
+        <ChestPage cameraPos={cameraPos} setDevMode={setDevMode} run={run} bomb={bomb} mint={mint} activePuzzle={activePuzzle} puzzle={puzzle} cameraIndex={cameraIndex} changeCameraIndex={changeCameraIndex} curtains={curtains} connect={connectWallet} wallet={wallet} state={state} codes={codes} puzzleState={puzzleState} action={actionCounter} subAction={subActionCounter}/>
         <Curtains curtains={curtains}/>
       </ThemeProvider>
     </div>

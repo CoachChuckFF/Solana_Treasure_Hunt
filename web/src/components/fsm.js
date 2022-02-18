@@ -1,6 +1,6 @@
 import { PublicKey } from '@solana/web3.js';
 
-export const Devmode = "-2. Devmode";
+export const DevMode = "-2. Devmode";
 export const Supernova = "-1. Supernova";
 export const NotConnected = "0. Connect your wallet";
 export const Playing = "1. Playing";
@@ -10,6 +10,9 @@ export const Puzzle1 = "Noots";
 export const Puzzle2 = "Terminal";
 export const Puzzle3 = "Desolates";
 export const Puzzle4 = "Trees";
+
+export const CheaterTime = 1000*60*13;
+export const SecretCheaterTime = 1000*60*21;
 
 export const Guide = new PublicKey('2dm1VxKGnTHfN9SDpL9EAH8MtQ4ZMuXGM5jXugkVCPqU');
 export const NFKeyB = new PublicKey('98LMSXMzUP4myGehpbHmLQmhByPiMyjm8nzRJBKBtJz5');
@@ -38,10 +41,26 @@ export const blankPuzzle = {
     replay: false,
 };
 
+export const getCurrentChestTime = (run) => {
+    return Math.abs(run[0] - Date.now());
+}
+
+export const canOpenSecretChest = (puzzleState) => {
+    return puzzleState.blue && puzzleState.green && puzzleState.purple && puzzleState.white && puzzleState.black && !puzzleState.secret;
+}
+
+export const isSecretCheater = (run, state, puzzleState) => {
+    return (canOpenSecretChest(puzzleState) && state === Playing && getCurrentChestTime(run) < SecretCheaterTime);
+}
+
 export const canOpenChest = (puzzleState) => {
-    if(!puzzleState) return false;
     return puzzleState.blue && puzzleState.green && puzzleState.purple && !puzzleState.regular;
 }
+
+export const isCheater = (run, state, puzzleState) => {
+    return (canOpenChest(puzzleState) && state === Playing && getCurrentChestTime(run) < CheaterTime);
+}
+
 
 export const Items = [
     Guide,

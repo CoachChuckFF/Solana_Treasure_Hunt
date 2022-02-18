@@ -1,4 +1,4 @@
-import React, { Suspense, useRef, useState, useLayoutEffect } from "react";
+import React, { Suspense, useRef, useState, useEffect, useLayoutEffect } from "react";
 import { useGLTF, Stars, PointerLockControls, ScrollControls, Plane } from "@react-three/drei";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
@@ -19,7 +19,6 @@ import { lerp } from "three/src/math/MathUtils";
 
 extend({ TextGeometry })
 extend({ Text });
-extend({ STControls });
 
 
 const orbit = 8;
@@ -67,7 +66,7 @@ const superNovaDistance = 888
 const EdgeWidth = HubRadius
 
 const StartingCamera = {pos: [0, EyeLevel, superNovaDistance], rot: [0, 0, 0]};
-const TargetCamera = {pos: [0, EyeLevel, 0], rot: [0, 0, 0]};
+export const TargetCamera = {pos: [0, EyeLevel, 0], rot: [0, 0, 0]};
 const HubIndex0 = {pos: [0, 0, -HubRadius], light: [0, PointLightHeight, -HubRadius * PointLightDistanceBehind], rot: [0, 0, 0], point: [0, -5, -HubRadius]};
 const HubIndex1 = {pos: [HubX, 0, -HubZ], light: [HubX * PointLightDistanceBehind, PointLightHeight, -HubZ * PointLightDistanceBehind], rot: [0, -(HexTheta * 1), 0], point: [0, -5, -HubRadius]};
 const HubIndex2 = {pos: [HubX, 0, HubZ], light: [HubX * PointLightDistanceBehind, PointLightHeight, HubZ * PointLightDistanceBehind], rot: [0, -(HexTheta * 2), 0], point: [0, -5, -HubRadius]};
@@ -572,7 +571,7 @@ function Timer(props) {
                     setMessage("SUPERNOVA");
                     setColor("#4FA5C4");
                 } else if(state > 27) {
-                    setMessage("IMMINENT");
+                    setMessage("IMMINENT.");
                     setColor("#4FA5C4");
                 } else if(state > 26) {
                     setMessage("REMAINING");
@@ -584,10 +583,7 @@ function Timer(props) {
                     setMessage("BURNED");
                     setColor("#4FA5C4");
                 } else if(state > 23) {
-                    setMessage("IN");
-                    setColor("#4FA5C4");
-                } else if(state > 22) {
-                    setMessage("...");
+                    setMessage("IN...");
                     setColor("#4FA5C4");
                 } else if(state === 10 && props.puzzleState.regular) {
                     setMessage("YOU");
@@ -663,26 +659,18 @@ function getStory(puzzleState, state, run){
     let fullRun = Math.abs(run[0] - run[2]);
 
     if(puzzleState.secret){
-        if(fullRun < cheaterTime * 1.5 && state === FSM.Playing){
-            return "You peaked at ALL the answers, didn't you?!";
-        } else {
-            return "Congrats! You 100%'d this thing! AND you did it in " + getTimeString(fullRun);
-        }
+        return "Congrats! You 100%'d this thing! AND you did it in " + getTimeString(fullRun) + '. You\'re the real treasure!\n\nLove,\nCoach Chuck';
     }
 
     if(puzzleState.regular){
-        if(normalRun < cheaterTime && state === FSM.Playing){
-            return "You peaked at the answers, didn't you...";
-        } else {
-            return "Congrats! You've opened the chest! AND you did it in " + getTimeString(normalRun) + '. Give yourself a pat on the back! Oh, and remember to ignore the red herring... \n\nLove,\nCoach Chuck';
-        }
+        return "Congrats! You've opened the chest! AND you did it in " + getTimeString(normalRun) + '. Give yourself a pat on the back! Oh, and remember to ignore the red herring... \n\nLove,\nCoach Chuck';
     }
 
     if(state === FSM.Reconstruction){
         return "Welcome! The supernova has already happened... Hoever, if you're playing this right now, you're actually playing a digitally recreated world saved within a replay token or an OG sol-treasure account. You won't be able to mint anything, however, you can see how fast you can solve the puzzles! Happy Speedrunning!\n\nLove,\nCoach Chuck";
     }
 
-    return "The object is simple. Mint each key for each lock. Do this BEFORE the supernova... Once this happens all unclaimed SFTs will be burned. Each key will cost a total of 0.05 SOL - if you input a wrong answer, you'll mint a broken key at 0.03. You'll need a total of ~0.255 Sol to 100% this thing... Happy Hunting! \n\n Love,\n Coach Chuck";
+    return "The object is simple. Mint each key for each lock. Do this BEFORE the supernova... Once this happens all unclaimed SFTs will be burned. Each key will cost a total of 0.05 SOL - if you input a wrong answer, you'll mint a broken key at 0.03. You'll need a total of ~0.255 Sol to 100% this thing... Happy Hunting! \n\n Love,\n Coach Chuck\n\n";
 
 }
 function Story(props) { 
@@ -776,7 +764,6 @@ function Floor(props){
         bevelEnabled: false
     }
 
-
     return (
         <mesh ref={props.fref} position={[0,0,0]} rotation={[PI/2, 0, props.startingTheta]}>
           <extrudeBufferGeometry attach="geometry" args={[shape, extrudeSettings]} />
@@ -854,6 +841,23 @@ function HubRing(props){
     );
 }
 
+function SecretHub(props){
+
+    return (
+        <group>
+            <Suspense fallback={null}>
+                <Inventory state={props.state} onHover={props.onHover} puzzleState={props.puzzleState}/>
+                {props.puzzleState.regular ? <OpenedChest run={props.run} bomb={props.bomb} puzzleState={props.puzzleState}/> : <Chest puzzleState={props.puzzleState} bomb={props.bomb} puzzleState={props.puzzleState}/>}
+                <Leaderboard deltaY={props.deltaY}/>
+                {props.puzzleState.blue ? <BlueUnlock /> : <BlueLock />}
+                {props.puzzleState.green ? <GreenUnlock /> : <GreenLock />}
+                {props.puzzleState.purple ? <PurpleUnlock /> : <PurpleLock />}
+                <Story run={props.run} deltaY={props.deltaY} puzzleState={props.puzzleState} state={props.state}/>
+            </Suspense>
+        </group>
+    );
+}
+
 function getCameraIndex(camera){
     const threshold = PI / 4;
     const halfHold = threshold / 2;
@@ -883,59 +887,9 @@ function Controls(props){
     const ref = useRef();
     const { camera, gl: { domElement },} = useThree();
     const [controller, setController] = useState(null);
-    const [didInit, setDidInit] = useState(false);
 
-    useFrame(({ camera }) => { 
-        if(controller){
-            let tick = Math.abs(Date.now() - props.time);
-            let time = tick / 1000;
-
-            let targetPos = new Vector3(
-                TargetCamera.pos[0],
-                TargetCamera.pos[1],
-                TargetCamera.pos[2],
-            );
-
-            controller.autoRotate = false;
-
-            let distance = targetPos.distanceTo(camera.position);
-            let tock = Math.pow(Math.min(1.0, tick / zoomInTime), 2);
-
-            ref.current.position.copy( camera.position );
-            ref.current.rotation.copy( camera.rotation );
-            ref.current.intensity = Math.min(Math.sqrt(Math.sqrt(distance)), 0.5);
-            ref.current.updateMatrix();
-
-            if(props.devMode){
-                ;;
-            } else if(props.state === FSM.NotConnected || props.bomb < Date.now()){
-                controller.autoRotate = true;
-                controller.update();
-
-                if(distance < superNovaDistance - 5){
-                    camera.position.z = lerp(camera.position.z, superNovaDistance, tock);
-                }
-
-            } else {
-                if(distance > 0.01){
-                    camera.position.x = lerp(camera.position.x, TargetCamera.pos[0], tock);
-                    camera.position.y = lerp(camera.position.y, TargetCamera.pos[1], tock);
-                    camera.position.z = lerp(camera.position.z, TargetCamera.pos[2], tock);
-                } else {
-                    let index = getCameraIndex(camera);
-                    if(props.cameraIndex != index){
-                        props.changeCameraIndex(index);
-                    }
-                }    
-            }
-        }
-    });
-
-    if(!didInit){
+    useEffect(() => {
         let controller = new STControls(camera, domElement, TargetCamera.pos);
-        setDidInit(true);
-        setController(controller);
-
         controller.addEventListener("scroll", (event)=>{
             props.onScroll(event.event);
         });
@@ -945,8 +899,69 @@ function Controls(props){
             HubIndex0.pos[1],
             HubIndex0.pos[2],
         ));
-    }
-    
+        setController(controller);
+        return () => {};
+    }, []);
+
+    useFrame(({ camera }) => { 
+        if(controller){
+            let tick = Math.abs(Date.now() - props.time);
+
+            let targetPos = new Vector3(
+                props.state === FSM.DevMode ? props.cameraPos[0] : TargetCamera.pos[0],
+                props.state === FSM.DevMode ? props.cameraPos[1] : TargetCamera.pos[1],
+                props.state === FSM.DevMode ? props.cameraPos[2] : TargetCamera.pos[2],
+            );
+
+            controller.target = targetPos;
+            controller.autoRotate = false;
+            console.log(props.cameraPos);
+
+            let distance = targetPos.distanceTo(camera.position);
+            let tock = Math.pow(Math.min(1.0, tick / zoomInTime), 2);
+
+            ref.current.position.copy( camera.position );
+            ref.current.rotation.copy( camera.rotation );
+            ref.current.intensity = Math.min(Math.sqrt(Math.sqrt(distance)), 0.5);
+            ref.current.updateMatrix();
+
+            if(props.state === FSM.NotConnected || props.state === FSM.Supernova){
+                controller.autoRotate = true;
+                controller.update();
+
+                if(distance < superNovaDistance - 5){
+                    camera.position.z = lerp(camera.position.z, superNovaDistance, tock);
+                }
+            } else {
+                if(distance > 0.03){
+                    camera.position.x = lerp(camera.position.x, targetPos.x, tock);
+                    camera.position.y = lerp(camera.position.y, targetPos.y, tock);
+                    camera.position.z = lerp(camera.position.z, targetPos.z, tock);
+
+                    if(props.cameraIndex != -1){
+                        props.changeCameraIndex(-1);
+                    }
+                } else {
+                    //TODO Check Index
+                    if(
+                        targetPos.x === TargetCamera.pos[0] &&
+                        targetPos.y === TargetCamera.pos[1] &&
+                        targetPos.z === TargetCamera.pos[2]
+                    ) {
+                        let index = getCameraIndex(camera);
+                        if(props.cameraIndex != index){
+                            props.changeCameraIndex(index);
+                        }
+                    } else {
+                        if(props.cameraIndex != -1){
+                            props.changeCameraIndex(-1);
+                        }
+                    }
+                }    
+            }
+        }
+    });
+
     return <Suspense><pointLight ref={ref} intensity={0.1} position={StartingCamera.pos}/></Suspense>;
 }
 
@@ -998,7 +1013,7 @@ export function BuildHub(props) {
                     <Bloom intensity={0.1} luminanceThreshold={0.08} luminanceSmoothing={0} />
                     <Outline blue selection={selected} visibleEdgeColor="white" edgeStrength={50} width={1} />
                 </EffectComposer>
-                <Controls onScroll={onScroll} bomb={props.bomb} state={state} time={time} devMode={false} cameraIndex={props.cameraIndex} changeCameraIndex={props.changeCameraIndex}/>
+                <Controls cameraPos={props.cameraPos} onScroll={onScroll} bomb={props.bomb} state={state} time={time} cameraIndex={props.cameraIndex} changeCameraIndex={props.changeCameraIndex}/>
             </Canvas>
         </div>
     );

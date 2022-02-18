@@ -7,6 +7,7 @@ import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import { getNootCode, codeToHexString, getDronieCode } from "./hashes";
 import { ConstCode, Header, codeToHex } from './commons';
+import * as FSM from './fsm';
 
 
 const TERMINALSPLIT = '▹';
@@ -67,7 +68,7 @@ const FILES = [
     "F0: Chrip Chirp, I'm a bird.",
     "F1: NFKey 2 codes: RW5 ^ RW0, RW5 ^ RW1, RW5 ^ RW2, RW5 ^ RW3",
     "F2: Fun (totally unrelated) fact! ^ is the symbol for XOR",
-    "F3: Melody is on to something...",
+    "F3: Melody says to ignore the red herring.",
     "46343A2031737420636F6465203D202D2E2E2D202D2D2D202E2D2E203E202E2D2E202E2D2D202E2E2E2E2E203E202E2D2E202E2D2D202D2D2D2D2D",
     "Stop. Bad. Only read files #'s 0-4",
     "463F3A20506179206E6F20617474656E74696F6E20746F20746865206D616E20626568696E6420746865206375727461696E2E",
@@ -83,7 +84,7 @@ const ERRORS = [
 ];
 
 const HELP = [
-    ("Available commands: SOS [CMD], RF# [# = 0-4], RW# [# = 0-9], XOR [RW#] [RW#], H2A [RF#]"),
+    ("Available commands: SOS [CMD], RF# (# = 0-4), RW# (# = 0-9), XOR [RW#] [RW#], H2A [RF#]"),
     ("SOS: Gives info. Uses: SOS" + TERMINALSPLIT + "CMD"),
     ("RF#: Read data file #. RF0-RF4"),
     ("RW#: Read wallet byte #. RW0-RW9"),
@@ -245,6 +246,92 @@ function runEmulator(program, wallet, byteCB, winCB){
     return ERRORS[0] + ` '${program}' is not valid`;
 }
 
+const DEVHELP = [
+    ("Available commands: SOS [CMD], *REDACTED*, LOC[##] [##] [##] (## = 00-FF)"),
+    ("SOS: Gives info. Uses: SOS" + TERMINALSPLIT + "CMD"),
+    ("FK#: Mint a black key from a broken key. # = 1 to accept."),
+    ("LOC: Change the [X, Y, Z] location of the camera, where X, Y, Z -> 00-FF. Uses: LOC" + TERMINALSPLIT + "XX" + TERMINALSPLIT + "YY"+ TERMINALSPLIT + "ZZ"),
+];
+
+const DEVCOMMANDS = [
+    "SOS", "FK", "LOC"
+];
+
+function sosDevCode(cmd){
+
+    if(cmd == null || cmd == ''){
+        return DEVHELP[0];
+    }
+
+    if(cmd.includes('SOS')) return DEVHELP[1];
+    if(cmd.includes('FK')) return DEVHELP[2];
+    if(cmd.includes('LOC')) return DEVHELP[3];
+
+    return DEVHELP[0];
+}
+
+function runDevEmulator(program, puzzleState, fkCB, locCB){
+
+    if(program == null || program.length <= 0){return NOOP;}
+    if(program.charAt(0) == TERMINALSPLIT){return NOOP;}
+
+    let codes = program.split(TERMINALSPLIT);
+
+    if(codes[0] === 'SOS'){
+        return sosDevCode(codes.length > 1 ? codes[1] : null);
+    }
+
+    if(codes[0].includes('FK')){
+        if(codes[0].length == 3){
+            let number = parseInt(codes[0].charAt(2));
+            if (isNaN(number)) return DEVHELP[2];
+            if (number !== 1) return DEVHELP[2];
+
+            if(puzzleState.broken){
+                fkCB();
+                return 'Fixing key...';
+            } else {
+                return "You need a broken key to fix first...";
+            }
+        }
+        return DEVHELP[3];
+    }
+
+    if(codes[0] === 'LOC'){
+        if(codes.length >= 4){
+            let x = null;
+            let y = null;
+            let z = null;
+
+            if(codes[1].length === 2){
+                x = parseInt(codes[1], 16);
+                if (isNaN(x)) x = null;
+
+            }
+
+            if(codes[2].length === 2){
+                y = parseInt(codes[2], 16);
+                if (isNaN(y)) y = null;
+            }
+
+            if(codes[3].length === 2){
+                z = parseInt(codes[3], 16);
+                if (isNaN(z)) z = null;
+            }
+
+            console.log(x, y, z);
+
+            if(x !== null && y !== null && z !== null){
+                locCB([x, y, z]);
+                return "Setting camera...";
+            }
+        }
+        return DEVHELP[3];
+    }
+
+    return ERRORS[0] + ` '${program}' is not valid`;
+}
+
 function DronieTerminal(props){
     const [didInit, setDidInit] = useState(false);
     const [blink, setBlink] = useState(false);
@@ -373,8 +460,8 @@ export function DroniesPuzzlePage(props){
     const refs = [useRef(), useRef()];
     const [codes, setCodes] = useState([-1,-1,-1,-1]);
     const [program, setProgram] = useState('');
-    const [response, setResponse] = useState('* Real Bird Noises');
-    const [omniColor, setOmniColor] = useState(false);
+    const [response, setResponse] = useState(props.state === FSM.DevMode ? '* More Convincing Bird Noises' : '* Real Bird Noises');
+    const [omniColor, setOmniColor] = useState(props.state === FSM.DevMode);
     const [action, setAction] = useState(0);
     const [blink, setBlink] = useState(true);
 
@@ -483,6 +570,16 @@ export function DroniesPuzzlePage(props){
                             setOmniColor(true);
                             setResponse("NG! ❤️");
                             break;
+                        // case '-......-------...':
+                        case '------':
+                            setOmniColor(true);
+                            if(props.state === FSM.DevMode){
+                                setResponse("Already in Dev mode");
+                            } else {
+                                setResponse("Now in Dev mode. Tap out SOS for available commands.");
+                                props.setDevMode(true);
+                            }
+                            break;
                     }
 
                     if(
@@ -511,13 +608,27 @@ export function DroniesPuzzlePage(props){
         codes[index] = hash;
         setCodes(codes);
     }
+    const fkCB = () =>{
+        if(props.puzzleState.broken){
+            console.log("Fix Key");
+        } else {
+            console.log("Could not fix key");
+        }
+    }
+    const locCB = (loc) =>{
+        props.cameraPosCB(loc);
+    }
     const runProgram = () => {
-        // response
-        let newResponse = (runEmulator(handleSpace(true), props.wallet, bytesCB, winCB) ?? '');
+        let newResponse = "...";
+        if(props.state === FSM.DevMode){
+            newResponse = runDevEmulator(handleSpace(true), props.puzzleState, fkCB, locCB)
+        } else {
+            newResponse = (runEmulator(handleSpace(true), props.wallet, bytesCB, winCB) ?? '');
+        }
         if(newResponse === response){
             driveState();
         } else {
-            setOmniColor(false);
+            setOmniColor(props.state === FSM.DevMode);
             setResponse(newResponse);
         }
         clearProgram();

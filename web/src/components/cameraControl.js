@@ -38,6 +38,8 @@ class OrbitControls extends EventDispatcher {
 		// "target" sets the location of focus, where the object orbits around
 		this.target = new Vector3();
 
+		this.id = Date.now();
+
 		// How far you can dolly in and out ( PerspectiveCamera only )
 		this.minDistance = 0;
 		this.maxDistance = Infinity;
@@ -129,6 +131,7 @@ class OrbitControls extends EventDispatcher {
 
 		this.saveState = function () {
 
+			console.log("Saved");
 			scope.target0.copy( scope.target );
 			scope.position0.copy( scope.object.position );
 			scope.zoom0 = scope.object.zoom;
@@ -137,6 +140,7 @@ class OrbitControls extends EventDispatcher {
 
 		this.reset = function () {
 
+			console.log("Reset");
 			scope.target.copy( scope.target0 );
 			scope.object.position.copy( scope.position0 );
 			scope.object.zoom = scope.zoom0;
@@ -150,9 +154,6 @@ class OrbitControls extends EventDispatcher {
 
 		};
 
-        this.setDolly = function (dolly) {
-            dollyOut(dolly);
-        }
 
 		// this method is exposed, but perhaps it would be better if we can make it private...
 		this.update = function () {
@@ -280,7 +281,6 @@ class OrbitControls extends EventDispatcher {
 				if ( zoomChanged ||
 					lastPosition.distanceToSquared( scope.object.position ) > EPS ||
 					8 * ( 1 - lastQuaternion.dot( scope.object.quaternion ) ) > EPS ) {
-
 					scope.dispatchEvent( _changeEvent );
 
 					lastPosition.copy( scope.object.position );
@@ -797,6 +797,8 @@ class STControls extends OrbitControls {
         this.autoRotateSpeed = -0.2;
 
 		this.rotateSpeed = 1.5;
+
+		console.log(this.id);
 
 		// this.enableDamping = true;
 
