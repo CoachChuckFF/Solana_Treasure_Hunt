@@ -593,7 +593,7 @@ export function DroniesPuzzlePage(props){
                         case '......':
                             if(props.state === FSM.DevMode){
                                 setResponse("Setting Camera");
-                                locCB([0x50, 0x50, 0x50]);
+                                locCB([0x13, 0x34, 0x55]);
                                 setProgram("");
                             }
                             return;  

@@ -157,7 +157,7 @@ function App() {
         if(puzzleState.blue){
           isCorrect = false;
         } else {
-          rightCodes = getNootCode(wallet, 1);
+          rightCodes = getNootCode(wallet, 6);
           for(var i = 0; i < rightCodes.length; i++) if(codes.blue[i] != rightCodes[i]){ isCorrect = false; }
           if(isCorrect){
             drawCurtains(curtains, "Click.", ()=>{

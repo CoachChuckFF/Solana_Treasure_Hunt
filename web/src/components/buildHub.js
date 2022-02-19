@@ -109,10 +109,33 @@ function getTimeString (time){
 
 function BuildGLB(props){
     const { scene } = useGLTF(props.file);
+    const scaleFactor = 1.1;
 
     useFrame(({ clock, camera }) => { if(props.animation) props.animation(clock, camera); });
 
-    return (<Suspense fallback={null}><primitive onPointerOver={(e) => {if(props.onHover) props.onHover()}} onPointerOut={(e) =>  {if(props.leaveHover) props.leaveHover()}} ref={ props.objRef } object={ scene } scale={ props.scale } position={ props.position } rotation={ props.rotation }/></Suspense>);
+    const pointerOver = () => {
+        if(props.isInventory) {
+            props.objRef.current.scale.x *= scaleFactor;
+            props.objRef.current.scale.y *= scaleFactor;
+            props.objRef.current.scale.z *= scaleFactor;
+        }
+    }
+
+    const pointerOut = () => {
+        if(props.isInventory) {
+            props.objRef.current.scale.x *= 1/scaleFactor;
+            props.objRef.current.scale.y *= 1/scaleFactor;
+            props.objRef.current.scale.z *= 1/scaleFactor;
+        }
+    }
+
+    const gotoURL = () => {
+        if(props.url) {
+            window.open(props.url, '_blank');
+        }
+    }
+
+    return (<Suspense fallback={null}><primitive onClick={()=>{gotoURL();}} onPointerOver={(e) => { pointerOver() }} onPointerOut={(e) => { pointerOut() }} ref={ props.objRef } object={ scene } scale={ props.scale } position={ props.position } rotation={ props.rotation }/></Suspense>);
 }
 
 // GLB FILES ---------------
@@ -271,26 +294,11 @@ function Inventory(props) {
         }
     };
 
-
-    const leaveHover = () => {
-        props.onHover(null);
-    };
-    const onHover = (index) => {
-        props.onHover(refs[index]);
-    }
-    const hover0 = () => onHover(0);
-    const hover1 = () => onHover(1);
-    const hover2 = () => onHover(2);
-    const hover3 = () => onHover(3);
-    const hover4 = () => onHover(4);
-    const hover5 = () => onHover(5);
-
-
     return (
         <group>
             <BuildGLB 
-                onHover={hover0}
-                leaveHover={leaveHover}
+                isInventory={true}
+                url={'https://www.google.com/imgres?imgurl=https%3A%2F%2Fmedia.istockphoto.com%2Fphotos%2Fto-do-list-in-notebook-with-calendar-picture-id1092571024%3Fk%3D20%26m%3D1092571024%26s%3D612x612%26w%3D0%26h%3Ddz6l5jjYZC0lU2dUkqu5g5_0XtY3xnHs57mJDNlvJSk%3D&imgrefurl=https%3A%2F%2Fwww.istockphoto.com%2Fphotos%2Fto-do-list&tbnid=6I-BwtfLiBk3nM&vet=12ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ..i&docid=1HDtarEtGxSSIM&w=612&h=408&q=img%20of%20todo&ved=2ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ'}
                 file={'models/sol/blue_key.glb'}
                 animation={animation}
                 objRef={ refs[0]  }
@@ -300,8 +308,8 @@ function Inventory(props) {
                 rotation={HubIndex0.rot}
             />
             <BuildGLB 
-                onHover={hover1}
-                leaveHover={leaveHover}
+                isInventory={true}
+                url={'https://www.google.com/imgres?imgurl=https%3A%2F%2Fmedia.istockphoto.com%2Fphotos%2Fto-do-list-in-notebook-with-calendar-picture-id1092571024%3Fk%3D20%26m%3D1092571024%26s%3D612x612%26w%3D0%26h%3Ddz6l5jjYZC0lU2dUkqu5g5_0XtY3xnHs57mJDNlvJSk%3D&imgrefurl=https%3A%2F%2Fwww.istockphoto.com%2Fphotos%2Fto-do-list&tbnid=6I-BwtfLiBk3nM&vet=12ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ..i&docid=1HDtarEtGxSSIM&w=612&h=408&q=img%20of%20todo&ved=2ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ'}
                 file={'models/sol/green_key.glb'}
                 animation={animation}
                 objRef={ refs[1]  }
@@ -311,8 +319,8 @@ function Inventory(props) {
                 rotation={HubIndex0.rot}
             />
             <BuildGLB 
-                onHover={hover2}
-                leaveHover={leaveHover}
+                isInventory={true}
+                url={'https://www.google.com/imgres?imgurl=https%3A%2F%2Fmedia.istockphoto.com%2Fphotos%2Fto-do-list-in-notebook-with-calendar-picture-id1092571024%3Fk%3D20%26m%3D1092571024%26s%3D612x612%26w%3D0%26h%3Ddz6l5jjYZC0lU2dUkqu5g5_0XtY3xnHs57mJDNlvJSk%3D&imgrefurl=https%3A%2F%2Fwww.istockphoto.com%2Fphotos%2Fto-do-list&tbnid=6I-BwtfLiBk3nM&vet=12ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ..i&docid=1HDtarEtGxSSIM&w=612&h=408&q=img%20of%20todo&ved=2ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ'}
                 file={'models/sol/purple_key.glb'}
                 animation={animation}
                 objRef={ refs[2]  }
@@ -322,8 +330,8 @@ function Inventory(props) {
                 rotation={HubIndex0.rot}
             />
             <BuildGLB 
-                onHover={hover3}
-                leaveHover={leaveHover}
+                isInventory={true}
+                url={'https://www.google.com/imgres?imgurl=https%3A%2F%2Fmedia.istockphoto.com%2Fphotos%2Fto-do-list-in-notebook-with-calendar-picture-id1092571024%3Fk%3D20%26m%3D1092571024%26s%3D612x612%26w%3D0%26h%3Ddz6l5jjYZC0lU2dUkqu5g5_0XtY3xnHs57mJDNlvJSk%3D&imgrefurl=https%3A%2F%2Fwww.istockphoto.com%2Fphotos%2Fto-do-list&tbnid=6I-BwtfLiBk3nM&vet=12ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ..i&docid=1HDtarEtGxSSIM&w=612&h=408&q=img%20of%20todo&ved=2ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ'}
                 file={'models/sol/broken_key.glb'}
                 animation={animation}
                 objRef={ refs[3]  }
@@ -333,8 +341,8 @@ function Inventory(props) {
                 rotation={HubIndex0.rot}
             />
             <BuildGLB 
-                onHover={hover4}
-                leaveHover={leaveHover}
+                isInventory={true}
+                url={'https://www.google.com/imgres?imgurl=https%3A%2F%2Fmedia.istockphoto.com%2Fphotos%2Fto-do-list-in-notebook-with-calendar-picture-id1092571024%3Fk%3D20%26m%3D1092571024%26s%3D612x612%26w%3D0%26h%3Ddz6l5jjYZC0lU2dUkqu5g5_0XtY3xnHs57mJDNlvJSk%3D&imgrefurl=https%3A%2F%2Fwww.istockphoto.com%2Fphotos%2Fto-do-list&tbnid=6I-BwtfLiBk3nM&vet=12ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ..i&docid=1HDtarEtGxSSIM&w=612&h=408&q=img%20of%20todo&ved=2ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ'}
                 file={'models/sol/black_key.glb'}
                 animation={animation}
                 objRef={ refs[4]  }
@@ -344,8 +352,8 @@ function Inventory(props) {
                 rotation={HubIndex0.rot}
             />
             <BuildGLB 
-                onHover={hover5}
-                leaveHover={leaveHover}
+                isInventory={true}
+                url={'https://www.google.com/imgres?imgurl=https%3A%2F%2Fmedia.istockphoto.com%2Fphotos%2Fto-do-list-in-notebook-with-calendar-picture-id1092571024%3Fk%3D20%26m%3D1092571024%26s%3D612x612%26w%3D0%26h%3Ddz6l5jjYZC0lU2dUkqu5g5_0XtY3xnHs57mJDNlvJSk%3D&imgrefurl=https%3A%2F%2Fwww.istockphoto.com%2Fphotos%2Fto-do-list&tbnid=6I-BwtfLiBk3nM&vet=12ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ..i&docid=1HDtarEtGxSSIM&w=612&h=408&q=img%20of%20todo&ved=2ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ'}
                 file={'models/sol/white_key.glb'}
                 animation={animation}
                 objRef={ refs[5]  }
@@ -765,7 +773,7 @@ function Floor(props){
     }
 
     return (
-        <mesh ref={props.fref} position={[0,0,0]} rotation={[PI/2, 0, props.startingTheta]}>
+        <mesh ref={props.fref} position={props.pos ?? [0,0,0]} rotation={[PI/2, 0, props.startingTheta]}>
           <extrudeBufferGeometry attach="geometry" args={[shape, extrudeSettings]} />
           <meshStandardMaterial wireframe={true} transparent={!props.wire} opacity={0.01} color="#EAEAEA"/>
         </mesh>
@@ -790,12 +798,12 @@ function FloorSet(props){
 
     return (
         <group>
-            <Floor wire={props.cameraIndex == 3} fref={refs[0]} radius={props.radius} startingTheta={OffsetTheta * 0}/>
-            <Floor wire={props.cameraIndex == 4} fref={refs[1]} radius={props.radius} startingTheta={OffsetTheta * 1}/>
-            <Floor wire={props.cameraIndex == 5} fref={refs[2]} radius={props.radius} startingTheta={OffsetTheta * 2}/>
-            <Floor wire={props.cameraIndex == 0} fref={refs[3]} radius={props.radius} startingTheta={OffsetTheta * 3}/>
-            <Floor wire={props.cameraIndex == 1} fref={refs[4]} radius={props.radius} startingTheta={OffsetTheta * 4}/>
-            <Floor wire={props.cameraIndex == 2} fref={refs[5]} radius={props.radius} startingTheta={OffsetTheta * 5}/>
+            <Floor wire={props.cameraIndex == 3} pos={props.pos} fref={refs[0]} radius={props.radius} startingTheta={OffsetTheta * 0}/>
+            <Floor wire={props.cameraIndex == 4} pos={props.pos} fref={refs[1]} radius={props.radius} startingTheta={OffsetTheta * 1}/>
+            <Floor wire={props.cameraIndex == 5} pos={props.pos} fref={refs[2]} radius={props.radius} startingTheta={OffsetTheta * 2}/>
+            <Floor wire={props.cameraIndex == 0} pos={props.pos} fref={refs[3]} radius={props.radius} startingTheta={OffsetTheta * 3}/>
+            <Floor wire={props.cameraIndex == 1} pos={props.pos} fref={refs[4]} radius={props.radius} startingTheta={OffsetTheta * 4}/>
+            <Floor wire={props.cameraIndex == 2} pos={props.pos} fref={refs[5]} radius={props.radius} startingTheta={OffsetTheta * 5}/>
         </group>
     );
 }
@@ -829,36 +837,36 @@ function HubRing(props){
     return (
         <group>
             <Suspense fallback={null}>
-                <Inventory state={props.state} onHover={props.onHover} puzzleState={props.puzzleState}/>
+                <Inventory state={props.state} puzzleState={props.puzzleState}/>
                 {props.puzzleState.regular ? <OpenedChest run={props.run} bomb={props.bomb} puzzleState={props.puzzleState}/> : <Chest puzzleState={props.puzzleState} bomb={props.bomb} puzzleState={props.puzzleState}/>}
                 <Leaderboard deltaY={props.deltaY}/>
                 {props.puzzleState.blue ? <BlueUnlock /> : <BlueLock />}
                 {props.puzzleState.green ? <GreenUnlock /> : <GreenLock />}
                 {props.puzzleState.purple ? <PurpleUnlock /> : <PurpleLock />}
                 <Story run={props.run} deltaY={props.deltaY} puzzleState={props.puzzleState} state={props.state}/>
+                <directionalLight position={[0, EyeLevel, 0]} intensity={1} rotation={0, 0, 0}/>
+                <pointLight position={[0, -(EyeLevel * 2), 0]} intensity={0.21}/>
+                <pointLight position={[0, EyeLevel, 0]} intensity={0.05}/>
+                <FloorSet radius={HubRadius} cameraIndex={props.cameraIndex}/>
             </Suspense>
         </group>
     );
 }
 
 function SecretHub(props){
-
+    const lightLoc = [0x13, 0x34 + EyeLevel, 0x55]
+    const floorPos = [0x13, 0x34 - EyeLevel, 0x55];
     return (
         <group>
             <Suspense fallback={null}>
-                <Inventory state={props.state} onHover={props.onHover} puzzleState={props.puzzleState}/>
-                {props.puzzleState.regular ? <OpenedChest run={props.run} bomb={props.bomb} puzzleState={props.puzzleState}/> : <Chest puzzleState={props.puzzleState} bomb={props.bomb} puzzleState={props.puzzleState}/>}
-                <Leaderboard deltaY={props.deltaY}/>
-                {props.puzzleState.blue ? <BlueUnlock /> : <BlueLock />}
-                {props.puzzleState.green ? <GreenUnlock /> : <GreenLock />}
-                {props.puzzleState.purple ? <PurpleUnlock /> : <PurpleLock />}
-                <Story run={props.run} deltaY={props.deltaY} puzzleState={props.puzzleState} state={props.state}/>
+                <pointLight position={lightLoc} intensity={0.13}/>
+                <FloorSet radius={HubRadius} pos={floorPos} cameraIndex={props.cameraIndex}/>
             </Suspense>
         </group>
     );
 }
 
-function getCameraIndex(camera){
+function getCameraIndex(camera, isDev, cameraPos){
     const threshold = PI / 4;
     const halfHold = threshold / 2;
     const gap = (HexTheta - threshold);
@@ -868,15 +876,47 @@ function getCameraIndex(camera){
     camera.getWorldDirection(vec);
     let theta = ((2*PI) - ((Math.atan2(vec.x, vec.z)) + PI));
     let index = -1;
+    let offset = -1;
+
+    if(
+        cameraPos.x == TargetCamera.pos[0] && 
+        cameraPos.y == TargetCamera.pos[1] && 
+        cameraPos.z == TargetCamera.pos[2]
+    ) {
+        offset = 0;
+    } else if (
+        cameraPos.x == 0x13 && 
+        cameraPos.y == 0x34 && 
+        cameraPos.z == 0x55
+    ) {
+        offset = 0x10;
+    }
     
     if(theta > 2*PI - halfHold || theta < halfHold){
-        index = 0;
+        index = 0 + offset;
     }
 
-    for(var i = 0; i < 5; i++){
-        if(theta > pos + (HexTheta * i) && theta < pos + threshold + (HexTheta * i)){
-            index = i + 1;
-            break;
+    if( offset !== -1 ){
+        for(var i = 0; i < 5; i++){
+            if(theta > pos + (HexTheta * i) && theta < pos + threshold + (HexTheta * i)){
+                index = i + 1 + offset;
+                break;
+            }
+        }
+    }
+
+    if( isDev === true ){
+        if( offset === 0){
+            if(!(index === 3 || index === 0)){
+                index = -1;
+            }
+        } else if(offset === 0x10){
+            switch(index){
+                case offset: index = 3; break;
+                default: index = -1; break;
+            }
+        } else {
+            index = -1;
         }
     }
 
@@ -888,6 +928,7 @@ function Controls(props){
     const { camera, gl: { domElement },} = useThree();
     const [controller, setController] = useState(null);
     const [lastPos, setLastPos] = useState(null);
+    const [lastState, setLastState] = useState(null);
 
     useEffect(() => {
         if(controller === null){
@@ -914,6 +955,16 @@ function Controls(props){
         if(controller){
             let tick = Math.abs(Date.now() - props.time);
 
+            if(lastState) {
+                if(lastState != props.state){
+                    setLastState(props.state);
+                    return;
+                }
+            } else {
+                setLastState(props.state);
+                return;
+            }
+
             if(lastPos) {
                 if(
                     lastPos[0] != props.cameraPos[0] ||
@@ -922,16 +973,15 @@ function Controls(props){
                 ){
                     setLastPos(props.cameraPos);
                 }
-
             } else {
                 setLastPos(props.cameraPos);
                 return;
             }
 
             let targetPos = new Vector3(
-                props.state === FSM.DevMode ? lastPos[0] : TargetCamera.pos[0],
-                props.state === FSM.DevMode ? lastPos[1] : TargetCamera.pos[1],
-                props.state === FSM.DevMode ? lastPos[2] : TargetCamera.pos[2],
+                lastState === FSM.DevMode ? lastPos[0] : TargetCamera.pos[0],
+                lastState === FSM.DevMode ? lastPos[1] : TargetCamera.pos[1],
+                lastState === FSM.DevMode ? lastPos[2] : TargetCamera.pos[2],
             );
 
             controller.autoRotate = false;
@@ -966,19 +1016,9 @@ function Controls(props){
                     //TODO Check Index
                     controller.target = targetPos;
 
-                    if(
-                        targetPos.x === TargetCamera.pos[0] &&
-                        targetPos.y === TargetCamera.pos[1] &&
-                        targetPos.z === TargetCamera.pos[2]
-                    ) {
-                        let index = getCameraIndex(camera);
-                        if(props.cameraIndex != index){
-                            props.changeCameraIndex(index);
-                        }
-                    } else {
-                        if(props.cameraIndex != -1){
-                            props.changeCameraIndex(-1);
-                        }
+                    let index = getCameraIndex(camera, lastState === FSM.DevMode, targetPos);
+                    if(props.cameraIndex != index){
+                        props.changeCameraIndex(index);
                     }
                 }    
             }
@@ -995,16 +1035,6 @@ export function BuildHub(props) {
     const [time, setTime] = useState(new Date());
     const [deltaY, setDeltaY] = useState(0);
 
-    //Keys
-    const [hovered, onHover] = useState(null)
-    const selected = hovered ? [hovered] : undefined
-
-    // if(selected){
-    //     // if(selected.length > 0){
-    //     //     console.log(selected[0].current.position);
-    //     // }
-    // }
-
     if(state != props.state){
         setTime(new Date());
         setState(props.state);
@@ -1018,13 +1048,10 @@ export function BuildHub(props) {
         <div className="scene-container">
             <Canvas dpr={window.devicePixelRatio} camera={{position: StartingCamera.pos, rotation: StartingCamera.rot, fov: Fov}}>
                 {/* <ambientLight position={[0, 0, 0]} intensity={0.1}/> */}
-                <directionalLight position={[0, EyeLevel, 0]} intensity={1} rotation={0, 0, 0}/>
-                <pointLight position={[0, -(EyeLevel * 2), 0]} intensity={0.21}/>
-                <pointLight position={[0, EyeLevel, 0]} intensity={0.05}/>
-                <HubRing run={props.run} puzzleState={props.puzzleState} deltaY={deltaY} bomb={props.bomb} state={state} onHover={onHover}/>
+                <SecretHub cameraIndex={props.cameraIndex}/>
+                <HubRing cameraIndex={props.cameraIndex} run={props.run} puzzleState={props.puzzleState} deltaY={deltaY} bomb={props.bomb} state={state}/>
                 {/* <Supernova time={time}/> */}
                 <Title state={props.state}/>
-                <FloorSet radius={HubRadius} cameraIndex={props.cameraIndex}/>
                 <Stars
                     radius={100} // Radius of the inner sphere (default=100)
                     depth={50} // Depth of area where stars should fit (default=50)
@@ -1035,7 +1062,6 @@ export function BuildHub(props) {
                 />
                 <EffectComposer multisampling={8} autoClear={false}>
                     <Bloom intensity={0.1} luminanceThreshold={0.08} luminanceSmoothing={0} />
-                    <Outline blue selection={selected} visibleEdgeColor="white" edgeStrength={50} width={1} />
                 </EffectComposer>
                 <Controls cameraPos={props.cameraPos} onScroll={onScroll} bomb={props.bomb} state={state} time={time} cameraIndex={props.cameraIndex} changeCameraIndex={props.changeCameraIndex}/>
             </Canvas>

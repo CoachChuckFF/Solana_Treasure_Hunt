@@ -10,10 +10,10 @@ import { getNootCode } from "./hashes";
 
 const NOOTS = [
     {
-        img: 'https://www.arweave.net/fDFF8koBC-RG7qf0g5Pof5Thj7fbDe3ZI0qccgIHuNs?ext=png',
+        img: 'https://www.arweave.net/EImqZ7GmraVINv5xcsHlmSdTN77WJSLwrtHJFSdwXkU?ext=png',
         title: 'NOOT',
         id: 0,
-        url: "https://solscan.io/token/CsTRmLYi8Vgwqwc8fbRG6prAwUakpZRErzp1zXBHZamc",
+        url: "https://solscan.io/token/HZy1GBpjJcsEJkJCEytqzu4nRgEwrU3S9AbwgAqpGDd#metadata",
     },
     {
         img: 'https://www.arweave.net/EImqZ7GmraVINv5xcsHlmSdTN77WJSLwrtHJFSdwXkU?ext=png',
@@ -22,46 +22,46 @@ const NOOTS = [
         url: "https://solscan.io/token/HZy1GBpjJcsEJkJCEytqzu4nRgEwrU3S9AbwgAqpGDd#metadata",
     },
     {
-        img: 'https://www.arweave.net/RQxAsrAphaUbfTjbt1IdTZdq5md7mynMQCuGzaWjm3s?ext=png',
+        img: 'https://www.arweave.net/EImqZ7GmraVINv5xcsHlmSdTN77WJSLwrtHJFSdwXkU?ext=png',
         title: 'NOOT',
         id: 2,
-        url: "https://solscan.io/token/2M4hWSKyaYuSkYY7CwFbzRrh5JvR9UqTNMBmJBYBid8N",
+        url: "https://solscan.io/token/HZy1GBpjJcsEJkJCEytqzu4nRgEwrU3S9AbwgAqpGDd#metadata",
     },
     {
-        img: 'https://www.arweave.net/2TbRjVHsws-oJNqexlSaEUyW_dtgkHMWf54kGOtpp_Q?ext=png',
+        img: 'https://www.arweave.net/EImqZ7GmraVINv5xcsHlmSdTN77WJSLwrtHJFSdwXkU?ext=png',
         title: 'NOOT',
         id: 3,
-        url: "https://solscan.io/token/1264qVjHWA5kW3uhq4ZgRUFWfa2ctGKFuseVx8J5RbG1",
+        url: "https://solscan.io/token/HZy1GBpjJcsEJkJCEytqzu4nRgEwrU3S9AbwgAqpGDd#metadata",
     },
     {
-        img: 'https://www.arweave.net/NHRBykyk8JYZ3SILyhblc1E8lif0H5mm6JIoEmtcA0Y?ext=png',
+        img: 'https://www.arweave.net/EImqZ7GmraVINv5xcsHlmSdTN77WJSLwrtHJFSdwXkU?ext=png',
         title: 'NOOT',
         id: 4,
-        url: "https://solscan.io/token/FeLXmjvfToLURzW6HLUT56rGLsUK5TXd8GiDExHH2WRy",
+        url: "https://solscan.io/token/HZy1GBpjJcsEJkJCEytqzu4nRgEwrU3S9AbwgAqpGDd#metadata",
     },
     {
-        img: 'https://www.arweave.net/otdiwLOf5hbkfFP6GAtygZ4Qr7guC5nKQmJYFly4JZU?ext=png',
+        img: 'https://www.arweave.net/EImqZ7GmraVINv5xcsHlmSdTN77WJSLwrtHJFSdwXkU?ext=png',
         title: 'NOOT',
         id: 5,
-        url: "https://solscan.io/token/Cq4SNB85bX99KKRsEHkU5vsRzK1s6o49m2S4EML9KQMz",
+        url: "https://solscan.io/token/HZy1GBpjJcsEJkJCEytqzu4nRgEwrU3S9AbwgAqpGDd#metadata",
     },
     {
-        img: 'https://www.arweave.net/updDcwBf4UTYOWQHCfN4PcmyVCoGvpZDMskvvr3She4?ext=png',
+        img: 'https://www.arweave.net/EImqZ7GmraVINv5xcsHlmSdTN77WJSLwrtHJFSdwXkU?ext=png',
         title: 'NOOT',
         id: 6,
-        url: "https://solscan.io/token/CaxgyA3gFjUw6YUgZXgPw9KTLavNFXpbVCvUsE2c5yVX",
+        url: "https://solscan.io/token/2ct6MNqzxoAv2guPoZQtrKd9pznfcAgd7MYaXHxNr5cW#metadata",
     },
     {
-        img: 'https://www.arweave.net/QZdQ2vyXHTK3CatJeBKbCeGkQyQemzByMcPMTSAk9ps?ext=png',
+        img: 'https://www.arweave.net/EImqZ7GmraVINv5xcsHlmSdTN77WJSLwrtHJFSdwXkU?ext=png',
         title: 'NOOT',
         id: 7,
-        url: "https://solscan.io/token/J2deHQ82J6bugVWefqtd5RSk1mJQmW5bqFiVYB2PHNA1",
+        url: "https://solscan.io/token/HZy1GBpjJcsEJkJCEytqzu4nRgEwrU3S9AbwgAqpGDd#metadata",
     },
     {
-        img: 'https://www.arweave.net/jlKWFrpk02mXE3021nAy1mfq3e-FJK_0KLe7fNnWoP8?ext=png',
+        img: 'https://www.arweave.net/EImqZ7GmraVINv5xcsHlmSdTN77WJSLwrtHJFSdwXkU?ext=png',
         title: 'NOOT',
         id: 8,
-        url: "https://solscan.io/token/78brukVVmQbwZSifAiRNkzsRSpzj7RkXGsSddSq6EcDM",
+        url: "https://solscan.io/token/HZy1GBpjJcsEJkJCEytqzu4nRgEwrU3S9AbwgAqpGDd#metadata",
     },
 ];
 
@@ -176,7 +176,7 @@ export function NootPuzzlePage(props){
                     target="_blank"
                     href={url}
                 > 
-                View on Solscan 👀
+                {`View N-00${props.noot + 1} on Solscan 👀`}
                 </a>
             </div>
         )
@@ -225,7 +225,7 @@ export function NootPuzzlePage(props){
         <div ref={refs[0]} className="puzzle-page">
             <div ref={refs[1]} className="puzzle-frame"></div>
             <div className="puzzle-header">
-                Find the Imposter NOOT
+                Find the NOOT, NOOT NOOT
             </div>
             <div className="puzzle-area">
                 <Penguins noot={activeNoot}/>

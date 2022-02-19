@@ -242,7 +242,6 @@ export function CombinationMint(props) {
                 buttonInfo.codes = props.codes.purple;
                 buttonInfo.codeColor = purpleColor;
                 break;
-            default: 
         }
 
 
