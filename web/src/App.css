@@ -407,13 +407,16 @@ body {
 }
 
 .puzzle-half-centered {
-  position: absolute;
-  color: #0E1922;
-  font-size: xxx-large;
-  top: 50%;
-  left: 50%;
+  max-width: 90%;
+  max-height: 100%;
+  display: block;
+  margin: auto;
+
+  border: 5px solid #000;
+  border-radius: 13px;
+  width: auto;
+  object-fit: contain;
   transition: all 150ms ease;
-  transform: translate(-50%, -50%);
 }
 
 .puzzle-half-centered:hover {

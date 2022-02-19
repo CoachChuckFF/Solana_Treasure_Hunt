@@ -212,7 +212,7 @@ export function DesolatePuzzlePage(props){
                         loading="lazy"
                     />
                     <div className="puzzle-half-centered">
-                        Enter
+                        Enter ⤴️
                     </div>
 
                 </ div>

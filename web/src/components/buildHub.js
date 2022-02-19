@@ -887,35 +887,55 @@ function Controls(props){
     const ref = useRef();
     const { camera, gl: { domElement },} = useThree();
     const [controller, setController] = useState(null);
+    const [lastPos, setLastPos] = useState(null);
 
     useEffect(() => {
-        let controller = new STControls(camera, domElement, TargetCamera.pos);
-        controller.addEventListener("scroll", (event)=>{
-            props.onScroll(event.event);
-        });
-        // setController(new STControls(camera, domElement, HubIndex0.pos));
-        camera.lookAt(new Vector3(
-            HubIndex0.pos[0],
-            HubIndex0.pos[1],
-            HubIndex0.pos[2],
-        ));
-        setController(controller);
+        if(controller === null){
+            let controller = new STControls(camera, domElement, TargetCamera.pos);
+            controller.addEventListener("scroll", (event)=>{
+                props.onScroll(event.event);
+            });
+            // setController(new STControls(camera, domElement, HubIndex0.pos));
+            camera.lookAt(new Vector3(
+                HubIndex0.pos[0],
+                HubIndex0.pos[1],
+                HubIndex0.pos[2],
+            ));
+            setController(controller);
+        }
         return () => {};
     }, []);
+
+    useEffect(() => {
+        console.log(lastPos);
+    }, [lastPos]);
 
     useFrame(({ camera }) => { 
         if(controller){
             let tick = Math.abs(Date.now() - props.time);
 
+            if(lastPos) {
+                if(
+                    lastPos[0] != props.cameraPos[0] ||
+                    lastPos[1] != props.cameraPos[1] ||
+                    lastPos[2] != props.cameraPos[2]
+                ){
+                    setLastPos(props.cameraPos);
+                }
+
+            } else {
+                setLastPos(props.cameraPos);
+                return;
+            }
+
             let targetPos = new Vector3(
-                props.state === FSM.DevMode ? props.cameraPos[0] : TargetCamera.pos[0],
-                props.state === FSM.DevMode ? props.cameraPos[1] : TargetCamera.pos[1],
-                props.state === FSM.DevMode ? props.cameraPos[2] : TargetCamera.pos[2],
+                props.state === FSM.DevMode ? lastPos[0] : TargetCamera.pos[0],
+                props.state === FSM.DevMode ? lastPos[1] : TargetCamera.pos[1],
+                props.state === FSM.DevMode ? lastPos[2] : TargetCamera.pos[2],
             );
 
-            controller.target = targetPos;
             controller.autoRotate = false;
-            console.log(props.cameraPos);
+            // console.log(props.cameraPos);
 
             let distance = targetPos.distanceTo(camera.position);
             let tock = Math.pow(Math.min(1.0, tick / zoomInTime), 2);
@@ -927,13 +947,14 @@ function Controls(props){
 
             if(props.state === FSM.NotConnected || props.state === FSM.Supernova){
                 controller.autoRotate = true;
-                controller.update();
+                
 
                 if(distance < superNovaDistance - 5){
                     camera.position.z = lerp(camera.position.z, superNovaDistance, tock);
                 }
             } else {
                 if(distance > 0.03){
+
                     camera.position.x = lerp(camera.position.x, targetPos.x, tock);
                     camera.position.y = lerp(camera.position.y, targetPos.y, tock);
                     camera.position.z = lerp(camera.position.z, targetPos.z, tock);
@@ -943,6 +964,8 @@ function Controls(props){
                     }
                 } else {
                     //TODO Check Index
+                    controller.target = targetPos;
+
                     if(
                         targetPos.x === TargetCamera.pos[0] &&
                         targetPos.y === TargetCamera.pos[1] &&
@@ -959,6 +982,8 @@ function Controls(props){
                     }
                 }    
             }
+
+            controller.update();
         }
     });
 
@@ -967,7 +992,6 @@ function Controls(props){
 
 export function BuildHub(props) {
     const [state, setState] = useState(props.state);
-    const [subState, setSubstate] = useState(FSM.Supernova);
     const [time, setTime] = useState(new Date());
     const [deltaY, setDeltaY] = useState(0);
 

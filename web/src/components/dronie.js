@@ -539,47 +539,64 @@ export function DroniesPuzzlePage(props){
                         case '...---...':
                             setOmniColor(true);
                             setResponse("Coach Chuck here from the 4th wall! You need to BREAK inbetween charecters: [... BREAK --- BREAK ... RUN]");
-                            break;
+                            setProgram("");
+                            return;
                         case '-....----.':
                             setOmniColor(true);
                             setResponse("Nice.");
-                            break;
+                            setProgram("");
+                            return;
                         case '..-...--.-.-.-':
                         case '.-......':
                         case '-.....--.-.....':
                             setOmniColor(true);
                             setResponse("Naughty");
-                            break;
+                            setProgram("");
+                            return;
                         case '-.-------':
                             setOmniColor(true);
                             setResponse("NOOT NOOT! 🐧");
-                            break;
+                            setProgram("");
+                            return;
                         case '.-...-...-.....-':
                             setOmniColor(true);
                             setResponse("Ribbit Ribbit! 🐸");
-                            break;
+                            setProgram("");
+                            return;
                         case '.....--....-':
                             setOmniColor(true);
                             setResponse("Suba Suba! 🐍");
-                            break;
+                            setProgram("");
+                            return;
                         case '--.--':
                             setOmniColor(true);
                             setResponse("GM! ❤️");
-                            break;
+                            setProgram("");
+                            return;
                         case '--.-.':
                             setOmniColor(true);
                             setResponse("NG! ❤️");
-                            break;
+                            setProgram("");
+                            return;
                         // case '-......-------...':
                         case '------':
                             setOmniColor(true);
                             if(props.state === FSM.DevMode){
                                 setResponse("Already in Dev mode");
+                                setProgram("");
                             } else {
                                 setResponse("Now in Dev mode. Tap out SOS for available commands.");
                                 props.setDevMode(true);
+                                setProgram("");
                             }
-                            break;
+                            return;
+                        case '......':
+                            if(props.state === FSM.DevMode){
+                                setResponse("Setting Camera");
+                                locCB([0x50, 0x50, 0x50]);
+                                setProgram("");
+                            }
+                            return;  
                     }
 
                     if(

@@ -85,7 +85,7 @@ function Puzzle3Page(props){
   if(props.puzzle != FSM.Puzzle3) return null;
 
   return (
-    <DesolatePuzzlePage puzzleState={props.puzzleState} cameraPosCB={props.cameraPosCB} wallet={props.wallet} puzzleCB={props.puzzleCB}></DesolatePuzzlePage>
+    <DesolatePuzzlePage puzzleState={props.puzzleState} wallet={props.wallet} puzzleCB={props.puzzleCB}></DesolatePuzzlePage>
   );
 }
 
