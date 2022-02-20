@@ -201,7 +201,7 @@ export function DesolatePuzzlePage(props){
         <div ref={refs[0]} className="puzzle-page">
             <div ref={refs[1]} className="puzzle-frame"></div>
             <div className="puzzle-header">
-                Goto DESOLATEs #4615 ⤵️
+                Enter DESOLATEs #4615 ⤵️
             </div>
             <div className="puzzle-area">
                 <div className="puzzle-half" onClick={toDesolate}>
@@ -211,10 +211,6 @@ export function DesolatePuzzlePage(props){
                         alt={'Coach Chuck'}
                         loading="lazy"
                     />
-                    <div className="puzzle-half-centered">
-                        Enter ⤴️
-                    </div>
-
                 </ div>
                 <div className="puzzle-quarter">
                     <div className="middle-box">

@@ -20,25 +20,43 @@ import { lerp } from "three/src/math/MathUtils";
 extend({ TextGeometry })
 extend({ Text });
 
-
-const orbit = 8;
-const msPerLoop = 13000;
-
-const maxFov = 180;
-const planeAspectRatio = 16 / 9;
-const yOffset = 1.89;
-
-const target = [0, orbit / (yOffset * 3), 0];
-const startingPostion = [0, orbit / yOffset, orbit - 2.8];
-const ocTO = 5000;
-const maxTO = ocTO * 1000;
-const origin = new Vector3(0,0,0);
-const targetVec = new Vector3(target[0],target[1],target[2]);
-
 const SupernovaStart = 5;
 const SupernovaMinScale = 0.01;
 const SupernovaMaxScale = 400;
 const SupernovaDuration = 60;
+
+// MODELS -----------------
+const BlueKeyGLB = "models/sol/blue_key.glb";
+const BlueLockGLB = "models/sol/blue_lock.glb";
+const BlueUnlockGLB = "models/sol/blue_unlock.glb";
+
+const GreenKeyGLB = "models/sol/green_key.glb";
+const GreenLockGLB = "models/sol/green_lock.glb";
+const GreenUnlockGLB = "models/sol/green_unlock.glb";
+
+const PurpleKeyGLB = "models/sol/purple_key.glb";
+const PurpleLockGLB = "models/sol/purple_lock.glb";
+const PurpleUnlockGLB = "models/sol/purple_unlock.glb";
+
+const BrokenKeyGLB = "models/sol/broken_key.glb";
+
+const BlackKeyGLB = "models/sol/black_key.glb";
+const BlackLockGLB = "models/sol/black_lock.glb";
+const BlackUnlockGLB = "models/sol/black_unlock.glb";
+
+const WhiteKeyGLB = "models/sol/white_key.glb";
+const WhiteLockGLB = "models/sol/white_lock.glb";
+const WhiteUnlockGLB = "models/sol/white_unlock.glb";
+
+const ChestOpenedGLB = "models/sol/chest_opened.glb";
+const ChestClosedGLB = "models/sol/chest_closed.glb";
+
+const WhiteChestOpenedGLB = "models/sol/white_chest_opened.glb";
+const WhiteChestClosedGLB = "models/sol/white_chest_closed.glb";
+
+const ReplayTokenGLB = "models/sol/replay_token.glb";
+const MirrorGLB = "models/sol/mirror.glb";
+const FishGLB = "models/sol/fish.glb";
 
 // GLOBALS -----------------
 const PI = Math.PI;
@@ -67,12 +85,23 @@ const EdgeWidth = HubRadius
 
 const StartingCamera = {pos: [0, EyeLevel, superNovaDistance], rot: [0, 0, 0]};
 export const TargetCamera = {pos: [0, EyeLevel, 0], rot: [0, 0, 0]};
+export const SecretCamera = [0x13, 0x34, 0x55];
+const SecretHubPos = [SecretCamera[0], SecretCamera[1] - EyeLevel, SecretCamera[2]];
 const HubIndex0 = {pos: [0, 0, -HubRadius], light: [0, PointLightHeight, -HubRadius * PointLightDistanceBehind], rot: [0, 0, 0], point: [0, -5, -HubRadius]};
 const HubIndex1 = {pos: [HubX, 0, -HubZ], light: [HubX * PointLightDistanceBehind, PointLightHeight, -HubZ * PointLightDistanceBehind], rot: [0, -(HexTheta * 1), 0], point: [0, -5, -HubRadius]};
 const HubIndex2 = {pos: [HubX, 0, HubZ], light: [HubX * PointLightDistanceBehind, PointLightHeight, HubZ * PointLightDistanceBehind], rot: [0, -(HexTheta * 2), 0], point: [0, -5, -HubRadius]};
 const HubIndex3 = {pos: [0, 0, HubRadius],light: [0, PointLightHeight, HubRadius * PointLightDistanceBehind], rot: [0, -(HexTheta * 3), 0], point: [0, -5, -HubRadius]};
 const HubIndex4 = {pos: [-HubX, 0, HubZ], light: [-HubX * PointLightDistanceBehind, PointLightHeight, HubZ * PointLightDistanceBehind], rot: [0, -(HexTheta * 4), 0], point: [0, -5, -HubRadius]};
 const HubIndex5 = {pos: [-HubX, 0, -HubZ], light: [-HubX * PointLightDistanceBehind, PointLightHeight, -HubZ * PointLightDistanceBehind], rot: [0, -(HexTheta * 5), 0], point: [0, -5, -HubRadius]};
+
+const MasterHubInfo = [
+    HubIndex0,
+    HubIndex1,
+    HubIndex2,
+    HubIndex3,
+    HubIndex4,
+    HubIndex5,
+]
 
 //Scales
 const scaleChest = 0.5;
@@ -86,7 +115,7 @@ const cheaterTime = 1000 * 60 * 10;
 
 
 
-// GLOBALS -----------------
+// HELPERS -----------------
 const _second = 1000;
 const _minute = _second * 60;
 const _hour = _minute * 60;
@@ -107,9 +136,44 @@ function getTimeString (time){
 
 }
 
+function addPos(pos0, pos1){
+    return [
+        pos0[0] + pos1[0],
+        pos0[1] + pos1[1],
+        pos0[2] + pos1[2],
+    ];
+}
+
+function overwritePos(pos, index, value){
+    return [
+        index === 0 ? value : pos[0],
+        index === 1 ? value : pos[1],
+        index === 2 ? value : pos[2],
+    ];
+}
+
+
+function comparePos(pos0, pos1){
+    return (
+        pos0[0] === pos1[0] &&
+        pos0[1] === pos1[1] &&
+        pos0[2] === pos1[2]
+    );
+}
+
+function compareVec(vec0, vec1){
+    return (
+        vec0.x === vec1.x &&
+        vec0.y === vec1.y &&
+        vec0.z === vec1.z
+    );
+}
+
+
 function BuildGLB(props){
     const { scene } = useGLTF(props.file);
     const scaleFactor = 1.1;
+
 
     useFrame(({ clock, camera }) => { if(props.animation) props.animation(clock, camera); });
 
@@ -135,7 +199,7 @@ function BuildGLB(props){
         }
     }
 
-    return (<Suspense fallback={null}><primitive onClick={()=>{gotoURL();}} onPointerOver={(e) => { pointerOver() }} onPointerOut={(e) => { pointerOut() }} ref={ props.objRef } object={ scene } scale={ props.scale } position={ props.position } rotation={ props.rotation }/></Suspense>);
+    return (<Suspense fallback={null}><primitive onClick={()=>{gotoURL();}} onPointerOver={(e) => { pointerOver() }} onPointerOut={(e) => { pointerOut() }} ref={ props.objRef } object={ scene.clone() } scale={ props.scale } position={ props.position } rotation={ props.rotation }/></Suspense>);
 }
 
 // GLB FILES ---------------
@@ -159,14 +223,14 @@ function OpenedChest(props) {
         <group>
             <Timer bomb={props.bomb} opened={true} run={props.run} state={props.state} puzzleState={props.puzzleState}/>
             <BuildGLB 
-                file={'models/sol/chest_opened.glb'}
+                file={ChestOpenedGLB}
                 objRef={ refs[0] }
                 scale={scaleChest}
                 position={HubIndex0.pos}
                 rotation={HubIndex0.rot}
             /> 
             <BuildGLB 
-                file={'models/sol/replay_token.glb'}
+                file={ReplayTokenGLB}
                 objRef={ refs[1] }
                 scale={scaleChest}
                 position={HubIndex0.pos}
@@ -184,82 +248,197 @@ function Chest(props) {
         useRef(),
     ];
 
+    const getOffset = (isY) => {
+        return (isY ? Math.sin(Date.now() / 1000 / 2) : Math.sin(Date.now()/1000)) * 0.021;
+    }  
+    
+    const getLittleYOffset = (yOffset) => {
+        return  Math.sin(Date.now()/1000/2 + yOffset) * 0.089
+    }
+
+    const getAnimationOffset = (index) => {
+        const divisor = 21;
+        return getLittleYOffset(PI/(divisor * index));
+    }
+
+    const getItemPos = (xOffset, yOffset, x, y, z, index) => {
+        return [
+            (HubIndex0.pos[0]) + xOffset + x,
+            (HubIndex0.pos[1]) + yOffset + y + (index ? getAnimationOffset(index) : 0),
+            (HubIndex0.pos[2]) + z,
+        ]
+    }
+
     useFrame(({ clock, camera }) => {
-        refs[3].current.position.x = HubIndex0.pos[0] + Math.sin(clock.getElapsedTime()) * 0.021
-        refs[3].current.position.y = HubIndex0.pos[1] + Math.sin(clock.getElapsedTime()/2) * 0.021
+        let xOffset = getOffset();
+        let yOffset = getOffset(true);
 
-        refs[0].current.position.x = -0.21 + Math.sin(clock.getElapsedTime()) * 0.021
-        refs[0].current.position.y =  0.8 + Math.sin(clock.getElapsedTime() + PI/4) * 0.089 + Math.sin(clock.getElapsedTime()/2) * 0.021
+        let chestPos = getItemPos(xOffset, yOffset, 0,0,0);
+        refs[3].current.position.x = chestPos[0];
+        refs[3].current.position.y = chestPos[1];
+        refs[3].current.position.z = chestPos[2];
 
-        refs[1].current.position.x = 0.21 + Math.sin(clock.getElapsedTime()) * 0.021
-        refs[1].current.position.y = 0.8 + Math.sin(clock.getElapsedTime() + PI/6) * 0.089 + Math.sin(clock.getElapsedTime()/2) * 0.021
+        let blueLock = getItemPos(xOffset, yOffset, 0.21, 0.8, 0.89, 2);
+        refs[0].current.position.x = blueLock[0];
+        refs[0].current.position.y = blueLock[1];
+        refs[0].current.position.z = blueLock[2];
 
-        refs[2].current.position.x = 0 + Math.sin(clock.getElapsedTime()) * 0.021
-        refs[2].current.position.y = 0.4 + Math.sin(clock.getElapsedTime() + PI/8) * 0.089 + Math.sin(clock.getElapsedTime()/2) * 0.021
+        let greenLock = getItemPos(xOffset, yOffset, -0.21, 0.8, 0.85, 4);
+        refs[1].current.position.x = greenLock[0];
+        refs[1].current.position.y = greenLock[1];
+        refs[1].current.position.z = greenLock[2];
 
-        refs[0].current.position.y = 0.8 + Math.sin(clock.getElapsedTime() + PI/4) * 0.089;
-        refs[1].current.position.y = 0.8 + Math.sin(clock.getElapsedTime() + PI/6) * 0.089;
-        refs[2].current.position.y = 0.4 + Math.sin(clock.getElapsedTime() + PI/8) * 0.089;
+        let purpleLock = getItemPos(xOffset, yOffset, 0, 0.4, 0.89, 3);
+        refs[2].current.position.x = purpleLock[0];
+        refs[2].current.position.y = purpleLock[1];
+        refs[2].current.position.z = purpleLock[2];
+
     });
 
     return (
         <group>
-            <pointLight position={HubIndex0.light} intensity={PointLightIntensity}/>
             <Timer bomb={props.bomb} opened={false} run={props.run} state={props.state} puzzleState={props.puzzleState}/>
-            {(props.puzzleState.blue) ? 
-                <BuildGLB 
-                    file={'models/sol/blue_unlock_chest.glb'}
-                    objRef={ refs[0] }
-                    scale={scaleMiniLock}
-                    position={[-0.21, 0.8, -HubRadius + 0.89]}
-                    rotation={[0,0,0]}
-                /> : 
-                <BuildGLB 
-                    file={'models/sol/blue_lock_chest.glb'}
-                    objRef={ refs[0] }
-                    scale={scaleMiniLock}
-                    position={[-0.21, 0.8, -HubRadius + 0.89]}
-                    rotation={[0,0,0]}
-                />
-            }
-            {(props.puzzleState.green) ? 
-                <BuildGLB 
-                    file={'models/sol/green_unlock_chest.glb'}
-                    objRef={ refs[1]  }
-                    scale={scaleMiniLock}
-                    position={[0.21, 0.8, -HubRadius + 0.85]}
-                    rotation={[0,0,0]}
-                /> :
-                <BuildGLB 
-                    file={'models/sol/green_lock_chest.glb'}
-                    objRef={ refs[1]  }
-                    scale={scaleMiniLock}
-                    position={[0.21, 0.8, -HubRadius + 0.85]}
-                    rotation={[0,0,0]}
-                />
-            }
-            {(props.puzzleState.purple) ? 
-                <BuildGLB 
-                    file={'models/sol/purple_unlock_chest.glb'}
-                    objRef={ refs[2]  }
-                    scale={scaleMiniLock}
-                    position={[0, 0.4, -HubRadius + 0.89]}
-                    rotation={[0,0,0]}
-                /> :
-                <BuildGLB 
-                    file={'models/sol/purple_lock_chest.glb'}
-                    objRef={ refs[2]  }
-                    scale={scaleMiniLock}
-                    position={[0, 0.4, -HubRadius + 0.89]}
-                    rotation={[0,0,0]}
-                />
-            }   
             <BuildGLB 
-                file={'models/sol/chest_closed.glb'}
+                file={props.puzzleState.blue ? BlueUnlockGLB : BlueLockGLB}
+                objRef={ refs[0] }
+                scale={scaleMiniLock}
+                position={getItemPos(getOffset(), getOffset(true), 0.21, 0.8, -0.89, 1)}
+                rotation={[0,0,0]}
+            />
+            <BuildGLB 
+                file={props.puzzleState.green ? GreenUnlockGLB : GreenLockGLB}
+                objRef={ refs[1]  }
+                scale={scaleMiniLock}
+                position={getItemPos(getOffset(), getOffset(true), -0.21, 0.8, -0.85, 3)}
+                rotation={[0,0,0]}
+            />
+            <BuildGLB 
+                file={props.puzzleState.purple ? PurpleUnlockGLB : PurpleLockGLB}
+                objRef={ refs[2]  }
+                scale={scaleMiniLock}
+                position={getItemPos(getOffset(), getOffset(true), 0, 0.4, -0.89, 2)}
+                rotation={[0,0,0]}
+            /> 
+            <BuildGLB 
+                file={ChestClosedGLB}
                 objRef={ refs[3]  }
                 scale={scaleChest}
-                position={HubIndex0.pos}
+                position={getItemPos(getOffset(), getOffset(true), 0,0,0)}
                 rotation={HubIndex0.rot}
+            />
+        </group>
+    );
+}
+
+function SecretChest(props) { 
+    const refs = [
+        useRef(),
+        useRef(),
+        useRef(),
+        useRef(),
+        useRef(),
+        useRef(),
+    ];
+
+    const getOffset = (isY) => {
+        return (isY ? Math.sin(Date.now() / 1000 / 2) : Math.sin(Date.now()/1000)) * 0.021;
+    }  
+    
+    const getLittleYOffset = (yOffset) => {
+        return  Math.sin(Date.now()/1000/2 + yOffset) * 0.089
+    }
+
+    const getAnimationOffset = (index) => {
+        const divisor = 21;
+        return getLittleYOffset(PI/(divisor * index));
+    }
+
+    const getItemPos = (xOffset, yOffset, x, y, z, index) => {
+        return [
+            (HubIndex3.pos[0] + SecretHubPos[0]) + xOffset + x,
+            (HubIndex3.pos[1] + SecretHubPos[1]) + yOffset + y + (index ? getAnimationOffset(index) : 0),
+            (HubIndex3.pos[2] + SecretHubPos[2]) + z,
+        ]
+    }
+
+    useFrame(({ clock, camera }) => {
+        let xOffset = getOffset();
+        let yOffset = getOffset(true);
+
+        let chestPos = getItemPos(xOffset, yOffset, 0,0,0);
+        refs[5].current.position.x = chestPos[0];
+        refs[5].current.position.y = chestPos[1];
+        refs[5].current.position.z = chestPos[2];
+
+        let blueLock = getItemPos(xOffset, yOffset, 0.21, 0.8, -0.89, 2);
+        refs[0].current.position.x = blueLock[0];
+        refs[0].current.position.y = blueLock[1];
+        refs[0].current.position.z = blueLock[2];
+
+        let greenLock = getItemPos(xOffset, yOffset, -0.21, 0.8, -0.85, 4);
+        refs[1].current.position.x = greenLock[0];
+        refs[1].current.position.y = greenLock[1];
+        refs[1].current.position.z = greenLock[2];
+
+        let purpleLock = getItemPos(xOffset, yOffset, 0, 0.4, -0.89, 3);
+        refs[2].current.position.x = purpleLock[0];
+        refs[2].current.position.y = purpleLock[1];
+        refs[2].current.position.z = purpleLock[2];
+
+        let blackLock = getItemPos(xOffset, yOffset, 0.37, 0.4, -0.89, 1);
+        refs[3].current.position.x = blackLock[0];
+        refs[3].current.position.y = blackLock[1];
+        refs[3].current.position.z = blackLock[2];
+
+        let whiteLock = getItemPos(xOffset, yOffset, -0.37, 0.4, -0.89, 5);
+        refs[4].current.position.x = whiteLock[0];
+        refs[4].current.position.y = whiteLock[1];
+        refs[4].current.position.z = whiteLock[2];
+    });
+
+    return (
+        <group>
+            <BuildGLB 
+                file={props.puzzleState.blue ? BlueUnlockGLB : BlueLockGLB}
+                objRef={ refs[0] }
+                scale={scaleMiniLock}
+                position={getItemPos(getOffset(), getOffset(true), 0.21, 0.8, -0.89, 1)}
+                rotation={[0,-PI,0]}
+            />
+            <BuildGLB 
+                file={props.puzzleState.green ? GreenUnlockGLB : GreenLockGLB}
+                objRef={ refs[1]  }
+                scale={scaleMiniLock}
+                position={getItemPos(getOffset(), getOffset(true), -0.21, 0.8, -0.85, 3)}
+                rotation={[0,-PI,0]}
+            />
+            <BuildGLB 
+                file={props.puzzleState.purple ? PurpleUnlockGLB : PurpleLockGLB}
+                objRef={ refs[2]  }
+                scale={scaleMiniLock}
+                position={getItemPos(getOffset(), getOffset(true), 0, 0.4, -0.89, 2)}
+                rotation={[0,-PI,0]}
+            /> 
+            <BuildGLB 
+                file={props.puzzleState.black ? BlackUnlockGLB : BlackLockGLB}
+                objRef={ refs[3]  }
+                scale={scaleMiniLock}
+                position={getItemPos(getOffset(), getOffset(true), 0.37, 0.4, -0.89, 0)}
+                rotation={[0,-PI,0]}
+            /> 
+            <BuildGLB 
+                file={props.puzzleState.white ? WhiteUnlockGLB : WhiteLockGLB}
+                objRef={ refs[4]  }
+                scale={scaleMiniLock}
+                position={getItemPos(getOffset(), getOffset(true), -0.37, 0.4, -0.89, 4)}
+                rotation={[0,-PI,0]}
+            /> 
+            <BuildGLB 
+                file={WhiteChestClosedGLB}
+                objRef={ refs[5]  }
+                scale={scaleChest}
+                position={getItemPos(getOffset(), getOffset(true), 0,0,0)}
+                rotation={HubIndex3.rot}
             />
         </group>
     );
@@ -299,7 +478,7 @@ function Inventory(props) {
             <BuildGLB 
                 isInventory={true}
                 url={'https://www.google.com/imgres?imgurl=https%3A%2F%2Fmedia.istockphoto.com%2Fphotos%2Fto-do-list-in-notebook-with-calendar-picture-id1092571024%3Fk%3D20%26m%3D1092571024%26s%3D612x612%26w%3D0%26h%3Ddz6l5jjYZC0lU2dUkqu5g5_0XtY3xnHs57mJDNlvJSk%3D&imgrefurl=https%3A%2F%2Fwww.istockphoto.com%2Fphotos%2Fto-do-list&tbnid=6I-BwtfLiBk3nM&vet=12ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ..i&docid=1HDtarEtGxSSIM&w=612&h=408&q=img%20of%20todo&ved=2ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ'}
-                file={'models/sol/blue_key.glb'}
+                file={BlueKeyGLB}
                 animation={animation}
                 objRef={ refs[0]  }
                 scale={keyScale}
@@ -310,7 +489,7 @@ function Inventory(props) {
             <BuildGLB 
                 isInventory={true}
                 url={'https://www.google.com/imgres?imgurl=https%3A%2F%2Fmedia.istockphoto.com%2Fphotos%2Fto-do-list-in-notebook-with-calendar-picture-id1092571024%3Fk%3D20%26m%3D1092571024%26s%3D612x612%26w%3D0%26h%3Ddz6l5jjYZC0lU2dUkqu5g5_0XtY3xnHs57mJDNlvJSk%3D&imgrefurl=https%3A%2F%2Fwww.istockphoto.com%2Fphotos%2Fto-do-list&tbnid=6I-BwtfLiBk3nM&vet=12ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ..i&docid=1HDtarEtGxSSIM&w=612&h=408&q=img%20of%20todo&ved=2ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ'}
-                file={'models/sol/green_key.glb'}
+                file={GreenKeyGLB}
                 animation={animation}
                 objRef={ refs[1]  }
                 scale={keyScale}
@@ -321,7 +500,7 @@ function Inventory(props) {
             <BuildGLB 
                 isInventory={true}
                 url={'https://www.google.com/imgres?imgurl=https%3A%2F%2Fmedia.istockphoto.com%2Fphotos%2Fto-do-list-in-notebook-with-calendar-picture-id1092571024%3Fk%3D20%26m%3D1092571024%26s%3D612x612%26w%3D0%26h%3Ddz6l5jjYZC0lU2dUkqu5g5_0XtY3xnHs57mJDNlvJSk%3D&imgrefurl=https%3A%2F%2Fwww.istockphoto.com%2Fphotos%2Fto-do-list&tbnid=6I-BwtfLiBk3nM&vet=12ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ..i&docid=1HDtarEtGxSSIM&w=612&h=408&q=img%20of%20todo&ved=2ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ'}
-                file={'models/sol/purple_key.glb'}
+                file={PurpleKeyGLB}
                 animation={animation}
                 objRef={ refs[2]  }
                 scale={keyScale}
@@ -332,7 +511,7 @@ function Inventory(props) {
             <BuildGLB 
                 isInventory={true}
                 url={'https://www.google.com/imgres?imgurl=https%3A%2F%2Fmedia.istockphoto.com%2Fphotos%2Fto-do-list-in-notebook-with-calendar-picture-id1092571024%3Fk%3D20%26m%3D1092571024%26s%3D612x612%26w%3D0%26h%3Ddz6l5jjYZC0lU2dUkqu5g5_0XtY3xnHs57mJDNlvJSk%3D&imgrefurl=https%3A%2F%2Fwww.istockphoto.com%2Fphotos%2Fto-do-list&tbnid=6I-BwtfLiBk3nM&vet=12ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ..i&docid=1HDtarEtGxSSIM&w=612&h=408&q=img%20of%20todo&ved=2ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ'}
-                file={'models/sol/broken_key.glb'}
+                file={BrokenKeyGLB}
                 animation={animation}
                 objRef={ refs[3]  }
                 scale={keyScale}
@@ -343,7 +522,7 @@ function Inventory(props) {
             <BuildGLB 
                 isInventory={true}
                 url={'https://www.google.com/imgres?imgurl=https%3A%2F%2Fmedia.istockphoto.com%2Fphotos%2Fto-do-list-in-notebook-with-calendar-picture-id1092571024%3Fk%3D20%26m%3D1092571024%26s%3D612x612%26w%3D0%26h%3Ddz6l5jjYZC0lU2dUkqu5g5_0XtY3xnHs57mJDNlvJSk%3D&imgrefurl=https%3A%2F%2Fwww.istockphoto.com%2Fphotos%2Fto-do-list&tbnid=6I-BwtfLiBk3nM&vet=12ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ..i&docid=1HDtarEtGxSSIM&w=612&h=408&q=img%20of%20todo&ved=2ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ'}
-                file={'models/sol/black_key.glb'}
+                file={BlackKeyGLB}
                 animation={animation}
                 objRef={ refs[4]  }
                 scale={keyScale}
@@ -354,7 +533,7 @@ function Inventory(props) {
             <BuildGLB 
                 isInventory={true}
                 url={'https://www.google.com/imgres?imgurl=https%3A%2F%2Fmedia.istockphoto.com%2Fphotos%2Fto-do-list-in-notebook-with-calendar-picture-id1092571024%3Fk%3D20%26m%3D1092571024%26s%3D612x612%26w%3D0%26h%3Ddz6l5jjYZC0lU2dUkqu5g5_0XtY3xnHs57mJDNlvJSk%3D&imgrefurl=https%3A%2F%2Fwww.istockphoto.com%2Fphotos%2Fto-do-list&tbnid=6I-BwtfLiBk3nM&vet=12ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ..i&docid=1HDtarEtGxSSIM&w=612&h=408&q=img%20of%20todo&ved=2ahUKEwjNoMjE44v2AhUJZM0KHaplDoAQMygAegUIARDhAQ'}
-                file={'models/sol/white_key.glb'}
+                file={WhiteKeyGLB}
                 animation={animation}
                 objRef={ refs[5]  }
                 scale={keyScale}
@@ -447,113 +626,38 @@ function Leaderboard(props) {
     );
 }
 
-function BlueLock(props) { 
+function Lock(props) {
     const objRef = useRef();
 
+    const getTheta = () => {
+        return Date.now()/1000 + props.index * PI/5;
+    }
+    const getYPos = (theta) => {
+        return Math.sin(theta) * 0.1 + 0.34 + (props.secret ? SecretHubPos[1] : 0);
+    }
+    const getYRot = (theta) => {
+        return theta / 2.1;
+    }
+
     const animation = (clock, camera) => {
-        objRef.current.position.y = Math.sin(clock.getElapsedTime()) * 0.1 + 0.34;
+        let theta = getTheta();
+        objRef.current.position.y = getYPos(theta);
+
+        if(!props.locked){
+            objRef.current.rotation.y = getYRot(theta);
+        }
     };
 
     return (
         <BuildGLB 
-            file={'models/sol/blue_lock.glb'}
+            file={props.locked ? props.lock : props.unlock}
             animation={props.animation ?? animation}
             objRef={ objRef }
-            scale={props.scale ?? scaleLock}
-            position={props.pos ?? HubIndex2.pos}
-            rotation={props.rot ?? HubIndex2.rot}
+            scale={ scaleLock }
+            position={ addPos(overwritePos(MasterHubInfo[props.index].pos, 1, getYPos(getTheta())), props.secret ? SecretHubPos : [0,0,0]) }
+            rotation={ props.locked ? MasterHubInfo[props.index].rot : overwritePos(MasterHubInfo[props.index].rot, 1, getYRot(getTheta())) }
         />
     );
-}
-
-function BlueUnlock(props) { 
-    const objRef = useRef();
-
-    const animation = (clock, camera) => {
-        objRef.current.position.y = Math.sin(clock.getElapsedTime()) * 0.1 + 0.34;
-        objRef.current.rotation.y += (Math.PI * 2) / 500;
-    };
-
-    return (
-        <BuildGLB 
-            file={'models/sol/blue_unlock.glb'}
-            animation={props.animation ?? animation}
-            objRef={ objRef }
-            scale={props.scale ?? scaleLock}
-            position={props.pos ?? HubIndex2.pos}
-            rotation={props.rot ?? HubIndex2.rot}
-        />
-    );
-}
-
-function GreenLock() { 
-    const objRef = useRef();
-
-    const animation = (clock, camera) => {
-        objRef.current.position.y = Math.sin(clock.getElapsedTime() + PI/16) * 0.1 + 0.34;
-    };
-
-    return (<BuildGLB 
-        file={'models/sol/green_lock.glb'}
-        animation={animation}
-        objRef={ objRef }
-        scale={scaleLock}
-        position={HubIndex3.pos}
-        rotation={HubIndex3.rot}
-    />);
-}
-
-function GreenUnlock() { 
-    const objRef = useRef();
-
-    const animation = (clock, camera) => {
-        objRef.current.position.y = Math.sin(clock.getElapsedTime() + PI/16) * 0.1 + 0.34;
-        objRef.current.rotation.y += (Math.PI * 2) / 500;
-    };
-
-    return (<BuildGLB 
-        file={'models/sol/green_unlock.glb'}
-        animation={animation}
-        objRef={ objRef }
-        scale={scaleLock}
-        position={HubIndex3.pos}
-        rotation={HubIndex3.rot}
-    />);
-}
-
-function PurpleLock() { 
-    const objRef = useRef();
-
-    const animation = (clock, camera) => {
-        objRef.current.position.y = Math.sin(clock.getElapsedTime() + PI/8) * 0.1 + 0.34;
-    };
-
-    return (<BuildGLB 
-        file={'models/sol/purple_lock.glb'}
-        animation={animation}
-        objRef={ objRef }
-        scale={scaleLock}
-        position={HubIndex4.pos}
-        rotation={HubIndex4.rot}
-    />);
-}
-
-function PurpleUnlock() { 
-    const objRef = useRef();
-
-    const animation = (clock, camera) => {
-        objRef.current.position.y = Math.sin(clock.getElapsedTime() + PI/8) * 0.1 + 0.34;
-        objRef.current.rotation.y += (Math.PI * 2) / 500;
-    };
-
-    return (<BuildGLB 
-        file={'models/sol/purple_unlock.glb'}
-        animation={animation}
-        objRef={ objRef }
-        scale={scaleLock}
-        position={HubIndex4.pos}
-        rotation={HubIndex4.rot}
-    />);
 }
 
 function Timer(props) {
@@ -786,7 +890,7 @@ function Floor(props){
     // );
 }
 
-function FloorSet(props){
+function FloorSet(props) {
     const refs = [
         useRef(),
         useRef(),
@@ -798,12 +902,12 @@ function FloorSet(props){
 
     return (
         <group>
-            <Floor wire={props.cameraIndex == 3} pos={props.pos} fref={refs[0]} radius={props.radius} startingTheta={OffsetTheta * 0}/>
-            <Floor wire={props.cameraIndex == 4} pos={props.pos} fref={refs[1]} radius={props.radius} startingTheta={OffsetTheta * 1}/>
-            <Floor wire={props.cameraIndex == 5} pos={props.pos} fref={refs[2]} radius={props.radius} startingTheta={OffsetTheta * 2}/>
-            <Floor wire={props.cameraIndex == 0} pos={props.pos} fref={refs[3]} radius={props.radius} startingTheta={OffsetTheta * 3}/>
-            <Floor wire={props.cameraIndex == 1} pos={props.pos} fref={refs[4]} radius={props.radius} startingTheta={OffsetTheta * 4}/>
-            <Floor wire={props.cameraIndex == 2} pos={props.pos} fref={refs[5]} radius={props.radius} startingTheta={OffsetTheta * 5}/>
+            <Floor wire={props.cameraIndex == (props.indexes ? props.indexes[0] : 3)} pos={props.pos} fref={refs[0]} radius={props.radius} startingTheta={OffsetTheta * 0}/>
+            <Floor wire={props.cameraIndex == (props.indexes ? props.indexes[1] : 4)} pos={props.pos} fref={refs[1]} radius={props.radius} startingTheta={OffsetTheta * 1}/>
+            <Floor wire={props.cameraIndex == (props.indexes ? props.indexes[2] : 5)} pos={props.pos} fref={refs[2]} radius={props.radius} startingTheta={OffsetTheta * 2}/>
+            <Floor wire={props.cameraIndex == (props.indexes ? props.indexes[3] : 0)} pos={props.pos} fref={refs[3]} radius={props.radius} startingTheta={OffsetTheta * 3}/>
+            <Floor wire={props.cameraIndex == (props.indexes ? props.indexes[4] : 1)} pos={props.pos} fref={refs[4]} radius={props.radius} startingTheta={OffsetTheta * 4}/>
+            <Floor wire={props.cameraIndex == (props.indexes ? props.indexes[5] : 2)} pos={props.pos} fref={refs[5]} radius={props.radius} startingTheta={OffsetTheta * 5}/>
         </group>
     );
 }
@@ -833,16 +937,15 @@ function Supernova(props){
 }
 
 function HubRing(props){
-
     return (
         <group>
             <Suspense fallback={null}>
                 <Inventory state={props.state} puzzleState={props.puzzleState}/>
                 {props.puzzleState.regular ? <OpenedChest run={props.run} bomb={props.bomb} puzzleState={props.puzzleState}/> : <Chest puzzleState={props.puzzleState} bomb={props.bomb} puzzleState={props.puzzleState}/>}
                 <Leaderboard deltaY={props.deltaY}/>
-                {props.puzzleState.blue ? <BlueUnlock /> : <BlueLock />}
-                {props.puzzleState.green ? <GreenUnlock /> : <GreenLock />}
-                {props.puzzleState.purple ? <PurpleUnlock /> : <PurpleLock />}
+                <Lock locked={!props.puzzleState.blue} lock={BlueLockGLB} unlock={BlueUnlockGLB} index={2}/>
+                <Lock locked={!props.puzzleState.green} lock={GreenLockGLB} unlock={GreenUnlockGLB} index={3}/>
+                <Lock locked={!props.puzzleState.purple} lock={PurpleLockGLB} unlock={PurpleUnlockGLB} index={4}/>
                 <Story run={props.run} deltaY={props.deltaY} puzzleState={props.puzzleState} state={props.state}/>
                 <directionalLight position={[0, EyeLevel, 0]} intensity={1} rotation={0, 0, 0}/>
                 <pointLight position={[0, -(EyeLevel * 2), 0]} intensity={0.21}/>
@@ -854,13 +957,16 @@ function HubRing(props){
 }
 
 function SecretHub(props){
-    const lightLoc = [0x13, 0x34 + EyeLevel, 0x55]
-    const floorPos = [0x13, 0x34 - EyeLevel, 0x55];
+    const floorPos = [SecretCamera[0], SecretCamera[1] - EyeLevel, SecretCamera[2]];
     return (
         <group>
             <Suspense fallback={null}>
-                <pointLight position={lightLoc} intensity={0.13}/>
-                <FloorSet radius={HubRadius} pos={floorPos} cameraIndex={props.cameraIndex}/>
+                <Lock locked={!props.puzzleState.green} lock={GreenLockGLB} unlock={GreenUnlockGLB} index={0} secret={true}/>
+                <Lock locked={true} lock={FishGLB} unlock={FishGLB} index={5} secret={true}/>
+                <Lock locked={!props.puzzleState.black} lock={BlackLockGLB} unlock={BlackUnlockGLB} index={2} secret={true}/>
+                <SecretChest puzzleState={props.puzzleState} bomb={props.bomb} puzzleState={props.puzzleState}/>
+                <Lock locked={!props.puzzleState.white} lock={WhiteLockGLB} unlock={WhiteUnlockGLB} index={4} secret={true}/>
+                <FloorSet radius={HubRadius} pos={floorPos} cameraIndex={props.cameraIndex} indexes={[0, 1, 2, 3, 4, 5]}/>
             </Suspense>
         </group>
     );
@@ -885,9 +991,9 @@ function getCameraIndex(camera, isDev, cameraPos){
     ) {
         offset = 0;
     } else if (
-        cameraPos.x == 0x13 && 
-        cameraPos.y == 0x34 && 
-        cameraPos.z == 0x55
+        cameraPos.x == SecretCamera[0] && 
+        cameraPos.y == SecretCamera[1] && 
+        cameraPos.z == SecretCamera[2]
     ) {
         offset = 0x10;
     }
@@ -952,6 +1058,7 @@ function Controls(props){
     }, [lastPos]);
 
     useFrame(({ camera }) => { 
+
         if(controller){
             let tick = Math.abs(Date.now() - props.time);
 
@@ -1014,7 +1121,9 @@ function Controls(props){
                     }
                 } else {
                     //TODO Check Index
-                    controller.target = targetPos;
+                    if(!compareVec(controller.target, targetPos)){
+                        controller.target = targetPos;
+                    }
 
                     let index = getCameraIndex(camera, lastState === FSM.DevMode, targetPos);
                     if(props.cameraIndex != index){
@@ -1023,7 +1132,7 @@ function Controls(props){
                 }    
             }
 
-            controller.update();
+            // controller.update();
         }
     });
 
@@ -1048,7 +1157,7 @@ export function BuildHub(props) {
         <div className="scene-container">
             <Canvas dpr={window.devicePixelRatio} camera={{position: StartingCamera.pos, rotation: StartingCamera.rot, fov: Fov}}>
                 {/* <ambientLight position={[0, 0, 0]} intensity={0.1}/> */}
-                <SecretHub cameraIndex={props.cameraIndex}/>
+                <SecretHub cameraIndex={props.cameraIndex} puzzleState={props.puzzleState} state={state}/>
                 <HubRing cameraIndex={props.cameraIndex} run={props.run} puzzleState={props.puzzleState} deltaY={deltaY} bomb={props.bomb} state={state}/>
                 {/* <Supernova time={time}/> */}
                 <Title state={props.state}/>
