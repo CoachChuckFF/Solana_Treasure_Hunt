@@ -1042,6 +1042,15 @@ function Controls(props){
             controller.addEventListener("scroll", (event)=>{
                 props.onScroll(event.event);
             });
+            controller.addEventListener("change", (event)=>{
+                console.log("change");
+            });
+            controller.addEventListener("start", (event)=>{
+                console.log("start");
+            });
+            controller.addEventListener("end", (event)=>{
+                console.log("end");
+            });
             // setController(new STControls(camera, domElement, HubIndex0.pos));
             camera.lookAt(new Vector3(
                 HubIndex0.pos[0],
@@ -1123,6 +1132,9 @@ function Controls(props){
                     //TODO Check Index
                     if(!compareVec(controller.target, targetPos)){
                         controller.target = targetPos;
+                        camera.position.x = targetPos.x;
+                        camera.position.y = targetPos.y + 0.001;
+                        camera.position.z = targetPos.z;
                     }
 
                     let index = getCameraIndex(camera, lastState === FSM.DevMode, targetPos);
