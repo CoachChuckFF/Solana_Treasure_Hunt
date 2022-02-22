@@ -37,6 +37,7 @@ pub mod soltreasure {
         let game = &mut ctx.accounts.game;
 
         // Game Handlers
+        game.game = game.key();
         game.coach = ctx.accounts.coach.key();
         game.gatekeeper = ctx.accounts.gatekeeper.key();
         game.nonce = nonce;
@@ -53,13 +54,13 @@ pub mod soltreasure {
     pub fn load_assets(
         ctx: Context<LoadAssets>,
         game_type: u8,
-        codes: u32,
-        is_wrong_answer_item: bool,
+        codes: u32, //Hash codes for puzzle to mint
+        is_wrong_answer_item: bool, //Default item to mint on wrong answer
         percent: u8, //Percentage gained with item,
-        amount: u8, // Total amount
-        max_amount: u8,
-        amount_tx: u64, // Total amount //TX amount
-        cost: u64, //Cost in Lammys, For Reward: this is the amount of replay tokens given out
+        amount: u8, //How many to mint at a pop
+        max_amount: u8, //Max amount in inventory
+        amount_tx: u64, //Amount to transfer from vault
+        cost: u64, //Cost in Lammys
     ) -> ProgramResult {
 
         // Update
@@ -245,10 +246,11 @@ pub mod soltreasure {
     }
 
     // -------------- USER FUNCTIONS ------------------------ //
-    pub fn create_player(ctx: Context<CreatePlayer>, bump: u8) -> ProgramResult {
+    pub fn create_game_player(ctx: Context<CreateGamePlayer>, bump: u8) -> ProgramResult {
         
         let player_account = &mut ctx.accounts.player_account;
 
+        player_account.player_account = player_account.key();
         player_account.game = ctx.accounts.game.key();
         player_account.player = ctx.accounts.player.key();
         player_account.bump = bump;
@@ -257,6 +259,22 @@ pub mod soltreasure {
         player_account.run_percent_timestamp = player_account.run_start;
         player_account.run_percent = 0;
 
+
+        Ok(())
+    }
+
+    pub fn set_game_player_game(
+        ctx: Context<SetGamePlayerGame>,
+
+    ) -> ProgramResult {
+
+        let player_account = &mut ctx.accounts.player_account;
+
+        player_account.game = ctx.accounts.game.key();
+
+        player_account.run_start = Clock::get()?.unix_timestamp as u64;
+        player_account.run_percent_timestamp = player_account.run_start;
+        player_account.run_percent = 0;
 
         Ok(())
     }
@@ -578,7 +596,7 @@ pub mod soltreasure {
 
         if inventory_output_index != inventory_len {
             let mut output_index = 0;
-            for i in 0..63 {
+            for _i in 0..63 {
                 if combination.output_id & 0b1 << output_index != 0 {
                     break;
                 } else {
@@ -660,22 +678,22 @@ pub struct CreateGame<'info> {
     pub coach: AccountInfo<'info>,    
 }
 
-
 impl<'info> CreateGame<'info> {
     // Approves the gatekeeper
     pub fn accounts(ctx: &Context<CreateGame>, nonce: u8) -> Result<()> {
+
         let gatekeeper = Pubkey::create_program_address(
             &[ctx.accounts.game.to_account_info().key.as_ref(), &[nonce]],
             ctx.program_id,
         )
         .map_err(|_| ErrorCode::InvalidGateKeeperNonce)?;
+
         if &gatekeeper != ctx.accounts.gatekeeper.to_account_info().key {
             return Err(ErrorCode::InvalidGatekeeper.into());
         }
         Ok(())
     }
 }
-
 
 // ------------ LOAD CHESTS -------------------------------
 #[derive(Accounts)]
@@ -693,6 +711,7 @@ pub struct LoadAssets<'info> {
         mut, 
         constraint = &coach_vault.owner == coach.key 
         && game_vault.mint == coach_vault.mint
+        && get_associated_token_address(&coach_vault.key(), &coach_vault.mint) == coach_vault.key()
     )]
     pub coach_vault: Account<'info, TokenAccount>,
 
@@ -700,6 +719,7 @@ pub struct LoadAssets<'info> {
     #[account(
         mut, 
         constraint = &game_vault.owner == gatekeeper.key
+        && get_associated_token_address(&game_vault.key(), &game_vault.mint) == game_vault.key()
     )]
     pub game_vault: Account<'info, TokenAccount>,
 
@@ -818,7 +838,7 @@ pub struct Supernova<'info> {
 // ------------ Create Player -------------------------------
 #[derive(Accounts)]
 #[instruction(bump: u8)]
-pub struct CreatePlayer<'info> {
+pub struct CreateGamePlayer<'info> {
   #[account(mut)]
   pub player: Signer<'info>,
 
@@ -833,14 +853,40 @@ pub struct CreatePlayer<'info> {
   #[account(mut, 
     has_one = coach,
     constraint = game.coach == coach.key()
-    && game.playing
-    && Clock::get()?.unix_timestamp < game.supernova as i64
+    // && game.playing
+    // && Clock::get()?.unix_timestamp as u64 < game.supernova
 )]
   pub game: Account<'info, Game>, 
 
   #[account(mut)]
   pub coach: AccountInfo<'info>,
   pub system_program: Program<'info, System>,
+}
+
+// ------------ Set Player Game -------------------------------
+#[derive(Accounts)]
+pub struct SetGamePlayerGame<'info> {
+    #[account(mut)]
+    pub player: Signer<'info>,
+  
+    #[account(
+        mut, 
+        has_one = player,
+        constraint = player_account.player == player.key(),
+        seeds = [player.to_account_info().key.as_ref()],
+        bump = player_account.bump,
+    )]
+    pub player_account: Account<'info, GamePlayer>,
+
+    #[account(
+        mut, 
+        has_one = coach, 
+        constraint = game.coach == coach.key()
+    )]
+    pub game: Account<'info, Game>,
+
+    #[account(mut)]
+    pub coach: AccountInfo<'info>,    
 }
 
 // ------------ Mint Item -------------------------------
@@ -863,7 +909,8 @@ pub struct MintItem<'info> {
     #[account(
         mut, 
         has_one = player,
-        constraint = player_account.player == player.key(),
+        constraint = player_account.player == player.key() 
+        && player_account.game == game.key(),
         seeds = [player.to_account_info().key.as_ref()],
         bump = player_account.bump,
     )]
@@ -932,7 +979,8 @@ pub struct CombineItem<'info> {
     #[account(
         mut, 
         has_one = player,
-        constraint = player_account.player == player.key(),
+        constraint = player_account.player == player.key() 
+        && player_account.game == game.key(),
         seeds = [player.to_account_info().key.as_ref()],
         bump = player_account.bump,
     )]
@@ -999,6 +1047,7 @@ pub struct CombineItem<'info> {
 #[account]
 #[derive(Default)]
 pub struct GamePlayer {
+    pub player_account: Pubkey,
     pub game: Pubkey,
     pub player: Pubkey,
     pub bump: u8,
@@ -1052,11 +1101,13 @@ pub struct GameLeaderboardInfo {
     pub run_start: u64,
     pub run_percent_timestamp: u64,
     pub run_percent: u8,
+    
 }
 
 #[account]
 pub struct Game {
     // Game Handlers
+    pub game: Pubkey,
     pub coach: Pubkey,
     pub gatekeeper: Pubkey,
     pub nonce: u8,

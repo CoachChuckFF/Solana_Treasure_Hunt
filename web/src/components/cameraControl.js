@@ -798,8 +798,6 @@ class STControls extends OrbitControls {
 
 		this.rotateSpeed = 1.5;
 
-		console.log(this.id);
-
 		// this.enableDamping = true;
 
 	}

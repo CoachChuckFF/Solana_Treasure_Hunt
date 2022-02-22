@@ -1,11 +1,11 @@
 {
   "name": "TEST ST",
-  "symbol": "ST-TST",
   "description": "...",
   "seller_fee_basis_points": 0,
+  "symbol": "ST-S0",
   "collection": {
-    "name": "Sol Treasure",
-    "family": "V0"
+    "name": "Supernova 0",
+    "family": "Sol-Treasure"
   },
   "animation_url": "https://soltreasure.s3.amazonaws.com/desolates/Treasure/sol_treasure.glb?ext=glb",
   "external_url": "https://twitter.com/CoachChuckFF",

@@ -1,11 +1,11 @@
 {
     "name": "Tree 0xF",
-    "symbol": "ST-TF",
     "description": "I like to name my trees!",
     "seller_fee_basis_points": 0,
+    "symbol": "ST-S0",
     "collection": {
-      "name": "V1",
-      "family": "Sol Treasure"
+      "name": "Supernova 0",
+      "family": "Sol-Treasure"
     },
     "image": "https://soltreasure.s3.amazonaws.com/desolates/Trees/tree_F.png?ext=png",
     "attributes": [

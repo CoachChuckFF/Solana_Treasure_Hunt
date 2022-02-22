@@ -185,6 +185,7 @@ export function NootPuzzlePage(props){
     const NootPFP = (props) => {
 
         const setThisNoot = () =>{
+            console.log(NOOTS[props.nootID].img);
             setActiveNoot(props.nootID);
         }
 

@@ -1,11 +1,11 @@
 {
     "name": "DESOLATEs Puzzle Clue 4",
-    "symbol": "ST-DPC4",
     "description": "I like logic puzzles!",
     "seller_fee_basis_points": 0,
+    "symbol": "ST-S0",
     "collection": {
-      "name": "V1",
-      "family": "Sol Treasure"
+      "name": "Supernova 0",
+      "family": "Sol-Treasure"
     },
     "image": "https://soltreasure.s3.amazonaws.com/desolates/Puzzle/puzzle_clue_4.png?ext=png",
     "attributes": [

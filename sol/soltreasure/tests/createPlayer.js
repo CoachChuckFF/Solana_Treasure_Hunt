@@ -10,6 +10,6 @@ const anchor = require("@project-serum/anchor")
 
 const account = anchor.web3.Keypair.generate()
 //keypair for JS
-fs.writeFileSync('./hunter.json', JSON.stringify(account))
+fs.writeFileSync('./player.json', JSON.stringify(account))
 //raw for solana
-fs.writeFileSync('./hunter-raw.json', `[${account.secretKey.toString()}]`);
+fs.writeFileSync('./player-raw.json', `[${account.secretKey.toString()}]`);
