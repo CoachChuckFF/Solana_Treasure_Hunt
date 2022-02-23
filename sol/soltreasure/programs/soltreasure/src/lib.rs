@@ -5,23 +5,24 @@ use std::cmp;
 use spl_associated_token_account::get_associated_token_address;
 
 declare_id!("76k1YLcR4sPGoyoFk8BH38RDtCMAq6R61n9eEibDMq85");
+
 const TX_LAMPORTS: u64 = 5000;
 const NFT_LAMPORTS: u64 = 1000000000;
 const NFT_NO_DEC: u64 = 1;
-const MAX_LEADERBAORD: usize = 10;
 
-const PUBKEY_SIZE: u8 = 32;
+const MAX_ITEMS: usize = 55;
+const MAX_LEADERBAORD: usize = 10;
+const MAX_NAME_LEN: usize = 31;
+const MAX_BITS: usize = 63;
+const MAX_BYTES_IN_PUBKEY: usize = 32 - 1;
 
 const TYPE_KEY: u8 = 0x00;
 const TYPE_ITEM: u8 = 0x01;
-const TYPE_COMBINATION: u8 = 0x02;
-const TYPE_REWARD: u8 = 0x03;
-const TYPE_LEADERBOARD: u8 = 0x04;
+const TYPE_REWARD: u8 = 0x02;
+const TYPE_COMBINATION_OUTPUT: u8 = 0x03;
 
 const CODE_NULL: u32 = 0;
-
 const REQUIREMENTS_NULL: u64 = 0;
-const REQUIREMENTS_IS_COMBINATION: u64 = 0b1 << 63;
 
 #[program]
 pub mod soltreasure {
@@ -53,24 +54,27 @@ pub mod soltreasure {
     // -------------- LOAD ASSETS ------------------------ //
     pub fn load_assets(
         ctx: Context<LoadAssets>,
+        name: String,
         game_type: u8,
         codes: u32, //Hash codes for puzzle to mint
         is_wrong_answer_item: bool, //Default item to mint on wrong answer
         percent: u8, //Percentage gained with item,
-        amount: u8, //How many to mint at a pop
-        max_amount: u8, //Max amount in inventory
-        amount_tx: u64, //Amount to transfer from vault
+        amount_per_mint: u8, //How many to mint at a pop
+        max_per_inventory: u8, //Max amount in inventory
         cost: u64, //Cost in Lammys
+        items_count_to_tx: u64, //Amount to transfer from vault
     ) -> ProgramResult {
 
         // Update
         let game = &mut ctx.accounts.game;
         let id = game.assets.len();
+        let safe_name = &name[..cmp::min(name.len(), MAX_NAME_LEN)];
 
         match game_type {
             TYPE_KEY | TYPE_ITEM | TYPE_REWARD => {
                 game.assets.push(
                     GameItem{
+                        name: String::from(safe_name),
                         item: ctx.accounts.game_vault.key(),
                         mint: ctx.accounts.game_vault.mint,
                         burned: false,
@@ -78,9 +82,9 @@ pub mod soltreasure {
                         codes: codes,
                         percent: percent,
                         id: 0b1 << id,
-                        requirements: 0,
-                        amount: amount,
-                        max_amount: max_amount,
+                        requirements: 0, // Will be set later
+                        max_per_inventory: max_per_inventory,
+                        amount_per_mint: amount_per_mint,
                         cost: cost,
                     }
                 );
@@ -102,7 +106,7 @@ pub mod soltreasure {
         let cpi_program = ctx.accounts.token_program.clone();
         let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
 
-        let token_tx_result = token::transfer(cpi_ctx, amount_tx);
+        let token_tx_result = token::transfer(cpi_ctx, items_count_to_tx);
 
         if !token_tx_result.is_ok() {
             return Err(ErrorCode::CouldNotTXNFT.into());
@@ -122,13 +126,14 @@ pub mod soltreasure {
 
         // Update
         let game = &mut ctx.accounts.game;
-        let len = game.assets.len();
+        let len = cmp::min(game.assets.len(), MAX_ITEMS);
 
         let mut input_0_id = 0;
         let mut input_1_id = 0;
         let mut output_id = 0;
 
         for i in 0..len {
+
             if game.assets[i].item == ctx.accounts.input_0.key() {
                 input_0_id = 0b1 << i;
             } else if game.assets[i].item == ctx.accounts.input_1.key() {
@@ -136,6 +141,7 @@ pub mod soltreasure {
             } else if game.assets[i].item == ctx.accounts.output.key() {
                 output_id = 0b1 << i;
             }
+
             if input_0_id != 0 && input_1_id != 0 && output_id != 0 {
                 break;
             }
@@ -314,14 +320,27 @@ pub mod soltreasure {
         let mut good_amount = 0;
         let mut bad_amount = 0;
 
+        // Check Big Errors
+        if good_item.burned {
+            return Err(ErrorCode::Burned.into());
+        }
+
+        if asset_len > MAX_ITEMS {
+            return Err(ErrorCode::BadLens.into());
+        }
+
+        if inventory_len > asset_len {
+            return Err(ErrorCode::BadLens.into());
+        }
+
         // Check Hash
         if good_item.codes != CODE_NULL {
             let wallet_bytes = ctx.accounts.player.key().to_bytes();
             let mut correct_hash = 0 as u32;
-            let puzzle_byte = wallet_bytes[PUBKEY_SIZE as usize - 1 - puzzle_index as usize];
+            let puzzle_byte = wallet_bytes[MAX_BYTES_IN_PUBKEY - puzzle_index as usize];
 
             for i in 0..4 {
-                correct_hash |= ((puzzle_byte ^ wallet_bytes[ ((good_item.codes >> i) & (PUBKEY_SIZE - 1) as u32) as usize ]) as u32 & 0x000000FF) << i;
+                correct_hash |= ((puzzle_byte ^ wallet_bytes[ cmp::min(MAX_BYTES_IN_PUBKEY, (good_item.codes >> (i * 8)) as usize) ]) as u32 & 0x000000FF) << (i * 8);
             }
 
             got_it_right = correct_hash != hash;
@@ -331,25 +350,20 @@ pub mod soltreasure {
         for i in 0..inventory_len {
             if player.inventory[i].item == good_item.item {
                 good_inventory_item_index = i;
-                got_it_right = player.inventory[i].amount + amount <= good_item.max_amount;
+                got_it_right = player.inventory[i].amount + amount <= good_item.max_per_inventory;
             } else if player.inventory[i].item == bad_item_key {
                 bad_inventory_item_index = i;
             }
         }
 
-        // Check Requirements
+        // Check Requirements + Get Bad Item
         for i in 0..asset_len {
             if game.assets[i].item == bad_item_key {
                 bad_item_index = i;
                 bad_item_cost = game.assets[i].cost;
             }
 
-            if 0b1 << cmp::min(i, 63) & good_item.requirements != 0 {
-
-                if i == 63 { 
-                    got_it_right = false;
-                    break; 
-                }
+            if 0b1 << i & good_item.requirements != 0 {
 
                 let mut did_find = false;
                 for j in 0..inventory_len {
@@ -363,27 +377,37 @@ pub mod soltreasure {
                     got_it_right = false;
                 }
             }
-        }
 
-        // Check if combination
-        if good_item.requirements & REQUIREMENTS_IS_COMBINATION != 0 {
-            got_it_right = false;
         }
 
         // Set amounts
         if got_it_right  {
-            if good_item.item_type == TYPE_REWARD {
-                if is_too_fast {
-                    return Err(ErrorCode::Cheater.into());
+            match good_item.item_type {
+                TYPE_KEY | TYPE_ITEM => {
+                    good_amount = good_item.amount_per_mint;
+                    bad_amount = 0;
+                },
+                TYPE_REWARD => {
+                    if is_too_fast {
+                        return Err(ErrorCode::Cheater.into());
+                    }
+    
+                    good_amount = 1;
+                    bad_amount = good_item.amount_per_mint;
+                    bad_item_cost = 0;
+                },
+                TYPE_COMBINATION_OUTPUT => {
+                    good_amount = 0;
+                    bad_amount = 1;
+                },
+                _=> {
+                    good_amount = 0;
+                    bad_amount = 0;
                 }
-
-                bad_amount = good_item.amount;
-                bad_item_cost = 0;
-                good_amount = 1;
-            } else {
-                good_amount = amount;
             }
+
         } else {
+            good_amount = 0;
             bad_amount = 1;
         }
 
@@ -568,15 +592,19 @@ pub mod soltreasure {
 
         let mut inventory_input_0_index = inventory_len;
         let mut inventory_input_1_index = inventory_len;
-        let mut inventory_output_index = inventory_len;
+        let mut inventory_output_index =  inventory_len;
 
         // Search player inventory
         for i in 0..inventory_len {
             if player.inventory[i].item == ctx.accounts.input_0_vault.key() {
                 inventory_input_0_index = i;
-            } else if player.inventory[i].item == ctx.accounts.input_1_vault.key() {
+            }
+            
+            if player.inventory[i].item == ctx.accounts.input_1_vault.key() {
                 inventory_input_1_index = i;
-            } else if  player.inventory[i].item == ctx.accounts.output_vault.key() {
+            }
+            
+            if  player.inventory[i].item == ctx.accounts.output_vault.key() {
                 inventory_output_index = i
             }
         }
@@ -594,24 +622,42 @@ pub mod soltreasure {
             return Err(ErrorCode::NotEnoughToCombine.into()); 
         }
 
-        if inventory_output_index != inventory_len {
-            let mut output_index = 0;
-            for _i in 0..63 {
-                if combination.output_id & 0b1 << output_index != 0 {
-                    break;
-                } else {
-                    output_index += 1;
-                }
-            }
-
-            if output_index as usize >= game.assets.len() {
-                return Err(ErrorCode::BadCombination.into());
-            }
-    
-            if player.inventory[inventory_output_index].amount + combination.output_amount > game.assets[output_index as usize].max_amount {
-                return Err(ErrorCode::NotEnoughToCombine.into()); 
+        let mut output_index = 0 as usize;
+        for _i in 0..MAX_ITEMS {
+            if combination.output_id & 0b1 << output_index != 0 {
+                break;
+            } else {
+                output_index += 1;
             }
         }
+
+        if output_index as usize >= game.assets.len() {
+            return Err(ErrorCode::BadCombination.into());
+        }
+
+
+        if inventory_output_index != inventory_len {
+
+            if player.inventory[inventory_output_index].amount + combination.output_amount > game.assets[output_index].max_per_inventory {
+                return Err(ErrorCode::NotEnoughToCombine.into()); 
+            }
+
+        } else {
+
+            player.inventory.push(
+                GameInventoryItem {
+                    item: game.assets[output_index].item,
+                    amount: 0,
+                }
+            );
+
+            inventory_output_index = player.inventory.len() - 1;
+        }
+
+        //Set New Amounts
+        player.inventory[inventory_output_index].amount += combination.output_amount;
+        player.inventory[inventory_input_0_index].amount -= combination.input_0_amount;
+        player.inventory[inventory_input_1_index].amount -= combination.input_1_amount;
 
         //TX Output
         let seeds = &[
@@ -710,8 +756,9 @@ pub struct LoadAssets<'info> {
     #[account(
         mut, 
         constraint = &coach_vault.owner == coach.key 
+        && game.assets.len() < MAX_ITEMS
         && game_vault.mint == coach_vault.mint
-        && get_associated_token_address(&coach_vault.key(), &coach_vault.mint) == coach_vault.key()
+        && get_associated_token_address(&coach.key(), &coach_vault.mint) == coach_vault.key()
     )]
     pub coach_vault: Account<'info, TokenAccount>,
 
@@ -719,7 +766,7 @@ pub struct LoadAssets<'info> {
     #[account(
         mut, 
         constraint = &game_vault.owner == gatekeeper.key
-        && get_associated_token_address(&game_vault.key(), &game_vault.mint) == game_vault.key()
+        && get_associated_token_address(&gatekeeper.key(), &game_vault.mint) == game_vault.key()
     )]
     pub game_vault: Account<'info, TokenAccount>,
 
@@ -736,6 +783,7 @@ pub struct LoadCombinations<'info> {
         mut, 
         has_one = coach, 
         constraint = !game.playing && game.coach == coach.key()
+        && game.combinations.len() < MAX_ITEMS
     )]
     pub game: Account<'info, Game>,
     pub gatekeeper: AccountInfo<'info>, //PDA who signs for transactions
@@ -853,8 +901,8 @@ pub struct CreateGamePlayer<'info> {
   #[account(mut, 
     has_one = coach,
     constraint = game.coach == coach.key()
-    // && game.playing
-    // && Clock::get()?.unix_timestamp as u64 < game.supernova
+    && game.playing
+    && Clock::get()?.unix_timestamp < game.supernova as i64
 )]
   pub game: Account<'info, Game>, 
 
@@ -1061,6 +1109,8 @@ pub struct GamePlayer {
 
 #[derive(Debug, Clone, AnchorSerialize, AnchorDeserialize)]
 pub struct GameItem {
+    pub name: String, //Max Length 32
+
     pub item: Pubkey,
     pub mint: Pubkey,
 
@@ -1070,11 +1120,13 @@ pub struct GameItem {
     pub requirements: u64,
     pub id: u64,
 
-    pub codes: u32,
-    pub percent: u8,
-    pub max_amount: u8,
-    pub amount: u8,
-    pub cost: u64,
+    pub codes: u32, // 4 bytes
+    pub percent: u8, // 0-100
+
+    pub max_per_inventory: u8, //Usually 1
+    pub amount_per_mint: u8, //Usally 1
+
+    pub cost: u64, //In Lammys
 }
 
 #[derive(Debug, Clone, AnchorSerialize, AnchorDeserialize)]
@@ -1147,6 +1199,10 @@ pub enum ErrorCode {
     BadItemType, 
     #[msg("Bad mint index")]
     BadMintIndex, 
+    #[msg("Already Burned")]
+    Burned, 
+    #[msg("Len out of bounds")]
+    BadLens, 
     #[msg("Cheater...")]
     Cheater, 
     #[msg("Could not TX the NFT")]

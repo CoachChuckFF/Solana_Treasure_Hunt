@@ -62,7 +62,6 @@ const getTokenFromMint = async (provider, mint) => {
 
 const getTokenInfo = async(provider, mint, owner) => {
   let token = await getTokenFromMint(provider, mint);
-  console.log(owner);
   let account = await token.getOrCreateAssociatedAccountInfo(owner ?? provider.wallet.publicKey);
 
   return {
@@ -72,7 +71,7 @@ const getTokenInfo = async(provider, mint, owner) => {
   };
 }
 
-const createTestAsset = async (provider, amount) => {
+const createTestAsset = async (provider, amount, name) => {
   let token = await createSPL(provider);
 
   let tokenAccount = await token.getOrCreateAssociatedAccountInfo(provider.wallet.publicKey);
@@ -84,17 +83,18 @@ const createTestAsset = async (provider, amount) => {
   );
   
   return {
+    name: name ?? "Game Item: X", 
     mint: token.publicKey,
     vault: tokenAccount.address,
     amount: tokenAccount.amount,
   };
 }
 
-const createTestAssets = async(provider, assetCount, assetAmount) => {
+const createTestAssets = async(provider, assetCount, assetAmount, nameBase) => {
   let assets = [];
 
   for(var i = 0; i < assetCount; i++){
-    assets.push(await createTestAsset(provider, assetAmount))
+    assets.push(await createTestAsset(provider, assetAmount, `${nameBase ?? "Game Item: "}${i}`))
   }
 
   return assets;
@@ -168,7 +168,7 @@ const createGame = async (provider, program, gamePair) => {
 }
 
 // LOAD ASSETS
-const loadAssets = async (provider, program, gameInfo, mint, gameType, codes, isWrongAnswerItem, percentage, amount, maxAmount, amountTX, cost) => {
+const loadAssets = async (provider, program, gameInfo, mint, name, gameType, codes, isWrongAnswerItem, percentage, amountPerMint, maxPerInventory, itemsToTX, cost) => {
   console.log("Loading Assets...");
 
   console.log("[1/3] Getting Token Account");
@@ -180,21 +180,17 @@ const loadAssets = async (provider, program, gameInfo, mint, gameType, codes, is
     assetInfo.mint, 
   );
 
-  console.log(assetInfo.mint);
-  console.log(assetGameVault);
-  console.log(gameInfo.account.gatekeeper);
-  console.log(provider.wallet.publicKey);
-
   console.log("[3/3] Loading Asset");
   let createTX = await program.rpc.loadAssets(
+    name ?? "Game Item: X",
     gameType ?? 0,
     codes ?? 0x00000000,
     isWrongAnswerItem ?? false,
     percentage ?? 0,
-    amount ?? 1,
-    maxAmount ?? 1,
-    new anchor.BN(amountTX) ?? new anchor.BN(assetInfo.amount),
-    new anchor.BN(cost) ?? new anchor.BN(Math.round(anchor.web3.LAMPORTS_PER_SOL * 0.05)),
+    amountPerMint ?? 1,
+    maxPerInventory ?? 1,
+    new anchor.BN(cost ?? Math.round(anchor.web3.LAMPORTS_PER_SOL * 0.05)),
+    new anchor.BN(itemsToTX ?? assetInfo.amount),
     {
       accounts: {
         game: gameInfo.account.game,
@@ -306,25 +302,34 @@ const main = async() => {
     console.log("Bad Game: PASSED\n");
   }
 
-  // ------------- STEP 2 = CREATE LOAD ASSETS -------------------
+  // ------------- STEP 2.0 = LOAD ASSETS -------------------
   let assets = await createTestAssets(coach, 9, 100000);
   let assetTX = [];
   for(var i = 0; i < assets.length; i++){
-    console.log(assets[i]);
-    assetTX.push(await loadAssets(coach, program, gameInfo, assets[i].mint));
+    assetTX.push(await loadAssets(coach, program, gameInfo, assets[i].mint, assets[i].name));
   }
+
+  gameInfo = await getGameAccount(program, gameInfo.account.game);
+  console.log(gameInfo);
+
+  // ------------- STEP 2.1 = LOAD COMBINATIONS -------------------
+  // for(var i = 0; i < assets.length; i++){
+  //   console.log(assets[i]);
+  //   assetTX.push(await loadAssets(coach, program, gameInfo, assetInfo));
+  // }
+
 
   // ------------- STEP X = CREATE GAME PLAYER -------------------
-  let playerInfo = await createGamePlayer(coach, program, gameInfo);
-  console.log(playerInfo);
+  // let playerInfo = await createGamePlayer(coach, program, gameInfo);
+  // console.log(playerInfo);
 
-  // Try to build a duplicate player
-  try {
-    let badPlayer = await createGamePlayer(coach, program, gameInfo);
-    console.log(badPlayer);
-  } catch (e) {
-    console.log("Bad Player: PASSED\n");
-  }
+  // // Try to build a duplicate player
+  // try {
+  //   let badPlayer = await createGamePlayer(coach, program, gameInfo);
+  //   console.log(badPlayer);
+  // } catch (e) {
+  //   console.log("Bad Player: PASSED\n");
+  // }
 
   console.log("... to the moon! 🌑")
 }
