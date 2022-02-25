@@ -11,4 +11,4 @@ cluster = "localnet"
 wallet = "/Users/drkrueger/.config/solana/id.json"
 
 [scripts]
-test = "node tests/soltreasure.js"
+test = "node tests/contractTest.js"

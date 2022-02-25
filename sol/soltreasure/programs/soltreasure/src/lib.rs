@@ -254,16 +254,16 @@ pub mod soltreasure {
     // -------------- USER FUNCTIONS ------------------------ //
     pub fn create_game_player(ctx: Context<CreateGamePlayer>, bump: u8) -> ProgramResult {
         
-        let player_account = &mut ctx.accounts.player_account;
+        let game_player = &mut ctx.accounts.game_player;
 
-        player_account.player_account = player_account.key();
-        player_account.game = ctx.accounts.game.key();
-        player_account.player = ctx.accounts.player.key();
-        player_account.bump = bump;
+        game_player.game_player = game_player.key();
+        game_player.game = ctx.accounts.game.key();
+        game_player.player = ctx.accounts.player.key();
+        game_player.bump = bump;
 
-        player_account.run_start = Clock::get()?.unix_timestamp as u64;
-        player_account.run_percent_timestamp = player_account.run_start;
-        player_account.run_percent = 0;
+        game_player.run_start = Clock::get()?.unix_timestamp as u64;
+        game_player.run_percent_timestamp = game_player.run_start;
+        game_player.run_percent = 0;
 
 
         Ok(())
@@ -274,13 +274,13 @@ pub mod soltreasure {
 
     ) -> ProgramResult {
 
-        let player_account = &mut ctx.accounts.player_account;
+        let game_player = &mut ctx.accounts.game_player;
 
-        player_account.game = ctx.accounts.game.key();
+        game_player.game = ctx.accounts.game.key();
 
-        player_account.run_start = Clock::get()?.unix_timestamp as u64;
-        player_account.run_percent_timestamp = player_account.run_start;
-        player_account.run_percent = 0;
+        game_player.run_start = Clock::get()?.unix_timestamp as u64;
+        game_player.run_percent_timestamp = game_player.run_start;
+        game_player.run_percent = 0;
 
         Ok(())
     }
@@ -298,7 +298,7 @@ pub mod soltreasure {
         }
 
         let game = &mut ctx.accounts.game;
-        let player = &mut ctx.accounts.player_account;
+        let player = &mut ctx.accounts.game_player;
         let asset_len = game.assets.len();
         let inventory_len = player.inventory.len();
 
@@ -569,6 +569,8 @@ pub mod soltreasure {
             );
         }
 
+        // Lammys
+        game.lamports += total_sol;
 
         Ok(())
     }
@@ -586,7 +588,7 @@ pub mod soltreasure {
         }
 
         let game =  &mut ctx.accounts.game;
-        let player = &mut ctx.accounts.player_account;
+        let player = &mut ctx.accounts.game_player;
         let inventory_len = player.inventory.len();
         let combination = game.combinations[combine_index as usize].clone();
 
@@ -654,12 +656,26 @@ pub mod soltreasure {
             inventory_output_index = player.inventory.len() - 1;
         }
 
-        //Set New Amounts
-        player.inventory[inventory_output_index].amount += combination.output_amount;
-        player.inventory[inventory_input_0_index].amount -= combination.input_0_amount;
-        player.inventory[inventory_input_1_index].amount -= combination.input_1_amount;
+        // Get those Lammys
+        let tx_lams = anchor_lang::solana_program::system_instruction::transfer(
+            &ctx.accounts.player.key(),
+            &game.coach.key(),
+            combination.cost,
+        );
+        
+        let get_tx_lams_response = anchor_lang::solana_program::program::invoke(
+            &tx_lams,
+            &[
+                ctx.accounts.player.to_account_info().clone(),
+                ctx.accounts.coach.to_account_info().clone(),
+            ],
+        );
+        
+        if !get_tx_lams_response.is_ok() {
+            return Err(ErrorCode::CouldNotFundTX.into());
+        }
 
-        //TX Output
+        // TX Output
         let seeds = &[
             game.to_account_info().key.as_ref(),
             &[game.nonce],
@@ -679,7 +695,7 @@ pub mod soltreasure {
             return Err(ErrorCode::CouldNotTXNFT.into());
         }
 
-        //RX Input 0
+        // RX Input 0
         let input_rx_0 = Transfer {
             from: ctx.accounts.player_input_0_vault.to_account_info().clone(),
             to: ctx.accounts.input_0_vault.to_account_info().clone(),
@@ -693,7 +709,7 @@ pub mod soltreasure {
             return Err(ErrorCode::CouldNotTXNFT.into());
         }
 
-        //RX Input 1
+        // RX Input 1
         let input_rx_1 = Transfer {
             from: ctx.accounts.player_input_1_vault.to_account_info().clone(),
             to: ctx.accounts.input_1_vault.to_account_info().clone(),
@@ -707,6 +723,13 @@ pub mod soltreasure {
             return Err(ErrorCode::CouldNotTXNFT.into());
         }
         
+        // Set New Amounts
+        player.inventory[inventory_output_index].amount += combination.output_amount;
+        player.inventory[inventory_input_0_index].amount -= combination.input_0_amount;
+        player.inventory[inventory_input_1_index].amount -= combination.input_1_amount;
+
+        // Lammys
+        game.lamports += combination.cost;
 
         Ok(())
     }
@@ -896,7 +919,7 @@ pub struct CreateGamePlayer<'info> {
     bump,
     payer = player,
   )]
-  pub player_account: Account<'info, GamePlayer>,
+  pub game_player: Account<'info, GamePlayer>,
 
   #[account(mut, 
     has_one = coach,
@@ -920,11 +943,11 @@ pub struct SetGamePlayerGame<'info> {
     #[account(
         mut, 
         has_one = player,
-        constraint = player_account.player == player.key(),
+        constraint = game_player.player == player.key(),
         seeds = [player.to_account_info().key.as_ref()],
-        bump = player_account.bump,
+        bump = game_player.bump,
     )]
-    pub player_account: Account<'info, GamePlayer>,
+    pub game_player: Account<'info, GamePlayer>,
 
     #[account(
         mut, 
@@ -957,12 +980,12 @@ pub struct MintItem<'info> {
     #[account(
         mut, 
         has_one = player,
-        constraint = player_account.player == player.key() 
-        && player_account.game == game.key(),
+        constraint = game_player.player == player.key() 
+        && game_player.game == game.key(),
         seeds = [player.to_account_info().key.as_ref()],
-        bump = player_account.bump,
+        bump = game_player.bump,
     )]
-    pub player_account: Account<'info, GamePlayer>,
+    pub game_player: Account<'info, GamePlayer>,
 
     // Game Vaults
     #[account(
@@ -1027,12 +1050,12 @@ pub struct CombineItem<'info> {
     #[account(
         mut, 
         has_one = player,
-        constraint = player_account.player == player.key() 
-        && player_account.game == game.key(),
+        constraint = game_player.player == player.key() 
+        && game_player.game == game.key(),
         seeds = [player.to_account_info().key.as_ref()],
-        bump = player_account.bump,
+        bump = game_player.bump,
     )]
-    pub player_account: Account<'info, GamePlayer>,
+    pub game_player: Account<'info, GamePlayer>,
 
     // Game Vaults
     #[account(
@@ -1095,7 +1118,7 @@ pub struct CombineItem<'info> {
 #[account]
 #[derive(Default)]
 pub struct GamePlayer {
-    pub player_account: Pubkey,
+    pub game_player: Pubkey,
     pub game: Pubkey,
     pub player: Pubkey,
     pub bump: u8,

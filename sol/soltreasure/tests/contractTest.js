@@ -31,7 +31,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const anchor = __importStar(require("@project-serum/anchor"));
-const helpers = __importStar(require("./solHelpers"));
+const treasure = __importStar(require("./treasure"));
 const devWallet = 'HAzgWmFC2TGw1Ry6C3h2i2eAnnbrD91wDremBSxXBgCB';
 // MAIN
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
@@ -40,8 +40,8 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const coach = anchor.Provider.env();
     anchor.setProvider(coach);
     const program = anchor.workspace.Soltreasure;
-    let asset = yield helpers.createSPL(coach, 100000);
-    console.log(asset);
+    let game = yield treasure.createTestGame(coach, program);
+    console.log(game);
     console.log("... to the moon! 🌑");
 });
 const runMain = () => __awaiter(void 0, void 0, void 0, function* () {
