@@ -1,10 +1,4 @@
 import { useRef, useState, useEffect } from "react";
-import PropTypes from 'prop-types';
-import NumberFormat from 'react-number-format';
-import { styled } from '@mui/system';
-import InputUnstyled from '@mui/base/InputUnstyled';
-import LoadingButton from '@mui/lab/LoadingButton';
-import CircularProgress from '@mui/material/CircularProgress';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -16,8 +10,7 @@ import { Connection, PublicKey, clusterApiUrl} from '@solana/web3.js';
 import './../App.css' 
 
 // Icons
-import { PuzzleIcon, WalletIcon, GuideIcon, ChestIcon, KeyIcon, LeftIcon } from './icons';
-import { codeToHexString, getGuideCodes } from './hashes';
+import { WalletIcon, PuzzleIcon, ChestIcon, KeyIcon, LeftIcon } from './icons';
 
 const disabledColor = "disabled";
 const enabledColor = "primary";
@@ -114,11 +107,9 @@ export function CombinationMint(props) {
     );
 
     const handleConnect = () => {
-        // setIsWorking(true);
         props.connect();
     }
     const handleMint = () => {
-        // setIsWorking(true);
         props.mint();
     }
 
@@ -156,37 +147,6 @@ export function CombinationMint(props) {
         );
     }
 
-    const LeaveDevMode = () => {props.setDevMode(false);}
-    const LeaveDevModeButton = () => {
-        return (
-            <div className="hub-controls">
-                <div className='puzzle-controls'>
-                    <div className="puzzle-controls">
-                        <Box className="puzzle-control-row-blank"></Box>
-                        <Box className="puzzle-control-row-blank">
-                            <Grid container spacing={2}></Grid>
-                        </Box>
-                        <Box className="puzzle-control-row">
-                            <Grid container spacing={2}>
-                                <Grid item xs={12}>
-                                    <TheButton 
-                                        handleClick={LeaveDevMode} 
-                                        loading={false} 
-                                        info={{
-                                            enabled: true, 
-                                            icon: (<LeftIcon />), 
-                                            text: "Leave Dev Mode"
-                                        }}
-                                    />
-                                </Grid>
-                            </Grid>
-                        </Box>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
     const changeButtonInfo = () => {
         let display = [false, false];
         buttonInfo.enabled = false;
@@ -194,53 +154,27 @@ export function CombinationMint(props) {
         switch(props.cameraIndex){
             case 0:
                 display = [false, true];
-                buttonInfo.enabled = FSM.canOpenChest(props.puzzleState, props.run, props.state) && !FSM.isCheater(props.run, props.state, props.puzzleState);
+                buttonInfo.enabled = props.puzzleState.test
                 buttonInfo.icon = (<ChestIcon />);
                 buttonInfo.overrideColor = null;
                 buttonInfo.text = props.puzzleState.regular ? "You did it!" : ((FSM.isCheater(props.run, props.state, props.puzzleState)) ? `Pumkin Eater...` : "Open Chest");
                 buttonInfo.title = "Locks:";
-                buttonInfo.iconButtonIcon = (<WalletIcon />);
+                buttonInfo.iconButtonIcon = (<LeftIcon />);
                 buttonInfo.iconTileColor = "primary";
                 buttonInfo.iconColor = whiteColor;
                 break;
-            case 2:
+            case 1:
                 display = [true, true];
-                buttonInfo.enabled = !props.codes.blue.includes(-1);
+                buttonInfo.enabled = !props.codes.test.includes(-1);
                 buttonInfo.icon = (<KeyIcon />);
                 buttonInfo.overrideColor = props.puzzleState.blue ? 'disabled' : null;
-                buttonInfo.text = props.puzzleState.blue ? "Mint Broken NFKey" : (buttonInfo.enabled ? "Try NFKey 1" : "Puzzle 1 ->");
+                buttonInfo.text = props.puzzleState.blue ? "Mint Broken NFKey" : (buttonInfo.enabled ? "Try NFKey 0" : "Demo Puzzle ->");
                 buttonInfo.title = "Codes:";
                 buttonInfo.iconButtonIcon = (<PuzzleIcon />);
-                buttonInfo.iconTileColor = "blue";
+                buttonInfo.iconTileColor = "test";
                 buttonInfo.iconColor = purpleColor;
-                buttonInfo.codes = props.codes.blue;
+                buttonInfo.codes = props.codes.test;
                 buttonInfo.codeColor = blueColor;
-                break;
-            case 3:
-                display = [true, true];
-                buttonInfo.enabled = !props.codes.green.includes(-1);
-                buttonInfo.icon = (<KeyIcon />);
-                buttonInfo.overrideColor = props.puzzleState.green ? 'disabled' : null;
-                buttonInfo.text = props.puzzleState.green ? "Mint Broken NFKey" : (buttonInfo.enabled ? "Try NFKey 2" : "Puzzle 2 ->");
-                buttonInfo.title = "Codes:";
-                buttonInfo.iconButtonIcon = (<PuzzleIcon />);
-                buttonInfo.iconTileColor = "green";
-                buttonInfo.iconColor = purpleColor;
-                buttonInfo.codes = props.codes.green;
-                buttonInfo.codeColor = greenColor;
-                break;
-            case 4:
-                display = [true, true];
-                buttonInfo.enabled = !props.codes.purple.includes(-1);
-                buttonInfo.icon = (<KeyIcon />);
-                buttonInfo.overrideColor = props.puzzleState.purple ? 'disabled' : null;
-                buttonInfo.text = props.puzzleState.purple ? "Mint Broken NFKey" : (buttonInfo.enabled ? "Try NFKey 3" : "Puzzle 3 ->");
-                buttonInfo.title = "Codes:";
-                buttonInfo.iconButtonIcon = (<PuzzleIcon />);
-                buttonInfo.iconTileColor = "primary";
-                buttonInfo.iconColor = blueColor;
-                buttonInfo.codes = props.codes.purple;
-                buttonInfo.codeColor = purpleColor;
                 break;
         }
 
@@ -258,10 +192,7 @@ export function CombinationMint(props) {
     }
 
     if(props.state === FSM.NotConnected) return <ConnectWalletButton />;
-    if(props.state === FSM.DevMode && props.cameraIndex === -1) return <LeaveDevModeButton />;
 
-
-    // console.log(props.codes.blue);
     changeButtonInfo();
 
     return (

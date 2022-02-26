@@ -31,8 +31,75 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const anchor = __importStar(require("@project-serum/anchor"));
-const helpers = __importStar(require("./solHelpers"));
+const metaplex = __importStar(require("@metaplex/js"));
+const spl_token_1 = require("@solana/spl-token");
 const devWallet = 'HAzgWmFC2TGw1Ry6C3h2i2eAnnbrD91wDremBSxXBgCB';
+// SOLANA HELPERS
+const findAssociatedTokenAddress = (owner, mint) => {
+    return spl_token_1.Token.getAssociatedTokenAddress(spl_token_1.ASSOCIATED_TOKEN_PROGRAM_ID, spl_token_1.TOKEN_PROGRAM_ID, mint, owner);
+};
+const createSFT = (provider, amount = 100000, name, symbol, uri, sellerFeeBasisPoints = 300) => __awaiter(void 0, void 0, void 0, function* () {
+    let mint = anchor.web3.Keypair.generate();
+    let metadata = anchor.web3.Keypair.generate();
+    let collection = anchor.web3.Keypair.generate();
+    let tx = new anchor.web3.Transaction();
+    let owner = provider.wallet.publicKey;
+    let vault = yield findAssociatedTokenAddress(owner, mint.publicKey);
+    let token = new spl_token_1.Token(provider.connection, mint.publicKey, spl_token_1.TOKEN_PROGRAM_ID, mint);
+    // Create the Account
+    tx.add(anchor.web3.SystemProgram.createAccount({
+        fromPubkey: owner,
+        newAccountPubkey: mint.publicKey,
+        lamports: yield spl_token_1.Token.getMinBalanceRentForExemptMint(provider.connection),
+        space: spl_token_1.MintLayout.span,
+        programId: spl_token_1.TOKEN_PROGRAM_ID
+    }));
+    // Create the Mint
+    tx.add(spl_token_1.Token.createInitMintInstruction(spl_token_1.TOKEN_PROGRAM_ID, // Program ID
+    mint.publicKey, // Mint
+    0, // Decimals
+    owner, // Mint Authority
+    null));
+    // Create Associated Account
+    tx.add(spl_token_1.Token.createAssociatedTokenAccountInstruction(spl_token_1.ASSOCIATED_TOKEN_PROGRAM_ID, spl_token_1.TOKEN_PROGRAM_ID, mint.publicKey, vault, // Associated Account
+    owner, // Owner
+    owner));
+    // Mint
+    tx.add(spl_token_1.Token.createMintToInstruction(spl_token_1.TOKEN_PROGRAM_ID, mint.publicKey, vault, owner, [], // Multi-signers
+    amount));
+    let txRes = yield provider.send(tx, [mint]);
+    let mdtx = new metaplex.programs.metadata.CreateMetadataV2({
+        recentBlockhash: null,
+        nonceInfo: null,
+        feePayer: null,
+        signatures: []
+    }, {
+        metadata: metadata.publicKey,
+        metadataData: {
+            name: name,
+            symbol: symbol,
+            uri: uri,
+            sellerFeeBasisPoints: sellerFeeBasisPoints,
+            creators: [
+                {
+                    address: provider.wallet.publicKey.toString(),
+                    verified: true,
+                    share: 100,
+                },
+            ],
+            collection: new metaplex.programs.metadata.Collection({
+                key: collection.publicKey.toString(),
+                verified: true,
+            }),
+            uses: null,
+        },
+        updateAuthority: provider.wallet.publicKey,
+        mint: mint.publicKey,
+        mintAuthority: provider.wallet.publicKey,
+    });
+    let mdRes = yield provider.send(mdtx);
+    console.log(mdRes);
+});
 // MAIN
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     console.log("🚀 Starting test...\n\n");
@@ -40,8 +107,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const coach = anchor.Provider.env();
     anchor.setProvider(coach);
     const program = anchor.workspace.Soltreasure;
-    let asset = yield helpers.createSPL(coach, 100000);
-    console.log(asset);
+    yield createSFT(coach, 100000, "TEST", "TEST", "test.uri", 300);
     console.log("... to the moon! 🌑");
 });
 const runMain = () => __awaiter(void 0, void 0, void 0, function* () {

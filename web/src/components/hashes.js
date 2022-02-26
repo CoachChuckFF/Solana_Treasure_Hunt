@@ -1,16 +1,15 @@
 import { PublicKey } from '@solana/web3.js';
 
-const PUBKEYSIZE = 32;
 
-function arrayToByte(wallet, puzzle, index){
-    return wallet.toBytes()[PUBKEYSIZE - 1 - puzzle] ^ wallet.toBytes()[index];
+function arrayToByte(wallet, index){
+    return wallet.toBytes()[index];
 }
-function codesToByteArray(wallet, puzzle, zero, one, two, three){
+function codesToByteArray(wallet, code0, code1, code2, code3){
     return [
-        arrayToByte(wallet, puzzle, zero),
-        arrayToByte(wallet, puzzle, one),
-        arrayToByte(wallet, puzzle, two),
-        arrayToByte(wallet, puzzle, three)
+        arrayToByte(wallet, code0),
+        arrayToByte(wallet, code1),
+        arrayToByte(wallet, code2),
+        arrayToByte(wallet, code3)
     ]
 }
 
@@ -18,64 +17,28 @@ export function codeToHexString(code){
     return `0x${code == null ? '??' : code.toString(16).padStart(2, '0').toUpperCase()}`;
 }
 
-export function getGuideCodes(wallet){
-
+export function getCorrectTestCodes(wallet){
     if(wallet){
         return codesToByteArray(
             wallet,
-            0,
-            1,
-            2, 
-            3,
-            4,
+            0x10,
+            0x11,
+            0x12,
+            0x13,
         );
     }
 
     return null;
 }
 
-export function getNootCode(wallet, noot){
-
+export function getWrongTestCodes(wallet, test){
     if(wallet){
         return codesToByteArray(
             wallet,
-            noot,
-            5,
-            6, 
-            7,
-            8,
-        );
-    }
-
-    return null;
-}
-
-export function getDronieCode(wallet, xorIndex){
-
-    if(wallet){
-        return codesToByteArray(
-            wallet,
-            PUBKEYSIZE - 1 - xorIndex,
-            0,
-            1, 
-            2,
-            3,
-        );
-    }
-
-    return null;
-}
-
-export function getDesolatesCode(wallet, r, g, b){
-
-    if(wallet){
-        return codesToByteArray(
-            wallet,
-            8,
-            r & 0x0F,
-            g & 0x0F,
-            b & 0x0F,
-            r & 0x0F + g & 0x0F + b & 0x0F,
+            10 + test,
+            11 + test, 
+            12 + test,
+            13 + test,
         );
     }
 

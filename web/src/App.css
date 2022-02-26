@@ -182,67 +182,101 @@ body {
 }
 
 /* ------------ NOOT Puzzle ------------------ */
-.noot-grid {
+.demo-center {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
+
+.demo-top {
+  position: block;
+  height: 45%;
+  width: 100%;
+}
+
+.demo-bottom {
+  position: relative;
+  height: 45%;
+  width: 100%;
+}
+
+.demo-left {
+  display: inline-flex;
+  justify-content: center;
+  height: 100%;
+  width: 50%;
+}
+
+.demo-right {
+  display: inline-flex;
+  justify-content: center;
+  width: 50%;
+  height: 100%;
+}
+
+.demo-speed {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  height: 10%;
+  width: 100%;
+}
+
+.demo-image {
+  position: block;
+  margin: auto;
+  width: 90%;
+}
+.demo-image img:hover{
+  transition: all 150ms ease;
+  border: 5px solid #6F4F00;
+}
+.demo-image img{
   display: block;
   margin: auto;
-  max-width: 500px;
-  max-height: 100%;
-  width: 100%;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  grid-gap: 5px;
-}
-.noot-grid div {
-  aspect-ratio: 1;
-}
-.noot-image {
-  width: 90%;
-}
-.noot-image img:hover{
-  width: 90%;
-  transition: all 150ms ease;
-  border: 5px solid #005C67;
-}
-.noot-image img{
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
   border: 5px solid #000;
   border-radius: 13px;
-  width: 100%;
+  max-height: 80%;
+  max-width: 80%;
   object-fit: contain;
   transition: all 150ms ease;
 }
-.noot-selected {
+
+.demo-selected {
+  position: block;
+  margin: auto;
   width: 90%;
 }
-.noot-selected img{
+.demo-selected img{
   display: block;
-  margin-left: auto;
-  margin-right: auto;
-  border: 5px solid #4FA5C4;
+  margin: auto;
+  border: 5px solid #FFB600;
   border-radius: 13px;
-  width: 90%;
+  max-height: 80%;
+  max-width: 80%;
   object-fit: contain;
   transition: all 150ms ease;
 }
-.noot-selected img:hover {
-  border: 5px solid #4FA5C4;
+.demo-selected img:hover {
+  transition: all 150ms ease;
+  border: 5px solid #FFB600;
 }
-.noot-solscan {
+
+.demo-solscan {
   width: 100%;
-  margin-top: 5px;
+  height: 100%;
 }
-.noot-solscan a {
+.demo-solscan a {
   color: #EAEAEA;
   font-size: large;
   font-weight: bold;
   text-align: center;
+  vertical-align: middle;
   text-decoration: none;
   transition: all 150ms ease;
 }
-.noot-solscan a:hover {
-  color: #4FA5C4;
+.demo-solscan a:hover {
+  color: #FFB600;
 }
 
 /* Dronie */
@@ -567,6 +601,8 @@ body {
 
 .message { 
   width: 100%;
+  font-family: "Vimland";
+  font-size: xx-large;
   position: absolute;
   top: 34%;
   text-align: center;
@@ -574,7 +610,15 @@ body {
   font-size: xx-large;
 }
 
-
+.test {
+  width: 100%;
+  font-family: "Vimland";
+  position: absolute;
+  top: 34%;
+  text-align: center;
+  color: white;
+  font-size: xx-large;
+}
 
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {

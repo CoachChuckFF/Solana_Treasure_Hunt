@@ -6,6 +6,7 @@ export const NotConnected = "0. Connect your wallet";
 export const Playing = "1. Playing";
 export const Reconstruction = "2. Reconstruction";
 
+export const Puzzle0 = "Test";
 export const Puzzle1 = "Noots";
 export const Puzzle2 = "Terminal";
 export const Puzzle3 = "Desolates";
@@ -23,22 +24,12 @@ export const Treasure = new PublicKey('JB3SZLbMn7fZQ2fSdg8pc2y5exDCzNZfUs16wnkXs
 export const Mystery = new PublicKey('BtkPvSzfF9tMh9hHgKLUQ453BVJdWG92n46WRCkgX69h');
 
 export const staticCodes = {
-    blue:  [-1,-1,-1,-1],
-    green: [-1,-1,-1,-1],
-    purple:  [-1,-1,-1,-1],
-    white: [-1,-1,-1,-1],
+    test:  [-1,-1,-1,-1],
 };
 
 export const blankPuzzle = {
-    blue: false,
-    green: false,
-    purple: false,
-    broken: false,
-    black: false,
-    white: false,
-    regular: false,
-    secret: false,
-    replay: false,
+    test: false,
+    brokenKey: false,
 };
 
 export const getCurrentChestTime = (run) => {

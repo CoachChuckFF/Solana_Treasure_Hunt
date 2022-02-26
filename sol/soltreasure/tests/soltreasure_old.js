@@ -13,7 +13,6 @@ const devWallet = 'HAzgWmFC2TGw1Ry6C3h2i2eAnnbrD91wDremBSxXBgCB';
 // SOLANA HELPERS
 const findAssociatedTokenAddress = (wallet, mint) => {
   return new Promise((resolve, reject) => {
-    anchor.
     anchor.web3.PublicKey.findProgramAddress(
       [
           wallet.toBuffer(),
