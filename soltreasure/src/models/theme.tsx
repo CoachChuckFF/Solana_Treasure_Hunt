@@ -5,7 +5,7 @@ export const enum ST_COLORS {
     blue = '#4FA5C4',
     purple = '#9945FF',
     gold = '#FFB600',
-    red = '#FB4E56',
+    red = '#E4463A',
     black = '#0E1922',
     white = '#EAEAEA',
     grey = '#0D0D0D'
