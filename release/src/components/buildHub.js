@@ -1,5 +1,8 @@
 import React, { Suspense, useRef, useState, useEffect, useLayoutEffect } from "react";
 import { useGLTF, Stars, Environment, Stage, PointerLockControls, ScrollControls, Plane } from "@react-three/drei";
+import {
+    CubeTextureLoader,
+} from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { MathUtils, Vector3, Raycaster, PerspectiveCamera, GridHelper, DirectionalLight, Shape, DoubleSide, PointLight } from 'three';
@@ -60,6 +63,13 @@ const FishGLB = "models/sol/fish.glb";
 
 const SunGLB = "models/sol/sun.glb";
 const SupernovaGLB = "models/sol/supernova.glb";
+
+const SKYBOX_PX = "img/skybox/px.png";
+const SKYBOX_NX = "img/skybox/nx.png";
+const SKYBOX_PY = "img/skybox/py.png";
+const SKYBOX_NY = "img/skybox/ny.png";
+const SKYBOX_PZ = "img/skybox/pz.png";
+const SKYBOX_NZ = "img/skybox/nz.png";
 
 // GLOBALS -----------------
 const PI = Math.PI;
@@ -247,28 +257,50 @@ function Supernova(props) {
     const refs = [
         useRef(),
         useRef(),
+        useRef(),
     ];
 
     useFrame(({ clock, camera }) => {
-
+        for(var i = 0; i < refs.length - 1; i++){
+            refs[ i ].current.rotation.y  -= 0.003;
+        }
+        refs[ i ].current.position.y = Math.sin(
+            clock.getElapsedTime()/3
+        ) * 0.55
     });
+
+    
 
     return (
         <group>
+            <pointLight intensity={0.5} />
+            <text
+                ref={refs[2]}
+                position={[0, 0.34, -0.25]}
+                rotation={[-PI/2, 0, 0]}
+                fontSize={0.34}
+                maxWidth={2.34}
+                lineHeight={1.55}
+                letterSpacing={0}
+                text={"Star"}
+                font={fonts['Vimland']}
+                anchorX="center"
+                anchorY="top"
+            >
+                <meshPhongMaterial attach="material" color={'#FFB600'} />
+            </text>
             <BuildGLB 
-                file={BlueKeyGLB}
-                objRef={ refs[0] }
+                file={SunGLB}
+                objRef={ refs[0]  }
                 scale={scaleMiniLock}
                 position={[0,0,0]}
-                rotation={[0,0,0]}
             />
-            {/* <BuildGLB 
+            <BuildGLB 
                 file={SunGLB}
                 objRef={ refs[1]  }
                 scale={scaleMiniLock}
                 position={[0,0,0]}
-                rotation={[0,0,0]}
-            /> */}
+            />
         </group>
     );
 }
@@ -637,7 +669,7 @@ function Leaderboard(props) {
             anchorX="center"
             anchorY="top"
         >
-            <meshPhongMaterial attach="material" color={'#FFFFFF'} />
+        <meshPhongMaterial attach="material" color={'#FFFFFF'} />
         </text>
             <text
                 ref={refs[1]}
@@ -951,13 +983,13 @@ function HubRing(props){
         <group>
             <Suspense fallback={null}>
                 <Inventory state={props.state} puzzleState={props.puzzleState}/>
-                {props.puzzleState.regular ? <OpenedChest run={props.run} bomb={props.bomb} puzzleState={props.puzzleState}/> : <Chest puzzleState={props.puzzleState} bomb={props.bomb} puzzleState={props.puzzleState}/>}
+                {props.puzzleState.regular ? <OpenedChest run={props.run} bomb={props.bomb} puzzleState={props.puzzleState}/> : <Chest puzzleState={props.puzzleState} bomb={props.bomb}/>}
                 <Leaderboard deltaY={props.deltaY}/>
                 <Lock locked={!props.puzzleState.blue} lock={BlueLockGLB} unlock={BlueUnlockGLB} index={2}/>
                 <Lock locked={!props.puzzleState.green} lock={GreenLockGLB} unlock={GreenUnlockGLB} index={3}/>
                 <Lock locked={!props.puzzleState.purple} lock={PurpleLockGLB} unlock={PurpleUnlockGLB} index={4}/>
                 <Story run={props.run} deltaY={props.deltaY} puzzleState={props.puzzleState} state={props.state}/>
-                <directionalLight position={[0, EyeLevel, 0]} intensity={1} rotation={0, 0, 0}/>
+                {/* <directionalLight position={[0, EyeLevel, 0]} intensity={1} rotation={0, 0, 0}/> */}
                 <Supernova />
                 {/* <pointLight position={[0, -(EyeLevel * 2), 0]} intensity={0.21}/> */}
                 {/* <pointLight position={[0, EyeLevel, 0]} intensity={0.05}/> */}
@@ -975,7 +1007,7 @@ function SecretHub(props){
                 <Lock locked={!props.puzzleState.green} lock={GreenLockGLB} unlock={GreenUnlockGLB} index={0} secret={true}/>
                 <Lock locked={true} lock={FishGLB} unlock={FishGLB} index={5} secret={true}/>
                 <Lock locked={!props.puzzleState.black} lock={BlackLockGLB} unlock={BlackUnlockGLB} index={2} secret={true}/>
-                <SecretChest puzzleState={props.puzzleState} bomb={props.bomb} puzzleState={props.puzzleState}/>
+                <SecretChest puzzleState={props.puzzleState} bomb={props.bomb}/>
                 <Lock locked={!props.puzzleState.white} lock={WhiteLockGLB} unlock={WhiteUnlockGLB} index={4} secret={true}/>
                 {/* <FloorSet radius={HubRadius} pos={floorPos} cameraIndex={props.cameraIndex} indexes={[0, 1, 2, 3, 4, 5]}/> */}
             </Suspense>
@@ -995,11 +1027,14 @@ function getCameraIndex(camera, isDev, cameraPos){
     let index = -1;
     let offset = -1;
 
+    console.log(Math.min(vec.x, vec.z));
+
     if(
         cameraPos.x == TargetCamera.pos[0] && 
         cameraPos.y == TargetCamera.pos[1] && 
         cameraPos.z == TargetCamera.pos[2]
     ) {
+        let isGround = 
         offset = 0;
     } else if (
         cameraPos.x == SecretCamera[0] && 
@@ -1036,6 +1071,12 @@ function getCameraIndex(camera, isDev, cameraPos){
             index = -1;
         }
     }
+
+    // if( offset === 0){ 
+    //     if(Math.abs(Math.min(vec.x, vec.z)) < 0.55) {
+    //         index = -1;
+    //     }
+    // }
 
     return index;
 }
@@ -1114,6 +1155,7 @@ function Controls(props){
             ref.current.intensity = Math.min(Math.sqrt(Math.sqrt(distance)), 0.5);
             ref.current.updateMatrix();
 
+
             if(props.state === FSM.NotConnected || props.state === FSM.Supernova){
                 controller.autoRotate = true;
                 
@@ -1151,7 +1193,28 @@ function Controls(props){
         }
     });
 
-    return <Suspense><pointLight ref={ref} intensity={0.1} position={StartingCamera.pos}/></Suspense>;
+    return <Suspense><pointLight ref={ref} intensity={0.1}/></Suspense>;
+}
+
+// Loads the skybox texture and applies it to the scene.
+function SkyBox() {
+    const { scene } = useThree();
+
+    useEffect(() => {
+        const loader = new CubeTextureLoader();
+        const texture = loader.load([
+            SKYBOX_PX,
+            SKYBOX_NX,
+            SKYBOX_PY,
+            SKYBOX_NY,
+            SKYBOX_PZ,
+            SKYBOX_NZ,
+          ]);
+          // Set the scene background property to the resulting texture.
+          scene.background = texture;
+    }, []);
+
+    return null;
 }
 
 export function BuildHub(props) {
@@ -1166,7 +1229,6 @@ export function BuildHub(props) {
             characters: 'abcdefghijklmnopqrstuvwxyz'
         }, ()=> {
             setLoaded(true);
-            console.log("loaded");
         })
     }, []);
 
@@ -1200,13 +1262,15 @@ export function BuildHub(props) {
                 />
                 {/* <Stage environment={null} intensity={1} contactShadowOpacity={0.1} shadowBias={-0.0015}/> */}
                 <Suspense fallback={null}>
+                    <SkyBox></SkyBox>
+                    {/* <ambientLight></ambientLight>
                     <Environment
-                        background={false}
-                        // files={['px.png', 'nx.png', 'py.png', 'ny.png', 'pz.png', 'nz.png']}
-                        path="/"
-                        preset={'night'}
-                        // scene={undefined} // adds the ability to pass a custom THREE.Scene
-                    />
+                        background={true} // Whether to affect scene.background
+                        files={['px.png', 'px.png', 'px.png', 'px.png', 'px.png', 'px.png']} // Array of cubemap files OR single equirectangular file
+                        path={'img/'} // Path to the above file(s)
+                        preset={null} // Preset string (overrides files and path)
+                        scene={undefined} // adds the ability to pass a custom THREE.Scene
+                    /> */}
                 </Suspense>
                 <EffectComposer multisampling={8} autoClear={false}>
                     <Bloom intensity={0.1} luminanceThreshold={0.08} luminanceSmoothing={0} />

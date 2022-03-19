@@ -500,6 +500,19 @@ body {
   padding-bottom: 3vh;
 }
 
+.dronie-terminal-text {
+  font-family: LCD;
+  font-size: x-small;
+  padding-top: 2vh;
+  display:inline;
+  float:left;
+}
+
+.dronie-terminal-header-footer {
+  display:inline;
+  float:left;
+}
+
 .your-codes-header a{
   transition: all 150ms ease;
   color: #FFF;

@@ -1,66 +1,26 @@
 import React from "react";
 import * as STSnackbar from "../views/snackbar";
 import * as STCurtains from "../views/curtains";
-import { addDays } from "../models/clock";
+import * as STWorldSpace from "../models/worldSpace";
+import * as STState from "../models/state";
+import { PublicKey } from '@solana/web3.js';
 import { Vector3 } from 'three';
+import { TreasureProvider } from "../models/solTreasure";
 
-
-export enum ST_GLOBAL_STATE {
-    dev = "-2. Devmode",
-    supernova = "-1. Supernova",
-    notConnected = "0. Connect your wallet",
-    playing = "1. Playing",
-    reconstruction = "2. Reconstruction",
-}
-export const NULL_GLOBAL_STATE = ST_GLOBAL_STATE.notConnected;
-
-export interface GameState {
-    blue?: boolean;
-    green?: boolean;
-    purple?: boolean;
-    broken?: boolean;
-    black?: boolean;
-    white?: boolean;
-    regular?: boolean;
-    secret?: boolean;
-    replay?: boolean;
-}
-
-export const NULL_GAME_STATE: GameState = {
-    blue: false,
-    green: false,
-    purple: false,
-    broken: false,
-    black: false,
-    white: false,
-    regular: false,
-    secret: false,
-    replay: false,
-};
-
-export const NULL_MINT_CODES = [-1, -1, -1, -1];
-export const NULL_SUPERNOVA = addDays(5);
-
-export enum CameraSlot {
-    devSlot = -2,
-    noSlot = -1,
-    position0 = 0,
-    position1 = 1,
-    position2 = 2,
-    position3 = 3,
-    position4 = 4,
-    position5 = 4,
-    secret0 = 5,
-    secret1 = 6,
-    secret2 = 7,
-    secret3 = 8,
-    secret4 = 9,
-    secret5 = 10,
-}
-export const NULL_CAMERA_INDEX = -1;
-export const NULL_CAMERA_SLOT = CameraSlot.secret0;
-
+// TODO Change to Player State
 export interface Store {
+    treasureProvider: [
+        TreasureProvider,
+        React.Dispatch<React.SetStateAction<TreasureProvider>>
+    ],
+    devMode: [
+        boolean,
+        React.Dispatch<React.SetStateAction<boolean>>
+    ],
+    isLoading: [
+        boolean,
+        React.Dispatch<React.SetStateAction<boolean>>
+    ]
     snackbar: [
         STSnackbar.SnackbarInfo, 
         (
@@ -79,43 +39,75 @@ export interface Store {
         ) => void,
         React.Dispatch<React.SetStateAction<STCurtains.CurtainsInfo>>
     ],
+    actionCrank: [
+        number,
+        ()=>void
+    ],
     globalState: [
-        ST_GLOBAL_STATE,
-        React.Dispatch<React.SetStateAction<ST_GLOBAL_STATE>>
+        STState.ST_GLOBAL_STATE,
+        React.Dispatch<React.SetStateAction<STState.ST_GLOBAL_STATE>>
     ],
     gameState: [
-        GameState,
-        ( state: GameState, ) => void,
+        STState.GameState,
+        ( state: STState.GameState, ) => void,
     ],
-    mintCodes: [
-        number [],
-        ( state: number [], ) => void,
-    ],
-    supernova: [
-        Date,
-        React.Dispatch<React.SetStateAction<Date>>
-    ],
-    cameraIndex: [
-        number,
-        React.Dispatch<React.SetStateAction<number>>
+    puzzleState: [
+        STState.ST_PUZZLE_STATE,
+        React.Dispatch<React.SetStateAction<STState.ST_PUZZLE_STATE>>
+    ]
+    cameraSlot: [
+        STState.ST_CAMERA_SLOTS,
+        React.Dispatch<React.SetStateAction<STState.ST_CAMERA_SLOTS>>
     ],
     cameraPosition: [
-        Vector3,
-        ( state: Vector3, ) => void,
+        STWorldSpace.STSpace,
+        ( state: STWorldSpace.STSpace, ) => void,
     ],
+    logout: [() => void],
 };
 
-export const StoreContext = React.createContext<Store>({
+export const logoutOfStore = (store: Store) => {
+    if( store.actionCrank[1] !== null) store.actionCrank[1]();
+    if( store.treasureProvider[1] !== null) store.treasureProvider[1](TreasureProvider.empty());
+    if( store.devMode[1] !== null) store.devMode[1](STState.NULL_DEV_MODE);
+    if( store.isLoading[1] !== null) store.isLoading[1](STState.NULL_IS_LOADING);
+    if( store.snackbar[2] !== null) store.snackbar[2](STSnackbar.NULL_SNACKBAR);
+    if( store.curtains[2] !== null) store.curtains[2](STCurtains.NULL_CURTAINS);
+    if( store.globalState[1] !== null) store.globalState[1](STState.NULL_GLOBAL_STATE);
+    if( store.puzzleState[1] !== null) store.puzzleState[1](STState.NULL_PUZZLE_STATE);
+    if( store.gameState[1] !== null) store.gameState[1](STState.NULL_GAME_STATE);
+    if( store.cameraSlot[1] !== null) store.cameraSlot[1](STState.NULL_CAMERA_SLOT);
+    if( store.cameraPosition[1] !== null) store.cameraPosition[1](STState.NULL_CAMERA_POSITION);
+}
+
+export const NULL_STORE: Store = {
+    treasureProvider: [(null as any), (null as any)],
+    devMode: [STState.NULL_DEV_MODE, (null as any)],
+    isLoading: [STState.NULL_IS_LOADING, (null as any)],
     snackbar: [STSnackbar.NULL_SNACKBAR, (null as any), (null as any)],
     curtains: [STCurtains.NULL_CURTAINS, (null as any), (null as any)],
-    globalState: [NULL_GLOBAL_STATE, (null as any)],
-    gameState: [NULL_GAME_STATE, (null as any)],
-    mintCodes: [NULL_MINT_CODES, (null as any)],
-    supernova: [NULL_SUPERNOVA, (null as any)],
-    cameraIndex: []
-})
+    actionCrank: [STState.NULL_ACTION_CRANK, (null as any)],
+    globalState: [STState.NULL_GLOBAL_STATE, (null as any)],
+    puzzleState: [STState.NULL_PUZZLE_STATE, (null as any)],
+    gameState: [STState.NULL_GAME_STATE, (null as any)],
+    cameraSlot: [STState.NULL_CAMERA_SLOT, (null as any)],
+    cameraPosition: [STState.NULL_CAMERA_POSITION, (null as any)],
+    logout: [(null as any)],
+}
+
+export const StoreContext = React.createContext<Store>(NULL_STORE)
 
 export default function StoreProvider({ children }:any) {
+
+    // Dev Mode
+    const [treasureProvider, setTreasureProvider] = React.useState(TreasureProvider.empty());
+
+    // Dev Mode
+    const [devMode, setDevMode] = React.useState(STState.NULL_DEV_MODE);
+
+    // Is Loading
+    const [isLoading, setIsLoading] = React.useState(STState.NULL_IS_LOADING);
+
     // Snackbar
     const [snackbar, setSnackbar] = React.useState(STSnackbar.NULL_SNACKBAR);
     const showSnackbar = (
@@ -143,60 +135,41 @@ export default function StoreProvider({ children }:any) {
         });
     }
 
+    // Action Crank
+    const [actionCrank, setActionCrank] = React.useState(STState.NULL_ACTION_CRANK);
+    const crankAction = () => {setActionCrank(actionCrank+1);}
+
     // Global State
-    const [globalState, setGlobalState] = React.useState(ST_GLOBAL_STATE.notConnected);
+    const [globalState, setGlobalState] = React.useState(STState.NULL_GLOBAL_STATE);
+
+    // Puzzle State
+    const [puzzleState, setPuzzleState] = React.useState(STState.NULL_PUZZLE_STATE);
 
     // Game State
-    const [gameState, setGameState] = React.useState(NULL_GAME_STATE);
-    const changeGameState = (newState: GameState) => {
-        setGameState(
-            Object.assign(
-                {},
-                {
-                    ...NULL_GAME_STATE,
-                    ...newState
-                }
-            )
-        );
-    }
+    const [gameState, setGameState] = React.useState(STState.NULL_GAME_STATE);
+    const updateGameState = (newState: STState.GameState) => { setGameState( STState.getNewGameState( newState )); }
 
-    // Camera 
-    const [cameraIndex, setCameraIndex] = React.useState(NULL_GAME_STATE);
-    const changeGameState = (newState: GameState) => {
-        setGameState(
-            Object.assign(
-                {},
-                {
-                    ...NULL_GAME_STATE,
-                    ...newState
-                }
-            )
-        );
-    }
+    // Camera Slot
+    const [cameraSlot, setCameraSlot] = React.useState(STState.NULL_CAMERA_SLOT);
 
-    // Mint Keys
-    const [mintCodes, setMintCodes] = React.useState(NULL_MINT_CODES);
-    const changeMintCodes = (newState: number[]) => {
-        setMintCodes(
-            Object.assign([], newState)
-        );
-    }
-
-    // Supernova
-    const [supernova, setSupernova] = React.useState(NULL_SUPERNOVA);
-
-    // Camera Index
-    const [cameraIndex, setCameraIndex] = React.useState(NULL_SUPERNOVA);
+    // Camera Position
+    const [cameraPosition, setCameraPosition] = React.useState(STState.NULL_CAMERA_POSITION);
+    const updateCameraPosition = (newState: STWorldSpace.STSpace) => { setCameraPosition( STState.getNewCameraPosition(newState) );}
 
     const store: Store = {
+        treasureProvider: [treasureProvider, setTreasureProvider],
+        devMode: [devMode, setDevMode],
+        isLoading: [isLoading, setIsLoading],
         snackbar: [snackbar, showSnackbar, setSnackbar],
         curtains: [curtains, drawCurtains, setCurtains],
+        actionCrank: [actionCrank, crankAction],
         globalState: [globalState, setGlobalState],
-        gameState: [gameState, changeGameState],
-        mintCodes: [mintCodes, changeMintCodes],
-        supernova: [supernova, setSupernova],
-        
-    }
+        puzzleState: [puzzleState, setPuzzleState],
+        gameState: [gameState, updateGameState],
+        cameraSlot: [cameraSlot, setCameraSlot],
+        cameraPosition: [cameraPosition, updateCameraPosition],
+        logout: [()=>{logoutOfStore(store);}],
+    };
   
     return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>
 }

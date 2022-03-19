@@ -9,44 +9,57 @@ import { StateView } from './components/stateView';
 import * as FSM from './components/fsm';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
-import { NootPuzzlePage } from './components/noot';
-import { DroniesPuzzlePage } from './components/dronie';
+import { NootPuzzlePage } from './puzzles/noot';
+import { DroniesPuzzlePage } from './puzzles/dronie';
+import React, { createContext, useReducer } from 'react';
+import AppReducer from './AppReducer';
 
 import { Connection, PublicKey, clusterApiUrl} from '@solana/web3.js';
 import {
   Program, Provider, web3, BN
 } from '@project-serum/anchor';
 import { getNFTs } from './components/solScan';
-import { DesolatePuzzlePage } from './components/desolates';
+import { DesolatePuzzlePage } from './puzzles/desolates';
 import { getDesolatesCode, getDronieCode, getNootCode } from './components/hashes';
 import { fontSize } from '@mui/system';
 
-const theme = createTheme({
-  typography: {
-    fontFamily: [
-      "Vimland",
-    ].join(",")
-  },
-  palette: {
-    primary: {
-      main: '#9945FF'
-    },
-    secondary: {
-      main: '#4FA5C4'
-    },
-    disabled: {
-      main: '#0D0D0D',
-    },
-    blue: {
-      main: '#4FA5C4',
-    },
-    green: {
-      main: '#14F195',
-    }
-  }
-});
+
+// New Imports
+import { STTheme } from './components/theme';
+
 
 const Bomb = Date.now() + 1000 * 60 * 60 * 24;
+
+const initialState = {
+   shoppingList : []
+}
+
+export const GlobalContext = createContext(initialState);
+
+export const GlobalProvider = ({ children }) => {
+   const [state, dispatch] = useReducer(AppReducer, initialState);
+
+   // Actions for changing state
+
+   function addItemToList(item) {
+       dispatch({
+           type: 'ADD_ITEM',
+           payload: item
+       });
+   }
+   function removeItemFromList(item) {
+       dispatch({
+           type: 'REMOVE_ITEM',
+           payload: item
+       });
+   }
+
+   return(
+    <GlobalContext.Provider value = {{shoppingList : state.shoppingList, addItemToList, removeItemFromList}}> 
+      {children} 
+    </GlobalContext.Provider>
+   )
+}
 
 function Loader(props){
   return (
@@ -356,7 +369,7 @@ function App() {
 
   return (
     <div className="App">
-      <ThemeProvider theme={theme}>
+      <ThemeProvider theme={STTheme}>
         <Loader open={isLoading}/>
         <Puzzle1Page puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle}/>
         <Puzzle2Page puzzleState={puzzleState} cameraPosCB={cameraPosCB} setDevMode={setDevMode} puzzleCB={puzzleCB} wallet={wallet} puzzle={activePuzzle} state={state}/>

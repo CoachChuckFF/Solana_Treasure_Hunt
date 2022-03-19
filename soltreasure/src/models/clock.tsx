@@ -5,6 +5,19 @@ const _minute = _second * 60;
 const _hour = _minute * 60;
 const _day = _hour * 24;
 
+export const daysToMS = (days: number) => {
+    return _day * Math.trunc(days);
+}
+export const hoursToMS = (hours: number) => {
+    return _hour * Math.trunc(hours);
+}
+export const minutesToMS = (minutes: number) => {
+    return _minute * Math.trunc(minutes);
+}
+export const secondsToMS = (seconds: number) => {
+    return _second * Math.trunc(seconds);
+}
+
 export const addDays = (days: number, date?:Date) => {
     return new Date((date == null ? Date.now() : date.getTime()) + _day *  Math.trunc(days));
 }
@@ -45,7 +58,6 @@ export const dateToUnix = (date?:Date) => {
 }
 
 export const dateToBN = (date:Date) => {
-    date.getDay
     return new BN(dateToUnix(date))
 }
 

@@ -3,6 +3,18 @@
   src: local("Vimland"),
    url("./fonts/Vimland.otf") format("truetype");
 }
+
+@font-face {
+  font-family: "LCD";
+  src: local("LCD"),
+   url("./fonts/lcd.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: local("Roboto"),
+   url("./fonts/robot.woff") format("truetype");
+}
   
 
 body {

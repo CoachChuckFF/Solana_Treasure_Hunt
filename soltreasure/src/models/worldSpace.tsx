@@ -69,13 +69,13 @@ const superNovaDistance = 888
 export const TargetCamera: STSpace = {pos: new Vector3(0, EyeLevel, 0), rot: new Vector3(0, 0, 0) };
 export const SecretCamera: STSpace = {pos: new Vector3(0, EyeLevel, 0), rot: new Vector3(0, 0, 0) };
 export const HubIndex0: STSpace = {pos: new Vector3(0, 0, -HubRadius), rot: new Vector3(0, 0, 0) };
-export const HubIndex1: STSpace = {pos: new Vector3(HubX, 0, -HubZ), rot: [0, -(HexTheta * 1), 0], point: [0, -5, -HubRadius]};
-export const HubIndex2: STSpace = {pos: new Vector3(HubX, 0, HubZ), rot: [0, -(HexTheta * 2), 0], point: [0, -5, -HubRadius]};
-export const HubIndex3: STSpace = {pos: new Vector3(0, 0, HubRadius), rot: [0, -(HexTheta * 1), 0], point: [0, -5, -HubRadius]};
-export const HubIndex4: STSpace = {pos: new Vector3(-HubX, 0, HubZ), light: [-HubX * PointLightDistanceBehind, PointLightHeight, HubZ * PointLightDistanceBehind], rot: [0, -(HexTheta * 4), 0], point: [0, -5, -HubRadius]};
-export const HubIndex5: STSpace = {pos: new Vector3(-HubX, 0, -HubZ), light: [-HubX * PointLightDistanceBehind, PointLightHeight, -HubZ * PointLightDistanceBehind], rot: [0, -(HexTheta * 5), 0], point: [0, -5, -HubRadius]};
+export const HubIndex1: STSpace = {pos: new Vector3(HubX, 0, -HubZ), rot: new Vector3(0, -(HexTheta * 1), 0),};
+export const HubIndex2: STSpace = {pos: new Vector3(HubX, 0, HubZ), rot: new Vector3(0, -(HexTheta * 2), 0),};
+export const HubIndex3: STSpace = {pos: new Vector3(0, 0, HubRadius), rot: new Vector3(0, -(HexTheta * 1), 0),};
+export const HubIndex4: STSpace = {pos: new Vector3(-HubX, 0, HubZ), rot: new Vector3(0, -(HexTheta * 4), 0),};
+export const HubIndex5: STSpace = {pos: new Vector3(-HubX, 0, -HubZ), rot: new Vector3(0, -(HexTheta * 5), 0),};
 
-const MasterHubInfo = [
+export const MasterHubInfo = [
     HubIndex0,
     HubIndex1,
     HubIndex2,
@@ -85,9 +85,7 @@ const MasterHubInfo = [
 ]
 
 // Classes
-interface STSpace {
+export interface STSpace {
     pos: Vector3;
     rot: Vector3;
 }
-
-// 
