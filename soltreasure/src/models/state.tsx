@@ -2,11 +2,13 @@
 import React from "react";
 import * as STSnackbar from "../views/snackbar";
 import * as STCurtains from "../views/curtains";
-import * as STWorldSpace from "./worldSpace";
+import * as STWorldSpace from "./space";
 import * as STClock from "./clock";
 import { PublicKey } from "@solana/web3.js"
 import { Vector3 } from 'three';
 import { addDays } from "./clock";
+
+export const FRACTAL_SOLUTION = "TTQPHH";
 
 //TODO Update these with SOL TREASURE
 export enum ST_CHEST_TYPES {
@@ -16,23 +18,6 @@ export enum ST_CHEST_TYPES {
 export enum ST_CHEATER_TIMES {
     main = STClock.minutesToMS(10),
     secret = STClock.minutesToMS(30),
-}
-
-export enum ST_CAMERA_SLOTS {
-    devSlot = -2,
-    nullSlot = -1,
-    slot0 = 0,
-    slot1 = 1,
-    slot2 = 2,
-    slot3 = 3,
-    slot4 = 4,
-    slot5 = 4,
-    sslot0 = 5,
-    sslot1 = 6,
-    sslot2 = 7,
-    sslot3 = 8,
-    sslot4 = 9,
-    sslot5 = 10,
 }
 
 export enum ST_GLOBAL_STATE {
@@ -47,7 +32,8 @@ export enum ST_PUZZLE_STATE {
     noot = "Noots",
     dronies = "Dronies",
     desolates = "Desolates",
-    combination = "Combination",
+    forge = "Forge",
+    rug = "Rug",
     fractals = "Fractals",
 }
 
@@ -109,8 +95,8 @@ export const NULL_GAME_STATE: GameState = {
 };
 export const NULL_GLOBAL_STATE = ST_GLOBAL_STATE.notConnected;
 export const NULL_PUZZLE_STATE = ST_PUZZLE_STATE.noPuzzle;
-export const NULL_CAMERA_SLOT = ST_CAMERA_SLOTS.nullSlot;
-export const NULL_CAMERA_POSITION = STWorldSpace.TargetCamera;
+export const NULL_CAMERA_SLOT = STWorldSpace.ST_CAMERA_SLOTS.nullSlot;
+export const NULL_CAMERA_POSITION = STWorldSpace.NullSpace;
 export const NULL_IS_LOADING = false;
 export const NULL_DEV_MODE = false;
 export const NULL_ACTION_CRANK = 0;
@@ -198,4 +184,24 @@ export const didUnlockChest = ( state: GameState, chest: ST_CHEST_TYPES, ) => {
     } else {
         return state.main > 0;
     }
+}
+
+export const getStory = () => {
+    // let normalRun = Math.abs(run[0] - run[1]);
+    // let fullRun = Math.abs(run[0] - run[2]);
+
+    // if(puzzleState.secret){
+    //     return "Congrats! You 100%'d this thing! AND you did it in " + getTimeString(fullRun) + '. You\'re the real treasure!\n\nLove,\nCoach Chuck';
+    // }
+
+    // if(puzzleState.regular){
+    //     return "Congrats! You've opened the chest! AND you did it in " + getTimeString(normalRun) + '. Give yourself a pat on the back! Oh, and remember to ignore the red herring... \n\nLove,\nCoach Chuck';
+    // }
+
+    // if(state === FSM.Reconstruction){
+    //     return "Welcome! The supernova has already happened... Hoever, if you're playing this right now, you're actually playing a digitally recreated world saved within a replay token or an OG sol-treasure account. You won't be able to mint anything, however, you can see how fast you can solve the puzzles! Happy Speedrunning!\n\nLove,\nCoach Chuck";
+    // }
+
+    return "The object is simple. Mint each key for each lock. Do this BEFORE the supernova... Once this happens all unclaimed SFTs will be burned. Each key will cost a total of 0.05 SOL - if you input a wrong answer, you'll mint a broken key at 0.03. You'll need a total of ~0.255 Sol to 100% this thing... Happy Hunting! \n\n Love,\n Coach Chuck\n\n";
+    
 }

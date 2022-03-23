@@ -1,8 +1,9 @@
 import React from "react";
 import * as STSnackbar from "../views/snackbar";
 import * as STCurtains from "../views/curtains";
-import * as STWorldSpace from "../models/worldSpace";
+import * as STWorldSpace from "../models/space";
 import * as STState from "../models/state";
+import * as STS from "../models/space";
 import { PublicKey } from '@solana/web3.js';
 import { Vector3 } from 'three';
 import { TreasureProvider } from "../models/solTreasure";
@@ -56,8 +57,8 @@ export interface Store {
         React.Dispatch<React.SetStateAction<STState.ST_PUZZLE_STATE>>
     ]
     cameraSlot: [
-        STState.ST_CAMERA_SLOTS,
-        React.Dispatch<React.SetStateAction<STState.ST_CAMERA_SLOTS>>
+        STS.ST_CAMERA_SLOTS,
+        React.Dispatch<React.SetStateAction<STS.ST_CAMERA_SLOTS>>
     ],
     cameraPosition: [
         STWorldSpace.STSpace,
