@@ -85,25 +85,21 @@ pub mod soltreasure {
     ) -> Result<()> {
 
         let game = &mut ctx.accounts.game;
-        let id_index = game.items.len();
-
-
 
         // Check Game
         if is_playing!(game.start_date) { return Err(error!(ErrorCode::IsPlaying)) }
 
         // Check Params
+        let id_index = game.items.len();
         if params.name.len() > MAX_NAME_LEN { return Err(error!(ErrorCode::NameTooLong)) }
         if params.mint_tail_seed as usize > MAX_TAIL_SEED_INDEX { return Err(error!(ErrorCode::BadTailSeed)) }
         if !check_item_has_ok_mint(&params.mint_bytes) { return Err(error!(ErrorCode::BadMintBytes)) }
-
 
         // Check Items
         let item_index = get_item_index_from_mint(&ctx.accounts.game_vault.mint, &game.items);
         if item_index != game.items.len() { return Err(error!(ErrorCode::ItemAlreadyExists)) }
         if game.item_count as usize <= game.items.len() { return Err(error!(ErrorCode::MaxItemsLoaded)) }
         if ctx.accounts.coach_vault.amount < params.amount_to_tx { return Err(error!(ErrorCode::NotEnoughInCoachesVault)) }
-
 
         match params.item_type {
             TYPE_ITEM | TYPE_REWARD | TYPE_COMBINATION_OUTPUT => {
@@ -130,11 +126,12 @@ pub mod soltreasure {
         }
 
         if params.is_replay_token {
-            game.replay_token_mint = ctx.accounts.game_vault.mint;
+            game.replay_token_mint = ctx.accounts.game_vault.mint.clone();
         }
 
         if params.is_wrong_answer_item {
-            game.wrong_answer_mint = ctx.accounts.game_vault.mint;
+            game.wrong_answer_mint = ctx.accounts.game_vault.mint.clone();
+            game.wrong_answer_vault = ctx.accounts.game_vault.key().clone();
         }
 
         let cpi_accounts = Transfer {
@@ -343,6 +340,7 @@ pub mod soltreasure {
         player_account.player = ctx.accounts.player.key().clone();
         player_account.game = game.key().clone();
         player_account.player_replay_vault = ctx.accounts.player_replay_vault.key().clone();
+        player_account.player_wrong_answer_vault = ctx.accounts.player_wrong_answer_vault.key().clone();
         player_account.player_account = player_account.key().clone();
 
         player_account.run_start = now;
@@ -495,17 +493,20 @@ pub mod soltreasure {
 
         // Check Items
         let item_index = get_item_index_from_mint(&ctx.accounts.player_vault_or_replay.mint, &game.items);
+        let bad_item_index = get_item_index_from_mint(&game.wrong_answer_mint, &game.items);
         let inventory_index = get_inventory_item_index_from_mint(&ctx.accounts.player_vault_or_replay.mint, &player_account.inventory);
+        let bad_inventory_index = get_inventory_item_index_from_mint(&game.wrong_answer_mint, &player_account.inventory);
         
         if item_index == game.items.len() { return Err(error!(ErrorCode::ItemDoesNotExist)) }
+        if bad_item_index == game.items.len() { return Err(error!(ErrorCode::ItemDoesNotExist)) }
         if inventory_index == player_account.inventory.len() { return Err(error!(ErrorCode::ItemDoesNotExistInInventory)) }
-
+        if bad_inventory_index == player_account.inventory.len() { return Err(error!(ErrorCode::ItemDoesNotExistInInventory)) }
         
         // Check Amounts
         let amount = player_account.inventory[inventory_index].amount - player_account.inventory[inventory_index].minted_count;
+        let bad_amount = player_account.inventory[bad_inventory_index].amount - player_account.inventory[bad_inventory_index].minted_count;
 
-        if amount == 0 { return Err(error!(ErrorCode::NoneToMint)) }
-
+        if amount == 0 && bad_amount == 0{ return Err(error!(ErrorCode::NoneToMint)) }
 
         // If ! Recreation
         if !is_recreation {
@@ -514,7 +515,7 @@ pub mod soltreasure {
             if game.items[item_index].mint != player_account.inventory[inventory_index].mint { return Err(error!(ErrorCode::GeneralError)) }
 
             // If there are not enough in the vault, still count it for the game!
-            if ctx.accounts.game_vault.amount >= amount as u64 {
+            if ctx.accounts.game_vault.amount >= amount as u64 && amount != 0 {
     
                 let lammy_cost = amount as u64 * game.items[item_index].cost_per_item;
                 if lammy_cost != 0 {
@@ -560,15 +561,64 @@ pub mod soltreasure {
                     return Err(error!(ErrorCode::CouldNotTX))
                 }
             }
+
+            // If there are not enough in the vault, still count it for the game!
+            if ctx.accounts.game_wrong_answer_vault.amount >= bad_amount as u64 && bad_amount != 0 {
+
+                let lammy_cost = bad_amount as u64 * game.items[bad_item_index].cost_per_item;
+                if lammy_cost != 0 {
+                    // Get those Lammys
+                    let tx_lams = anchor_lang::solana_program::system_instruction::transfer(
+                        &ctx.accounts.player.key(),
+                        &ctx.accounts.coach.key(),
+                        lammy_cost,
+                    );
+                    
+                    let get_tx_lams_response = anchor_lang::solana_program::program::invoke(
+                        &tx_lams,
+                        &[
+                            ctx.accounts.player.to_account_info().clone(),
+                            ctx.accounts.coach.to_account_info().clone(),
+                        ],
+                    );
+                    
+                    if !get_tx_lams_response.is_ok() {
+                        return Err(error!(ErrorCode::CouldNotTX))
+                    }
+
+                    game.lamports += lammy_cost;
+                }
+                
+                // TX Output
+                let seeds = &[
+                    game.to_account_info().key.as_ref(),
+                    &[game.nonce],
+                ];
+                let signer = &[&seeds[..]];
+                let cpi_program = ctx.accounts.token_program.clone();
+    
+                let output_tx = Transfer {
+                    from: ctx.accounts.game_wrong_answer_vault.to_account_info().clone(),
+                    to: ctx.accounts.player_wrong_answer_vault.to_account_info().clone(),
+                    authority: ctx.accounts.gatekeeper.clone(),
+                };
+                let output_cpi = CpiContext::new_with_signer(cpi_program.clone(), output_tx, signer);
+                let output_tx_result = token::transfer(output_cpi, bad_amount as u64);
+    
+                if !output_tx_result.is_ok() {
+                    return Err(error!(ErrorCode::CouldNotTX))
+                }
+            }
         }
 
         // Set State
-        let percent = game.items[item_index].percent_per_item * amount;
-
-        if !is_recreation { player_account.og_percent += percent; }
-        player_account.run_percent += percent;
-        player_account.run_percent_timestamp = get_time!();
+        player_account.run_percent += game.items[item_index].percent_per_item * amount;
+        player_account.run_percent += game.items[bad_item_index].percent_per_item * bad_amount;
         player_account.inventory[inventory_index].minted_count = player_account.inventory[inventory_index].amount;
+        player_account.inventory[bad_inventory_index].minted_count = player_account.inventory[bad_inventory_index].amount;
+        player_account.run_percent_timestamp = get_time!();
+
+        if !is_recreation { player_account.og_percent = player_account.run_percent; }
 
         if is_recreation {
             // Set Speedboard
@@ -945,10 +995,10 @@ pub struct CreatePlayer<'info> {
         ],
         bump
     )]
-    pub player_account: Account<'info, Player>,
+    pub player_account: Box<Account<'info, Player>>,
 
     #[account(mut)]
-    pub game: Account<'info, Game>, 
+    pub game: Box<Account<'info, Game>>, 
 
     #[account(
         mut, 
@@ -957,6 +1007,14 @@ pub struct CreatePlayer<'info> {
         && get_associated_token_address(&player.key(), &player_replay_vault.mint) == player_replay_vault.key()
     )]
     pub player_replay_vault: Account<'info, TokenAccount>,
+
+    #[account(
+        mut, 
+        constraint = &player_wrong_answer_vault.owner == player.key
+        && player_wrong_answer_vault.mint == game.wrong_answer_mint
+        && get_associated_token_address(&player.key(), &player_wrong_answer_vault.mint) == player_wrong_answer_vault.key()
+    )]
+    pub player_wrong_answer_vault: Account<'info, TokenAccount>,
 
     #[account(mut)]
     pub player: Signer<'info>,
@@ -1065,12 +1123,27 @@ pub struct MintItem<'info> {
     )]
     pub game_vault: Account<'info, TokenAccount>,
 
+    #[account(
+        mut, 
+        constraint = &game_vault.owner == gatekeeper.key
+        && game_wrong_answer_vault.mint == game.wrong_answer_mint
+    )]
+    pub game_wrong_answer_vault: Account<'info, TokenAccount>,
+
     // Player Vaults
     #[account(
         mut, 
         constraint = &player_vault_or_replay.owner == player.key
     )]
     pub player_vault_or_replay: Account<'info, TokenAccount>, 
+
+    #[account(
+        mut, 
+        constraint = &player_wrong_answer_vault.owner == player.key
+        && player_wrong_answer_vault.mint == game.wrong_answer_mint
+        && get_associated_token_address(&player.key(), &player_wrong_answer_vault.mint) == player_wrong_answer_vault.key()
+    )]
+    pub player_wrong_answer_vault: Account<'info, TokenAccount>,
 
     // Signers
     #[account(mut)]
@@ -1240,6 +1313,7 @@ pub struct Player {
     pub game: Pubkey,
 
     pub player_replay_vault: Pubkey,
+    pub player_wrong_answer_vault: Pubkey,
     pub player_account: Pubkey,
 
     pub run_start: u64,
@@ -1256,7 +1330,7 @@ pub fn get_player_size (
 ) -> usize {
     return  ACCOUNT_DISCRIMINATOR +
             (MAX_NAME_LEN) + 
-            (32 * 4) + 
+            (32 * 5) + 
             8 + // run_start
             8 + // run_percent_timestamp
             1 + // run_percent
@@ -1346,6 +1420,7 @@ pub struct Game {
     // Game Mechanics
     pub replay_token_mint: Pubkey, 
     pub wrong_answer_mint: Pubkey,
+    pub wrong_answer_vault: Pubkey,
 
     // Counts 
     pub item_count: u8,
@@ -1367,7 +1442,7 @@ pub fn get_game_size (
 ) -> usize {
     return  ACCOUNT_DISCRIMINATOR +
         (MAX_NAME_LEN) + 
-        (32 * 3) + 
+        (32 * 4) + 
         1 + // nonce
         8 + // lammys
         8 + // cheater_time
@@ -1523,12 +1598,13 @@ pub fn check_for_correct_hash(
     mint_tail_seed: u8,
 ) -> bool {
     let mut correct_hash = [0, 0, 0, 0] as [u8; 4];
+    let wallet = player.to_bytes();
 
     // Create the correct hash
     for i in 0..item_mint_bytes.len() {
         correct_hash[i] = 
-            player.to_bytes()[PUBKEY_SIZE - 1 - mint_tail_seed as usize] ^ 
-            player.to_bytes()[item_mint_bytes[i] as usize];
+            wallet[wallet.len() - 1 - mint_tail_seed as usize] ^ 
+            wallet[item_mint_bytes[i] as usize];
     }
 
     // Check against input

@@ -75,11 +75,11 @@ const main = async() => {
     const items = {
       key0: await ST.createTestGameItem(provider, {name: "Key 0"}),
       key1: await ST.createTestGameItem(provider, {name: "Key 1"}),
-      key2: await ST.createTestGameItem(provider, {name: "Key 2"}),
-      badKey: await ST.createTestGameItem(provider, {name: "Bad Key", isWrongAnswerItem: true, percent: 0}),
+      key2: await ST.createTestGameItem(provider, {name: "Key 2", mintBytes: [0,1,2,3], }),
+      badKey: await ST.createTestGameItem(provider, {name: "Bad Key", isWrongAnswerItem: true, percentPerItem: 0, itemsPerMint: 2, maxItemsPerInventory: 5}),
       forgedKey: await ST.createTestGameItem(provider, {name: "Forged Key", itemType: ST.GameItemType.comb}),
       treasure: await ST.createTestGameItem(provider, {name: "Treasure", itemType: ST.GameItemType.reward}),
-      replayToken: await ST.createTestGameItem(provider, {name: "Replay Token", isReplayToken: true, percent: 0, itemType: ST.GameItemType.reward}),
+      replayToken: await ST.createTestGameItem(provider, {name: "Replay Token", isReplayToken: true, percentPerItem: 0, itemType: ST.GameItemType.reward}),
     };
 
     const combinations = {
@@ -147,7 +147,9 @@ const main = async() => {
     await ST.startStopCountdown(
       stProvider,
       game,
-      ST.createTestStartStop(true, {}),
+      ST.createTestStartStop(true, {
+        cheaterTime: new anchor.BN(0),
+      }),
     )
 
     console.log( await ST.gameToString(stProvider, game.game) );
@@ -188,13 +190,96 @@ const main = async() => {
     // ))
 
     // ---------------------- HASH ----------------------------------
-    console.log("Grabbing Key...");
+    console.log("Grabbing Keys...");
 
     players.player0.playerAccount = await ST.hashItem(
       players.player0.stProvider,
       game,
       players.player0.playerAccount,
-      game.items[0].mint,
+      items.key0.mint,
+      {
+        hash: [0,0,0,0]
+      }
+    )
+
+    players.player0.playerAccount = await ST.hashItem(
+      players.player0.stProvider,
+      game,
+      players.player0.playerAccount,
+      items.key1.mint,
+      {
+        hash: [0,0,0,0]
+      }
+    )
+
+    players.player0.playerAccount = await ST.hashItem(
+      players.player0.stProvider,
+      game,
+      players.player0.playerAccount,
+      items.key2.mint,
+      {
+        hash: ST.hashWallet(
+          players.player0.stProvider,
+          items.key2.params.mintBytes,
+          items.key2.params.mintTailSeed,
+        )
+      }
+    )
+
+    players.player0.playerAccount = await ST.hashItem(
+      players.player0.stProvider,
+      game,
+      players.player0.playerAccount,
+      items.key2.mint,
+      {
+        hash: [0,0,0,0]
+      }
+    )
+    
+    players.player0.playerAccount = await ST.hashItem(
+      players.player0.stProvider,
+      game,
+      players.player0.playerAccount,
+      items.key2.mint,
+      {
+        hash: [0,0,0,0]
+      }
+    )
+
+    // ---------------------- COMBO ----------------------------------
+    console.log("Forging Keys...");
+    let forgeParams = await ST.createForgeParams(
+      players.player0.stProvider,
+      game,
+      0
+    );
+    players.player0.playerAccount = await ST.forgeItem(
+      players.player0.stProvider,
+      game,
+      players.player0.playerAccount,
+      forgeParams.mints.mintI0,
+      forgeParams.mints.mintI1,
+      forgeParams.mints.mintO,
+      forgeParams.params,
+    )
+
+    // ---------------------- TREASURE ----------------------------------
+    console.log("Grabbing Treasure...");
+    players.player0.playerAccount = await ST.hashItem(
+      players.player0.stProvider,
+      game,
+      players.player0.playerAccount,
+      items.treasure.mint,
+      {
+        hash: [0,0,0,0]
+      }
+    )
+
+    players.player0.playerAccount = await ST.hashItem(
+      players.player0.stProvider,
+      game,
+      players.player0.playerAccount,
+      items.replayToken.mint,
       {
         hash: [0,0,0,0]
       }
@@ -232,7 +317,7 @@ const main = async() => {
       process.exit(0);
     } catch (error) {
 
-      console.log((error as any).toString());
+      console.log(error);
       process.exit(1);
     }
   };

@@ -45,7 +45,7 @@ export interface GameItem {
     percentPerItem: number,
     itemsPerMint: number,
     maxItemsPerInventory: number,
-    costPerMint: BN,
+    costPerItem: BN,
 }
 
 export interface GameInventoryItem {
@@ -59,6 +59,7 @@ export interface PlayerAccount {
     player: web3.PublicKey,
     game: web3.PublicKey,
     playerReplayVault: web3.PublicKey,
+    playerWrongAnswerVault: web3.PublicKey,
     playerAccount: web3.PublicKey,
     runStart: BN,
     runPercentTimestamp: BN,
@@ -80,6 +81,7 @@ export interface GameAccount {
     supernovaDate: BN,
     replayTokenMint: web3.PublicKey,
     wrongAnswerMint: web3.PublicKey,
+    wrongAnswerVault: web3.PublicKey,
     itemCount: number,
     combinationCount: number,
     leaderboardCount: number,
@@ -104,10 +106,10 @@ export interface LoadItemsParams {
     mintBytes: number[],
     isReplayToken: boolean,
     isWrongAnswerItem: boolean,
-    percent: number,
-    amountPerMint: number,
-    maxPerInventory: number,
-    cost: BN,
+    percentPerItem: number,
+    itemsPerMint: number,
+    maxItemsPerInventory: number,
+    costPerItem: BN,
     amountToTx: BN,
 }
 
@@ -136,6 +138,11 @@ export interface CreatePlayerParams {
 
 export interface HashItemParams {
     hash: number[],
+}
+
+
+export interface ForgeItemParams {
+    combinationIndex: number,
 }
 
 // --------- PROVIDER -----------------------------------------
@@ -442,9 +449,15 @@ export const createPlayerAccount = async (
 
     params.bump = bump;
 
-    const { vault, shouldCreate } = await helpers.getAssociatedTokenAddressAndShouldCreate(
+    let replay = await helpers.getAssociatedTokenAddressAndShouldCreate(
         stProvider.provider,
         game.replayTokenMint,
+        player,
+    );
+
+    let wrongAns = await helpers.getAssociatedTokenAddressAndShouldCreate(
+        stProvider.provider,
+        game.wrongAnswerMint,
         player,
     );
 
@@ -455,18 +468,29 @@ export const createPlayerAccount = async (
                 playerAccount: playerAccount,
                 game: game.game,
                 player: player,
-                playerReplayVault: vault,
+                playerReplayVault: replay.vault,
+                playerWrongAnswerVault: wrongAns.vault,
                 gatekeeper: game.gatekeeper,
                 systemProgram: web3.SystemProgram.programId,
             },
             signers: [],
             instructions: [
-                ...(shouldCreate) ? [
+                ...(replay.shouldCreate) ? [
                     spl.Token.createAssociatedTokenAccountInstruction(
                         spl.ASSOCIATED_TOKEN_PROGRAM_ID,
                         spl.TOKEN_PROGRAM_ID,
                         game.replayTokenMint,
-                        vault,
+                        replay.vault,
+                        player,
+                        player,
+                    ) 
+                ] : [],
+                ...(wrongAns.shouldCreate) ? [
+                    spl.Token.createAssociatedTokenAccountInstruction(
+                        spl.ASSOCIATED_TOKEN_PROGRAM_ID,
+                        spl.TOKEN_PROGRAM_ID,
+                        game.wrongAnswerMint,
+                        wrongAns.vault,
                         player,
                         player,
                     ) 
@@ -515,6 +539,14 @@ export const hashItem = async (
     const player = stProvider.owner;
 
     const gameItemAccount = await helpers.getAssociatedTokenAddress(mint, game.gatekeeper, true);
+    const isRecreation = await getIsRecreation(stProvider, game);
+
+    const gameVault = await helpers.getAssociatedTokenAddress(mint, game.gatekeeper, true);
+    const { vault, shouldCreate } = await helpers.getAssociatedTokenAddressAndShouldCreate(
+        stProvider.provider,
+        mint,
+        player,
+    );
 
     const tx = new web3.Transaction();
 
@@ -536,16 +568,10 @@ export const hashItem = async (
         )
     );
 
-    if(!await getIsRecreation(stProvider, game)){
-        const gameVault = await helpers.getAssociatedTokenAddress(mint, game.gatekeeper, true);
-        const { vault, shouldCreate } = await helpers.getAssociatedTokenAddressAndShouldCreate(
-            stProvider.provider,
-            mint,
-            player,
-        );
 
+    if(shouldCreate && !isRecreation){
         tx.add(
-            ...(shouldCreate) ? [
+            ...[
                 spl.Token.createAssociatedTokenAccountInstruction(
                     spl.ASSOCIATED_TOKEN_PROGRAM_ID,
                     spl.TOKEN_PROGRAM_ID,
@@ -554,29 +580,31 @@ export const hashItem = async (
                     player,
                     player,
                 ) 
-            ] : []
-        )
-
-        tx.add(
-            stProvider.program.instruction.mintItem(
-                {
-                    accounts: {
-                        game: game.game,
-                        gatekeeper: game.gatekeeper,
-                        playerAccount: playerAccount.playerAccount,
-                        gameVault: gameVault,
-                        playerVault: vault,
-                        player: player,
-                        coach: game.coach,
-                        tokenProgram: spl.TOKEN_PROGRAM_ID,
-                        systemProgram: web3.SystemProgram.programId,
-                    },
-                    signers: [],
-                    instructions: [],
-                } 
-            )
+            ]
         );
     }
+
+    tx.add(
+        stProvider.program.instruction.mintItem(
+            {
+                accounts: {
+                    game: game.game,
+                    gatekeeper: game.gatekeeper,
+                    playerAccount: playerAccount.playerAccount,
+                    gameVault: gameVault,
+                    gameWrongAnswerVault: game.wrongAnswerVault,
+                    playerVaultOrReplay: isRecreation ? playerAccount.playerReplayVault : vault,
+                    playerWrongAnswerVault: playerAccount.playerWrongAnswerVault,
+                    player: player,
+                    coach: game.coach,
+                    tokenProgram: spl.TOKEN_PROGRAM_ID,
+                    systemProgram: web3.SystemProgram.programId,
+                },
+                signers: [],
+                instructions: [],
+            } 
+        )
+    );
 
     await stProvider.provider.send(tx);
 
@@ -590,39 +618,85 @@ export const forgeItem = async (
     mintI0: web3.PublicKey,
     mintI1: web3.PublicKey,
     mintO: web3.PublicKey,
-    params: any,
+    params: ForgeItemParams,
 ) => {
     const game = await getGameAccount(stProvider, stKey);
     const playerAccount = await getPlayerAccount(stProvider, playerAccountKey);
     const player = stProvider.owner;
 
-    const input0Vault = await helpers.getAssociatedTokenAddress(mintI0, game.gatekeeper, true);
-    const input1Vault = await helpers.getAssociatedTokenAddress(mintI1, game.gatekeeper, true);
-    const outputVault = await helpers.getAssociatedTokenAddress(mintO, game.gatekeeper, true);
+    const gameI0Vault = await helpers.getAssociatedTokenAddress(mintI0, game.gatekeeper, true);
+    const gameI1Vault = await helpers.getAssociatedTokenAddress(mintI1, game.gatekeeper, true);
+    const gameOVault = await helpers.getAssociatedTokenAddress(mintO, game.gatekeeper, true);
 
-    const playerInput0Vault = await helpers.getAssociatedTokenAddress(mintI0, player);
-    const playerInput1Vault = await helpers.getAssociatedTokenAddress(mintI1, player);
-    const playerOutputVault = await helpers.getAssociatedTokenAddress(mintO, player);
+    const isRecreation = await getIsRecreation(stProvider, game);
 
-    await stProvider.program.rpc.forgeItem(
-        {
-            accounts: {
-                game: game.game,
-                gatekeeper: game.gatekeeper,
-                playerAccount: playerAccount.playerAccount,
-                input0Vault: input0Vault,
-                input1Vault: input1Vault,
-                outputVault: outputVault,
-                playerInput0Vault: playerInput0Vault,
-                playerInput1Vault: playerInput1Vault,
-                playerOutputVault: playerOutputVault,
-                player: player,
-                tokenProgram: spl.TOKEN_PROGRAM_ID,
-            },
-            signers: [],
-            instructions: [],
-        }
+    const gameVault = await helpers.getAssociatedTokenAddress(mintO, game.gatekeeper, true);
+    const { vault, shouldCreate } = await helpers.getAssociatedTokenAddressAndShouldCreate(
+        stProvider.provider,
+        mintO,
+        player,
     );
+
+    const tx = new web3.Transaction();
+
+    tx.add(
+        stProvider.program.instruction.forgeItem(
+            params,
+            {
+                accounts: {
+                    game: game.game,
+                    gatekeeper: game.gatekeeper,
+                    playerAccount: playerAccount.playerAccount,
+                    input0Vault: gameI0Vault,
+                    input1Vault: gameI1Vault,
+                    outputVault: gameOVault,
+                    playerReplayVault: playerAccount.playerReplayVault,
+                    player: player,
+                },
+                signers: [],
+                instructions: [],
+            } 
+        )
+    );
+
+    if(shouldCreate && !isRecreation){
+        tx.add(
+            ...[
+                spl.Token.createAssociatedTokenAccountInstruction(
+                    spl.ASSOCIATED_TOKEN_PROGRAM_ID,
+                    spl.TOKEN_PROGRAM_ID,
+                    mintO,
+                    vault,
+                    player,
+                    player,
+                ) 
+            ]
+        );
+    }
+
+    tx.add(
+        stProvider.program.instruction.mintItem(
+            {
+                accounts: {
+                    game: game.game,
+                    gatekeeper: game.gatekeeper,
+                    playerAccount: playerAccount.playerAccount,
+                    gameVault: gameVault,
+                    gameWrongAnswerVault: game.wrongAnswerVault,
+                    playerVaultOrReplay: isRecreation ? playerAccount.playerReplayVault : vault,
+                    playerWrongAnswerVault: playerAccount.playerWrongAnswerVault,
+                    player: player,
+                    coach: game.coach,
+                    tokenProgram: spl.TOKEN_PROGRAM_ID,
+                    systemProgram: web3.SystemProgram.programId,
+                },
+                signers: [],
+                instructions: [],
+            } 
+        )
+    );
+
+    await stProvider.provider.send(tx);
 
     return getPlayerAccount(stProvider, playerAccount, true);
 }
@@ -687,6 +761,24 @@ export const itemTypeToString = (itemType: GameItemType) => {
     return "Unkown";
 }
 // --------- GAME HELPERS -----------------------------------------
+export const hashWallet = (
+    stProvider: STProvider,
+    mintBytes: number[],
+    tail: number,
+) => {
+    const wallet = stProvider.owner.toBytes();
+    let hash = [...NULL_MINT_BYTES];
+
+    if(tail > 16 ) return hash;
+    if(mintBytes.length !== hash.length) return hash;
+    for(let i = 0; i < mintBytes.length; i++){ if(mintBytes[i] > wallet.length) return hash; }
+
+    
+    for(let i = 0; i < hash.length; i++)
+        hash[i] = wallet[wallet.length - 1 - tail] ^ wallet[mintBytes[i]]
+
+    return hash;
+}
 
 export const getTimeTillSupernova = async (
     stProvider: STProvider,
@@ -751,6 +843,38 @@ export const createLoadRequirementParams = async (
     } as LoadRequirementsParams;
 }
 
+export const createForgeParams = async (
+    stProvider: STProvider,
+    stKey: web3.PublicKey | GameAccount,
+    comboIndex: number
+) => {
+    const game = await getGameAccount(stProvider, stKey);
+
+    if(comboIndex >= game.combinations.length){
+        throw new Error("Bad combo index");
+    }
+
+    const combo = game.combinations[comboIndex];
+    let mints = {
+        mintI0: web3.PublicKey.default,
+        mintI1: web3.PublicKey.default,
+        mintO: web3.PublicKey.default,
+    };
+
+    for (let i = 0; i < game.items.length; i++) {
+        if(game.items[i].id.eq(combo.input0Id)) mints.mintI0 = game.items[i].mint;
+        if(game.items[i].id.eq(combo.input1Id)) mints.mintI1 = game.items[i].mint;
+        if(game.items[i].id.eq(combo.outputId)) mints.mintO = game.items[i].mint;
+    }
+
+    return {
+        mints: mints,
+        params: {
+            combinationIndex: comboIndex,
+        } as ForgeItemParams
+    };
+}
+
 export const gameToString = async (
     stProvider: STProvider,
     stKey: web3.PublicKey | GameAccount,
@@ -767,6 +891,7 @@ export const gameToString = async (
     string += `- Gatekeeper:              ${game.gatekeeper} [${game.nonce}]\n\n`;
     string += `- Replay Token:            ${game.replayTokenMint} \n`;
     string += `- Wrong Answer:            ${game.wrongAnswerMint} \n`;
+    string += `- Wrong Answer Vault:      ${game.wrongAnswerVault} \n`;
     string += `\n---- STATE\n`;
     string += `- Lammys:                  ${lammysToSol(game.lamports)} \n`;
     string += `- Cheater Time:            ${BNToMin(game.cheaterTime)}\n`;
@@ -814,7 +939,7 @@ export const gameItemToString = (
     string += `-- Percent:                 ${item.percentPerItem}\n`;
     string += `-- Amount Per Mint:         ${item.itemsPerMint}\n`;
     string += `-- Max Per Inventory:       ${item.maxItemsPerInventory}\n`;
-    string += `-- Cost:                    ${lammysToSol(item.costPerMint)}\n`;
+    string += `-- Cost:                    ${lammysToSol(item.costPerItem)}\n`;
 
     return string;
 }
@@ -854,6 +979,7 @@ export const playerToString = async (
     string += `- Name:                    ${player.name} \n`;
     string += `- Player:                  ${player.player} \n`;
     string += `- Player Replay Vault:     ${player.playerReplayVault} \n`;
+    string += `- Player Wrong Vault:      ${player.playerWrongAnswerVault} \n`;
     string += `- Player Account:          ${player.playerAccount}\n\n`;
     string += `\n---- STATE\n`;
     string += `- OG Percent:              ${player.runPercent}%\n`;
@@ -889,10 +1015,10 @@ export interface TestItemParams {
     mintBytes?: number[],
     isReplayToken?: boolean,
     isWrongAnswerItem?: boolean,
-    percent?: number,
-    amountPerMint?: number,
-    maxPerInventory?: number,
-    cost?: anchor.BN,
+    percentPerItem?: number,
+    itemsPerMint?: number,
+    maxItemsPerInventory?: number,
+    costPerItem?: anchor.BN,
     amountToTx?: anchor.BN,
     amountToMake?: number,
   }
@@ -909,10 +1035,10 @@ export interface TestItemParams {
         mintBytes: params.mintBytes ?? NULL_MINT_BYTES,
         isReplayToken: params.isReplayToken ?? false,
         isWrongAnswerItem: params.isWrongAnswerItem ?? false,
-        percent: params.percent ?? 1,
-        amountPerMint: params.amountPerMint ?? 1,
-        maxPerInventory: params.maxPerInventory ?? 1,
-        cost: params.cost ?? new anchor.BN(1),
+        percentPerItem: params.percentPerItem ?? 1,
+        itemsPerMint: params.itemsPerMint ?? 1,
+        maxItemsPerInventory: params.maxItemsPerInventory ?? 1,
+        costPerItem: params.costPerItem ?? new anchor.BN(1),
         amountToTx: params.amountToTx ?? new anchor.BN(params.amountToMake ?? 1000000),
       } as LoadItemsParams,
     };
