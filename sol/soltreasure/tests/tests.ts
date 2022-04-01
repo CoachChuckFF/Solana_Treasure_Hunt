@@ -7,106 +7,88 @@ const secretArray = require('/Users/drkrueger/.config/solana/programs/sol-treasu
 const secret = new Uint8Array(secretArray);
 const payerKeypair = anchor.web3.Keypair.fromSecretKey(secret);
 
-const sleep = (ms: number) => {
-    return new Promise((resolve, reject) => {
-        setTimeout(()=>{
-            resolve(null);
-        }, ms);
-    });
+export const sleep = (ms: number) => {
+  return new Promise((resolve) => {
+      setTimeout(()=>{
+          resolve(null);
+      }, ms);
+  });
 }
 
-interface TestItemParams {
-  name?: string,
-  itemType?: ST.GameItemType,
-  mintTailSeed?: number,
-  mintBytes?: number[],
-  isReplayToken?: boolean,
-  isWrongAnswerItem?: boolean,
-  percent?: number,
-  amountPerMint?: number,
-  maxPerInventory?: number,
-  cost?: anchor.BN,
-  amountToTx?: anchor.BN,
-  amountToMake?: number,
-}
-const createTestGameItem = async (
-  provider: anchor.Provider,
-  params: TestItemParams,
-) => {
-  return {
-    mint: (await helpers.createSPL(provider, params.amountToMake ?? 1000000)).mint,
-    params: {
-      name: params.name ?? "Test Item",
-      itemType: params.itemType ?? ST.GameItemType.item,
-      mintTailSeed: params.mintTailSeed ?? 0,
-      mintBytes: params.mintBytes ?? ST.NULL_MINT_BYTES,
-      isReplayToken: params.isReplayToken ?? false,
-      isWrongAnswerItem: params.isWrongAnswerItem ?? false,
-      percent: params.percent ?? 1,
-      amountPerMint: params.amountPerMint ?? 1,
-      maxPerInventory: params.maxPerInventory ?? 1,
-      cost: params.cost ?? new anchor.BN(1),
-      amountToTx: params.amountToTx ?? new anchor.BN(params.amountToMake ?? 1000000),
-    } as ST.LoadItemsParams,
-  };
-}
+// static local(url?: string, opts?: ConfirmOptions): Provider {
+//   if (isBrowser) {
+//     throw new Error(`Provider local is not available on browser.`);
+//   }
+//   opts = opts ?? Provider.defaultOptions();
+//   const connection = new Connection(
+//     url ?? "http://localhost:8899",
+//     opts.preflightCommitment
+//   );
+//   const NodeWallet = require("./nodewallet.js").default;
+//   const wallet = NodeWallet.local();
+//   return new Provider(connection, wallet, opts);
+// }
 
-interface TestCombinationParams {
-  name?: string,
-  input0Amount?: number,
-  input1Amount?: number,
-  outputAmount?: number,
-}
-const createTestCombination = async (
-  mintI0: anchor.web3.PublicKey,
-  mintI1: anchor.web3.PublicKey,
-  mintO: anchor.web3.PublicKey,
-  params: TestCombinationParams,
-) => {
-  return {
-    mintI0: mintI0,
-    mintI1: mintI1,
-    mintO: mintO,
-    params: {
-      name: params.name ?? "Test Combo",
-      input0Amount: params.input0Amount ?? 1,
-      input1Amount: params.input1Amount ?? 1,
-      outputAmount: params.outputAmount ?? 1,
-    } as ST.LoadCombinationsParams
-  }
-}
+const createTestPlayer = async (coach: ST.STProvider, url?: string) => {
+  const opts = anchor.Provider.defaultOptions();
 
+  const connection = new anchor.web3.Connection(url ?? "http://localhost:8899", opts.preflightCommitment);
+  const wallet = new NodeWallet(anchor.web3.Keypair.generate());
+  const playerProvider = new anchor.Provider(connection, wallet, opts);
+  const program = new anchor.Program<anchor.Idl>(coach.program.idl, coach.program.programId, playerProvider);
+
+  const transaction = new anchor.web3.Transaction().add(
+    anchor.web3.SystemProgram.transfer({
+      fromPubkey: coach.owner,
+      toPubkey: playerProvider.wallet.publicKey,
+      lamports: anchor.web3.LAMPORTS_PER_SOL,
+    }),
+  );
+
+  await coach.provider.send(transaction);
+
+  return await ST.STProvider.init(playerProvider, program);
+}
 
 const main = async() => {
-    console.log("🚀 Starting test...")
+    console.log("🚀 Starting test...");
   
-    // let ownerWallet = new NodeWallet(payerKeypair);
-    // const provider = helpers.getSolanaProvider(ownerWallet);
-    // anchor.setProvider(provider);
-
     const provider = anchor.Provider.env();
     anchor.setProvider(provider);
 
     const program = anchor.workspace.Soltreasure;
     
     // ---------------------- PROVIDER ----------------------------------
-    console.log("Creating Provider...");
+    console.log("Creating Providers...");
+    console.log("--- Coach");
     const stProvider = await ST.STProvider.init(provider, program);
+
+    console.log("--- Players");
+    const players = {
+      player0: {stProvider: await createTestPlayer(stProvider), playerAccount: {} as ST.PlayerAccount},
+      player1: {stProvider: await createTestPlayer(stProvider), playerAccount: {} as ST.PlayerAccount},
+      player2: {stProvider: await createTestPlayer(stProvider), playerAccount: {} as ST.PlayerAccount},
+    };
 
     // ---------------------- GAME ITEMS ----------------------------------
     console.log("Creating Test Items...");
     const items = {
-      key0: await createTestGameItem(provider, {name: "Key 0"}),
-      key1: await createTestGameItem(provider, {name: "Key 1"}),
-      key2: await createTestGameItem(provider, {name: "Key 2"}),
-      badKey: await createTestGameItem(provider, {name: "Bad Key", isWrongAnswerItem: true, percent: 0}),
-      replayToken: await createTestGameItem(provider, {name: "Replay Token", isReplayToken: true, percent: 0}),
-      forgedKey: await createTestGameItem(provider, {name: "Forged Key", itemType: ST.GameItemType.comb}),
-      treasure: await createTestGameItem(provider, {name: "Treasure", itemType: ST.GameItemType.reward}),
+      key0: await ST.createTestGameItem(provider, {name: "Key 0"}),
+      key1: await ST.createTestGameItem(provider, {name: "Key 1"}),
+      key2: await ST.createTestGameItem(provider, {name: "Key 2"}),
+      badKey: await ST.createTestGameItem(provider, {name: "Bad Key", isWrongAnswerItem: true, percent: 0}),
+      forgedKey: await ST.createTestGameItem(provider, {name: "Forged Key", itemType: ST.GameItemType.comb}),
+      treasure: await ST.createTestGameItem(provider, {name: "Treasure", itemType: ST.GameItemType.reward}),
+      replayToken: await ST.createTestGameItem(provider, {name: "Replay Token", isReplayToken: true, percent: 0, itemType: ST.GameItemType.reward}),
     };
 
     const combinations = {
-      forgedKey: createTestCombination(items.badKey.mint, items.badKey.mint, items.forgedKey.mint, {name: "Forged Key"})
+      forgedKey: await ST.createTestCombination(items.badKey.mint, items.badKey.mint, items.forgedKey.mint, {name: "Forged Key"})
+    };
+
+    const requirements = {
+      replayToken: {mint: items.replayToken.mint, params: [items.key0.mint, items.key1.mint, items.key2.mint]},
+      treasure: {mint: items.treasure.mint, params: [items.key0.mint, items.key1.mint, items.key2.mint]},
     };
 
     // ---------------------- CREATE GAME ----------------------------------
@@ -133,40 +115,124 @@ const main = async() => {
       )
     }
 
-    // console.log(game);
+    // ---------------------- LOAD COMBOS ----------------------------------
+    console.log("Loading Combos...");
+    for (const [key, value] of Object.entries(combinations)) {
+      console.log("--- " + key);
+      game = await ST.loadCombination(
+        stProvider,
+        game,
+        value.mintI0,
+        value.mintI1,
+        value.mintO,
+        value.params,
+      )
+    }
 
-    // // ---------------------- LOAD ITEMS ----------------------------------
-    // console.log("Loading Combinations...");
-    // for (const key in items) {
-    //   console.log("--- " + key);
-    //   game = await ST.loadItem(
-    //     stProvider,
-    //     game,
-    //     items[key].mint,
-    //     items[key].params,
-    //   )
-    // }
 
-    // console.log("Settings Requirements...");
-    // for (const key in items) {
-    //   console.log("--- " + key);
-    //   game = await ST.loadItem(
-    //     stProvider,
+    // ---------------------- LOAD REQUIREMENTS ----------------------------------
+    console.log("Loading Requirements...");
+    for (const [key, value] of Object.entries(requirements)) {
+      console.log("--- " + key);
+      game = await ST.loadRequirements(
+        stProvider,
+        game,
+        value.mint,
+        await ST.createLoadRequirementParams(stProvider, game, value.params),
+      )
+    }
+
+    // ---------------------- START GAME ----------------------------------
+    console.log("Starting Game...");
+    await ST.startStopCountdown(
+      stProvider,
+      game,
+      ST.createTestStartStop(true, {}),
+    )
+
+    console.log( await ST.gameToString(stProvider, game.game) );
+
+    console.log("Starting in: ");
+    await sleep(300);
+    console.log("3");
+    await sleep(300);
+    console.log("2");
+    await sleep(300);
+    console.log("1");
+    await sleep(300);
+
+    // ---------------------- CREATE PLAYERS ----------------------------------
+    console.log("Creating Players...");
+    for (const [key, value] of Object.entries(players)) {
+      console.log("--- " + key);
+      value.playerAccount = await ST.createPlayerAccount(
+        value.stProvider,
+        game,
+        {name: key}
+      )
+    }
+    console.log(
+      await ST.playerToString(
+        players.player0.stProvider,
+        players.player0.playerAccount,
+      )
+    );
+
+    // ---------------------- SHOULD FAIL ----------------------------------
+    // console.log("Did fail? " + await testGuarded(
+    //   ST.startSpeedrun(
+    //     players.player0.stProvider,
     //     game,
-    //     items[key].mint,
-    //     items[key].params,
-    //   )
-    // }
+    //     players.player0.playerAccount,
+    //   ) as any
+    // ))
+
+    // ---------------------- HASH ----------------------------------
+    console.log("Grabbing Key...");
+
+    players.player0.playerAccount = await ST.hashItem(
+      players.player0.stProvider,
+      game,
+      players.player0.playerAccount,
+      game.items[0].mint,
+      {
+        hash: [0,0,0,0]
+      }
+    )
+
+    console.log(await ST.gameToString(
+      stProvider,
+      game.game,
+    ))
+
+    console.log(await ST.playerToString(
+      players.player0.stProvider,
+      players.player0.playerAccount,
+    ))
 
     console.log("... to the moon! 🌑")
   }
+
+  const testGuarded = (func: ()=>Promise<any>) => {
+    return new Promise<boolean>(async (resolve)=>{
+      try {
+        await func();
+        resolve(false);
+      } catch (error) {
+        resolve(true);
+      }
+    });
+  }
+
+
   
   const runMain = async () => {
     try {
       await main();
       process.exit(0);
     } catch (error) {
-      console.error(error);
+
+      console.log((error as any).toString());
       process.exit(1);
     }
   };

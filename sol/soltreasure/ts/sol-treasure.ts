@@ -7,6 +7,7 @@ import { web3, BN } from "@project-serum/anchor";
 export const SOL_TREASURE_ID = new web3.PublicKey("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 
 export const NULL_MINT_BYTES = [0,0,0,0];
+export const NULL_DATE = new BN(new BN(0).notn(64));
 
 export enum GameItemType {
     item = 0x00,
@@ -41,10 +42,10 @@ export interface GameItem {
     itemType: GameItemType,
     mintTailSeed: number,
     mintBytes: number[],
-    percent: number,
-    maxPerInventory: number,
-    amountPerMint: number,
-    cost: BN,
+    percentPerItem: number,
+    itemsPerMint: number,
+    maxItemsPerInventory: number,
+    costPerMint: BN,
 }
 
 export interface GameInventoryItem {
@@ -59,11 +60,10 @@ export interface PlayerAccount {
     game: web3.PublicKey,
     playerReplayVault: web3.PublicKey,
     playerAccount: web3.PublicKey,
-    bump: number,
     runStart: BN,
     runPercentTimestamp: BN,
     runPercent: number,
-    isOg: boolean,
+    OGPercent: boolean,
     isSpeedrunning: boolean,
     inventory: GameInventoryItem[]
 }
@@ -142,14 +142,17 @@ export interface HashItemParams {
 export class STProvider {
     provider: anchor.Provider;
     program: anchor.Program<anchor.Idl>;
+    owner: web3.PublicKey;
 
     // Call init
     private constructor(
         provider: anchor.Provider,
         program: anchor.Program<anchor.Idl>,
+        owner: web3.PublicKey,
     ) {
         this.provider = provider;
         this.program = program;
+        this.owner = owner;
     }
 
     static init = async (
@@ -159,6 +162,7 @@ export class STProvider {
         return new STProvider(
             provider,
             program ?? await STProvider._getSTProgram(provider),
+            provider.wallet.publicKey,
         );
     }
 
@@ -174,7 +178,7 @@ export const getGameAccount = async (
     stKey: web3.PublicKey | GameAccount,
     shouldUpdate?: boolean,
 ) => { 
-    if((stKey as GameAccount).nonce){
+    if((stKey as GameAccount).game){
         if( shouldUpdate ){
             return (await stProvider.program.account.game.fetch((stKey as GameAccount).game)) as GameAccount; 
         } else {
@@ -189,7 +193,7 @@ export const getPlayerAccount = async (
     playerAccountKey: web3.PublicKey | PlayerAccount,
     shouldUpdate?: boolean,
 ) => { 
-    if((playerAccountKey as PlayerAccount).bump){
+    if((playerAccountKey as PlayerAccount).player){
         if( shouldUpdate ){
             return (await stProvider.program.account.player.fetch((playerAccountKey as PlayerAccount).playerAccount)) as PlayerAccount; 
         } else {
@@ -199,15 +203,28 @@ export const getPlayerAccount = async (
     return (await stProvider.program.account.player.fetch(playerAccountKey as web3.PublicKey)) as PlayerAccount; 
 }
 
+export const findGameByCoach = async (
+    stProvider: STProvider,
+    coach?: web3.PublicKey,
+) => {
+    return await web3.PublicKey.findProgramAddress(
+        [
+            coach?.toBuffer() ?? stProvider.owner.toBuffer(),
+        ],
+        stProvider.program.programId,
+    );
+}
+
 export const findPlayerAccount = async (
     stProvider: STProvider,
     stKey: web3.PublicKey | GameAccount,
-    playerKey: web3.PublicKey,
+    player?: web3.PublicKey,
 ) => {
     const game = await getGameAccount(stProvider, stKey);
+
     return await web3.PublicKey.findProgramAddress(
         [
-            playerKey.toBuffer(),
+            player?.toBuffer() ?? stProvider.owner.toBuffer(),
             game.game.toBuffer(),
         ],
         stProvider.program.programId,
@@ -217,35 +234,32 @@ export const findPlayerAccount = async (
 export const createGame = async (
     stProvider: STProvider,
     params: CreateGameParams,
-    existingGameKeypair?: web3.Keypair,
 ) => {
-    const owner = stProvider.provider.wallet.publicKey;
-    const gameKeypair = existingGameKeypair ?? web3.Keypair.generate();
+    const owner = stProvider.owner;
+    let [gameKey, gameNonce] = await findGameByCoach(stProvider);
 
     const [gatekeeper, nonce] = await web3.PublicKey.findProgramAddress(
-        [gameKeypair.publicKey.toBuffer()],
+        [gameKey.toBuffer()],
         stProvider.program.programId
     );
 
     params.nonce = nonce;
-
-    console.log(params);
     
     await stProvider.program.rpc.createGame(
         params,
         {
             accounts: {
-                game: gameKeypair.publicKey,
+                game: gameKey,
                 gatekeeper: gatekeeper,
                 coach: owner,
                 systemProgram: web3.SystemProgram.programId,
             },
-            signers: [gameKeypair],
+            signers: [],
             instructions: [],
         }
     );
 
-    return getGameAccount(stProvider, gameKeypair.publicKey, true);
+    return getGameAccount(stProvider, gameKey, true);
 }
 
 export const loadItem = async (
@@ -255,7 +269,7 @@ export const loadItem = async (
     params: LoadItemsParams,
 ) => {
     const game = await getGameAccount(stProvider, stKey);
-    const owner = stProvider.provider.wallet.publicKey;
+    const owner = stProvider.owner;
 
     const ownerVault = await helpers.getAssociatedTokenAddress(
         mint,
@@ -308,7 +322,7 @@ export const loadCombination = async (
     params: LoadCombinationsParams,
 ) => {
     const game = await getGameAccount(stProvider, stKey);
-    const owner = stProvider.provider.wallet.publicKey;
+    const owner = stProvider.owner;
 
     const input0 = await helpers.getAssociatedTokenAddress(mintI0, game.gatekeeper, true);
     const input1 = await helpers.getAssociatedTokenAddress(mintI1, game.gatekeeper, true);
@@ -340,7 +354,7 @@ export const loadRequirements = async (
     params: LoadRequirementsParams,
 ) => {
     const game = await getGameAccount(stProvider, stKey);
-    const owner = stProvider.provider.wallet.publicKey;
+    const owner = stProvider.owner;
 
     const itemVault = await helpers.getAssociatedTokenAddress(mint, game.gatekeeper, true);
     
@@ -367,7 +381,7 @@ export const startStopCountdown = async (
     params: StartStopCountdownParams,
 ) => {
     const game = await getGameAccount(stProvider, stKey);
-    const owner = stProvider.provider.wallet.publicKey;
+    const owner = stProvider.owner;
     
     await stProvider.program.rpc.startStopCountdown(
         params,
@@ -390,7 +404,7 @@ export const supernova = async (
     mint: web3.PublicKey,
 ) => {
     const game = await getGameAccount(stProvider, stKey);
-    const owner = stProvider.provider.wallet.publicKey;
+    const owner = stProvider.owner;
 
     const itemVault = await helpers.getAssociatedTokenAddress(mint, game.gatekeeper, true);
     
@@ -418,7 +432,7 @@ export const createPlayerAccount = async (
     params: CreatePlayerParams,
 ) => {
     const game = await getGameAccount(stProvider, stKey);
-    const player = stProvider.provider.wallet.publicKey;
+    const player = stProvider.owner;
 
     const [ playerAccount, bump ] = await findPlayerAccount(
         stProvider,
@@ -471,7 +485,7 @@ export const startSpeedrun = async (
 ) => {
     const game = await getGameAccount(stProvider, stKey);
     const playerAccount = await getPlayerAccount(stProvider, playerAccountKey);
-    const player = stProvider.provider.wallet.publicKey;
+    const player = stProvider.owner;
 
     await stProvider.program.rpc.startSpeedrun(
         {
@@ -498,7 +512,7 @@ export const hashItem = async (
 ) => {
     const game = await getGameAccount(stProvider, stKey);
     const playerAccount = await getPlayerAccount(stProvider, playerAccountKey);
-    const player = stProvider.provider.wallet.publicKey;
+    const player = stProvider.owner;
 
     const gameItemAccount = await helpers.getAssociatedTokenAddress(mint, game.gatekeeper, true);
 
@@ -506,6 +520,7 @@ export const hashItem = async (
 
     tx.add(
         stProvider.program.instruction.hashItem(
+            params,
             {
                 accounts: {
                     game: game.game,
@@ -521,13 +536,26 @@ export const hashItem = async (
         )
     );
 
-    if(game.supernovaDate.toNumber() <= dateToUnix()){
+    if(!await getIsRecreation(stProvider, game)){
         const gameVault = await helpers.getAssociatedTokenAddress(mint, game.gatekeeper, true);
         const { vault, shouldCreate } = await helpers.getAssociatedTokenAddressAndShouldCreate(
             stProvider.provider,
             mint,
             player,
         );
+
+        tx.add(
+            ...(shouldCreate) ? [
+                spl.Token.createAssociatedTokenAccountInstruction(
+                    spl.ASSOCIATED_TOKEN_PROGRAM_ID,
+                    spl.TOKEN_PROGRAM_ID,
+                    mint,
+                    vault,
+                    player,
+                    player,
+                ) 
+            ] : []
+        )
 
         tx.add(
             stProvider.program.instruction.mintItem(
@@ -541,20 +569,10 @@ export const hashItem = async (
                         player: player,
                         coach: game.coach,
                         tokenProgram: spl.TOKEN_PROGRAM_ID,
+                        systemProgram: web3.SystemProgram.programId,
                     },
                     signers: [],
-                    instructions: [
-                        ...(shouldCreate) ? [
-                            spl.Token.createAssociatedTokenAccountInstruction(
-                                spl.ASSOCIATED_TOKEN_PROGRAM_ID,
-                                spl.TOKEN_PROGRAM_ID,
-                                mint,
-                                vault,
-                                player,
-                                player,
-                            ) 
-                        ] : []
-                    ],
+                    instructions: [],
                 } 
             )
         );
@@ -576,7 +594,7 @@ export const forgeItem = async (
 ) => {
     const game = await getGameAccount(stProvider, stKey);
     const playerAccount = await getPlayerAccount(stProvider, playerAccountKey);
-    const player = stProvider.provider.wallet.publicKey;
+    const player = stProvider.owner;
 
     const input0Vault = await helpers.getAssociatedTokenAddress(mintI0, game.gatekeeper, true);
     const input1Vault = await helpers.getAssociatedTokenAddress(mintI1, game.gatekeeper, true);
@@ -610,10 +628,335 @@ export const forgeItem = async (
 }
 
 // --------- HELPERS -------------------------------------------
+export const lammysToSol = (lammys: BN) => {
+    return lammys.toNumber() / web3.LAMPORTS_PER_SOL
+}
+
+export const DateToBN = (date: Date | number) => {
+    return new BN(Math.trunc((new Date(date)).getTime() / 1000))
+}
+
+export const BNToDate = (date: BN) => {
+    if(date.eq(NULL_DATE)) return new Date(0);
+    return new Date(Math.trunc(date.toNumber() * 1000));
+}
+
+export const BNToMin = (date: BN) => {
+    if(date.eq(NULL_DATE)) return 0;
+    return Math.fround(date.toNumber() / 60 );
+}
+
+export const BNToHours = (date: BN) => {
+    if(date.eq(NULL_DATE)) return 0;
+    return Math.fround(date.toNumber() / 60 / 60 );
+}
 
 export const dateToUnix = (date?: Date) => {
     return ( date ) ? 
         (Math.trunc(date.getTime() / 1000)) :
         (Math.trunc(Date.now() / 1000));
 }
+
+export const timeToString = (time?: number | Date) => {
+    let date = new Date(time ?? Date.now());
+
+    return date.toISOString();
+}
+
+export const reqToString = (req: BN, len: number = 64) => {
+    let string = "";
+    for (let index = 0; index < len; index++) {
+
+        if(req.and((new BN(1)).shln(len - 1 - index)).eq(new BN(0))){
+            string += "0 "
+        } else {
+            string += "1 "
+        }
+    }
+
+    return string;
+}
+
+export const itemTypeToString = (itemType: GameItemType) => {
+    switch(itemType){
+        case GameItemType.comb: return "Combination";
+        case GameItemType.item: return "Item";
+        case GameItemType.reward: return "Reward";
+    }
+
+    return "Unkown";
+}
+// --------- GAME HELPERS -----------------------------------------
+
+export const getTimeTillSupernova = async (
+    stProvider: STProvider,
+    stKey: web3.PublicKey | GameAccount,
+    mint: web3.PublicKey
+) => {
+    const game = await getGameAccount(stProvider, stKey);
+    return Math.min(0, (BNToDate(game.supernovaDate).getTime() - Date.now()))
+}
+
+export const getIsPlaying = async (
+    stProvider: STProvider,
+    stKey: web3.PublicKey | GameAccount,
+) => {
+    const game = await getGameAccount(stProvider, stKey);
+
+    if(game.startDate.eq(NULL_DATE)) return false;
+
+    return game.startDate.lte(DateToBN(Date.now()));
+}
+
+export const getIsRecreation = async (
+    stProvider: STProvider,
+    stKey: web3.PublicKey | GameAccount,
+) => {
+    const game = await getGameAccount(stProvider, stKey);
+
+    if(game.startDate.eq(NULL_DATE)) return false;
+
+    return game.supernovaDate.lt(DateToBN(Date.now()));
+}
+
+
+export const getItemID = async (
+    stProvider: STProvider,
+    stKey: web3.PublicKey | GameAccount,
+    mint: web3.PublicKey
+) => {
+    const game = await getGameAccount(stProvider, stKey);
+
+    for (let i = 0; i < game.items.length; i++) {
+        if(mint.equals(game.items[i].mint)) return game.items[i].id;
+    }
+
+    throw new Error("Item does not exist");
+}
+
+export const createLoadRequirementParams = async (
+    stProvider: STProvider,
+    stKey: web3.PublicKey | GameAccount,
+    reqItems: web3.PublicKey[],
+) => {
+    const game = await getGameAccount(stProvider, stKey);
+    let req = new BN(0);
+
+    for (let i = 0; i < reqItems.length; i++) {
+        req = req.or(await getItemID(stProvider, stKey, reqItems[i]))
+    }
+
+    return {
+        requirements: req
+    } as LoadRequirementsParams;
+}
+
+export const gameToString = async (
+    stProvider: STProvider,
+    stKey: web3.PublicKey | GameAccount,
+) => {
+    const game = await getGameAccount(stProvider, stKey);
+
+    let string = "\n";
+    string += `---------- SOL-TREASURE -------------\n`;
+    string += `- Playing:                 ${await getIsPlaying(stProvider, game)} \n`;
+    string += `- Is Recon:                ${await getIsRecreation(stProvider, game)} \n\n`;
+    string += `- Name:                    ${game.name} \n`;
+    string += `- Game:                    ${game.game} \n`;
+    string += `- Coach:                   ${game.coach} \n`;
+    string += `- Gatekeeper:              ${game.gatekeeper} [${game.nonce}]\n\n`;
+    string += `- Replay Token:            ${game.replayTokenMint} \n`;
+    string += `- Wrong Answer:            ${game.wrongAnswerMint} \n`;
+    string += `\n---- STATE\n`;
+    string += `- Lammys:                  ${lammysToSol(game.lamports)} \n`;
+    string += `- Cheater Time:            ${BNToMin(game.cheaterTime)}\n`;
+    string += `- Start Date:              ${BNToDate(game.startDate)}\n`;
+    string += `- Supernova Date:          ${BNToDate(game.supernovaDate)}\n\n`;
+    string += `\n---- ITEMS\n`;
+    string += `- Total Items:             ${game.itemCount} [${game.items.length}] \n`;
+    
+    for (let i = 0; i < game.items.length; i++) { string += gameItemToString(game.items[i], game.items.length) }
+
+    string += `\n---- COMBOS\n`;
+    string += `- Total Combos:             ${game.combinationCount} [${game.combinations.length}] \n`;
+
+    for (let i = 0; i < game.combinations.length; i++) { string += gameCombinationToString(game.combinations[i], game.items.length) }
+
+    string += `\n---- LEADERBAORDS\n`;
+    string += `- Total Players:            ${game.leaderboardCount} [${game.leaderboard.length}] \n`;
+
+    for (let i = 0; i < game.leaderboard.length; i++) { string += gameLeaderboardEntryToString(game.leaderboard[i], game.startDate) }
+
+    string += `\n---- SPEEDBOARD\n`;
+    string += `- Total Players:            ${game.leaderboardCount} [${game.leaderboard.length}] \n`;
+
+    for (let i = 0; i < game.speedboard.length; i++) { string += gameLeaderboardEntryToString(game.speedboard[i]) }
+
+    string += `\n-------------------------------------\n\n`;
+
+    return string;
+}
+
+export const gameItemToString = (
+    item: GameItem,
+    len: number = 64,
+) => {
+
+    let string = `\n`;
+    string += `--- [${item.name}]\n`;
+    string += `-- Burned?:                 ${item.burned}\n`;
+    string += `-- Mint:                    ${item.mint}\n`;
+    string += `-- Item Type:               ${itemTypeToString(item.itemType)}\n`;
+    string += `-- ID:                      ${reqToString(item.id, len)}\n`;
+    string += `-- Reqs:                    ${reqToString(item.requirements, len)}\n`;
+    string += `-- Hash:                    [${item.mintTailSeed}] [${item.mintBytes}]\n`;
+
+    string += `-- Percent:                 ${item.percentPerItem}\n`;
+    string += `-- Amount Per Mint:         ${item.itemsPerMint}\n`;
+    string += `-- Max Per Inventory:       ${item.maxItemsPerInventory}\n`;
+    string += `-- Cost:                    ${lammysToSol(item.costPerMint)}\n`;
+
+    return string;
+}
+
+export const gameCombinationToString = (
+    combo: GameCombination,
+    len: number = 64,
+) => {
+
+    let string = `\n`;
+    string += `--- [${combo.name}]\n`;
+    string += `-- Input 0:                 [${combo.input0Amount}] ${reqToString(combo.input0Id, len)}\n`;
+    string += `-- Input 1:                 [${combo.input1Amount}] ${reqToString(combo.input1Id, len)}\n`;
+    string += `-- Output:                  [${combo.outputAmount}] ${reqToString(combo.outputId, len)}\n`;
+
+    return string;
+}
+
+export const gameLeaderboardEntryToString = (
+    entry: GameLeaderboardInfo,
+    gameStart?: BN
+) => {
+
+    const name = `-- ${entry.name.substring(0, 3)}:${entry.player.toString().substring(0, 3)}:`;
+    const time = `${entry.runPercent}% in ${BNToMin(entry.runPercentTimestamp.sub(gameStart ?? entry.runStart))}`
+    return `${name}                 ${time}\n`;
+}
+
+export const playerToString = async (
+    stProvider: STProvider,
+    playerAccountKey: web3.PublicKey | PlayerAccount,
+) => {
+    const player = await getPlayerAccount(stProvider, playerAccountKey);
+
+    let string = "\n";
+    string += `---------- SOL-PLAYER --------------------\n`;
+    string += `- Name:                    ${player.name} \n`;
+    string += `- Player:                  ${player.player} \n`;
+    string += `- Player Replay Vault:     ${player.playerReplayVault} \n`;
+    string += `- Player Account:          ${player.playerAccount}\n\n`;
+    string += `\n---- STATE\n`;
+    string += `- OG Percent:              ${player.runPercent}%\n`;
+    string += `- Is Speedrunning:         ${player.isSpeedrunning}\n\n`;
+    string += `- Start:                   ${BNToDate(player.runStart)} \n`;
+    string += `- Timestamp:               ${BNToDate(player.runPercentTimestamp)} \n`;
+    string += `- Percent:                 ${player.runPercent}%\n\n`;
+    string += `\n---- INVENTORY\n`;
+    string += gameInventoryToString(player.inventory);
+    string += `\n-------------------------------------\n\n`;
+
+    return string;
+}
+
+export const gameInventoryToString = (
+    inventory: GameInventoryItem[],
+) => {
+
+    let amount = `-  Amount:                 `;
+    let minted = `-  Minted:                 `;
+    for (let i = 0; i < inventory.length; i++) {
+        amount += `${inventory[i].amount.toString().padEnd(3, " ")}`;
+        minted += `${inventory[i].mintedCount.toString().padEnd(3, " ")}`;
+    }
+    return `${amount}\n${minted}\n`;
+}
+
+// --------- GAME TESTERS -----------------------------------------
+export interface TestItemParams {
+    name?: string,
+    itemType?: GameItemType,
+    mintTailSeed?: number,
+    mintBytes?: number[],
+    isReplayToken?: boolean,
+    isWrongAnswerItem?: boolean,
+    percent?: number,
+    amountPerMint?: number,
+    maxPerInventory?: number,
+    cost?: anchor.BN,
+    amountToTx?: anchor.BN,
+    amountToMake?: number,
+  }
+  export const createTestGameItem = async (
+    provider: anchor.Provider,
+    params: TestItemParams,
+  ) => {
+    return {
+      mint: (await helpers.createSPL(provider, params.amountToMake ?? 1000000)).mint,
+      params: {
+        name: params.name ?? "Test Item",
+        itemType: params.itemType ?? GameItemType.item,
+        mintTailSeed: params.mintTailSeed ?? 0,
+        mintBytes: params.mintBytes ?? NULL_MINT_BYTES,
+        isReplayToken: params.isReplayToken ?? false,
+        isWrongAnswerItem: params.isWrongAnswerItem ?? false,
+        percent: params.percent ?? 1,
+        amountPerMint: params.amountPerMint ?? 1,
+        maxPerInventory: params.maxPerInventory ?? 1,
+        cost: params.cost ?? new anchor.BN(1),
+        amountToTx: params.amountToTx ?? new anchor.BN(params.amountToMake ?? 1000000),
+      } as LoadItemsParams,
+    };
+  }
+  
+  export interface TestCombinationParams {
+    name?: string,
+    input0Amount?: number,
+    input1Amount?: number,
+    outputAmount?: number,
+  }
+  export const createTestCombination = async (
+    mintI0: web3.PublicKey,
+    mintI1: web3.PublicKey,
+    mintO: web3.PublicKey,
+    params: TestCombinationParams,
+  ) => {
+    return {
+      mintI0: mintI0,
+      mintI1: mintI1,
+      mintO: mintO,
+      params: {
+        name: params.name ?? "Test Combo",
+        input0Amount: params.input0Amount ?? 1,
+        input1Amount: params.input1Amount ?? 1,
+        outputAmount: params.outputAmount ?? 1,
+      } as LoadCombinationsParams
+    }
+  }
+
+  export interface TestStartParams {
+    countdownTime?: BN,
+    supernovaDate?: BN,
+    cheaterTime?: BN,
+  }
+  export const createTestStartStop = (
+    playing: boolean,
+    params: TestStartParams,
+  ) => {
+    return {
+        playing: playing,
+        countdownTime: params.countdownTime ?? new BN(0),
+        supernovaDate: params.supernovaDate ?? DateToBN(Date.now() + 1000 * 60 * 30),
+        cheaterTime: params.cheaterTime ?? new BN(60 * 1),
+    } as StartStopCountdownParams;
+  }
 
