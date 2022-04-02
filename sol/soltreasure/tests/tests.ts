@@ -1,6 +1,7 @@
 import * as anchor from "@project-serum/anchor";
 import * as helpers from "@coach-chuck/solana-helpers";
 import * as ST from "../ts/sol-treasure"
+import * as V0 from "../ts/v0"
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 
 const secretArray = require('/Users/drkrueger/.config/solana/programs/sol-treasure.json');
@@ -64,95 +65,27 @@ const main = async() => {
     const stProvider = await ST.STProvider.init(provider, program);
 
     console.log("--- Players");
-    const players = {
-      player0: {stProvider: await createTestPlayer(stProvider), playerAccount: {} as ST.PlayerAccount},
-      player1: {stProvider: await createTestPlayer(stProvider), playerAccount: {} as ST.PlayerAccount},
-      player2: {stProvider: await createTestPlayer(stProvider), playerAccount: {} as ST.PlayerAccount},
-    };
+    const player1 = {stProvider: await createTestPlayer(stProvider), playerAccount: {} as ST.PlayerAccount};
+    const player2 = {stProvider: await createTestPlayer(stProvider), playerAccount: {} as ST.PlayerAccount};
+    const player3 = {stProvider: await createTestPlayer(stProvider), playerAccount: {} as ST.PlayerAccount};
 
-    // ---------------------- GAME ITEMS ----------------------------------
-    console.log("Creating Test Items...");
-    const items = {
-      key0: await ST.createTestGameItem(provider, {name: "Key 0"}),
-      key1: await ST.createTestGameItem(provider, {name: "Key 1"}),
-      key2: await ST.createTestGameItem(provider, {name: "Key 2", mintBytes: [0,1,2,3], }),
-      badKey: await ST.createTestGameItem(provider, {name: "Bad Key", isWrongAnswerItem: true, percentPerItem: 0, itemsPerMint: 2, maxItemsPerInventory: 5}),
-      forgedKey: await ST.createTestGameItem(provider, {name: "Forged Key", itemType: ST.GameItemType.comb}),
-      treasure: await ST.createTestGameItem(provider, {name: "Treasure", itemType: ST.GameItemType.reward}),
-      replayToken: await ST.createTestGameItem(provider, {name: "Replay Token", isReplayToken: true, percentPerItem: 0, itemType: ST.GameItemType.reward}),
-    };
-
-    const combinations = {
-      forgedKey: await ST.createTestCombination(items.badKey.mint, items.badKey.mint, items.forgedKey.mint, {name: "Forged Key"})
-    };
-
-    const requirements = {
-      replayToken: {mint: items.replayToken.mint, params: [items.key0.mint, items.key1.mint, items.key2.mint]},
-      treasure: {mint: items.treasure.mint, params: [items.key0.mint, items.key1.mint, items.key2.mint]},
-    };
 
     // ---------------------- CREATE GAME ----------------------------------
-    console.log("Creating Game...");
-    let game = await ST.createGame(
+    let game = await V0.createTheGame(
       stProvider,
-      {
-        name: "Sol-Treasure",
-        itemCount: Object.keys(items).length,
-        combinationCount: Object.keys(combinations).length,
-        leaderboardCount: 10,
-      }
-    )
+      anchor.web3.Keypair.generate(),
+      true
+    );
 
-    // ---------------------- LOAD ITEMS ----------------------------------
-    console.log("Loading Items...");
-    for (const [key, value] of Object.entries(items)) {
-      console.log("--- " + key);
-      game = await ST.loadItem(
-        stProvider,
-        game,
-        value.mint,
-        value.params,
-      )
-    }
-
-    // ---------------------- LOAD COMBOS ----------------------------------
-    console.log("Loading Combos...");
-    for (const [key, value] of Object.entries(combinations)) {
-      console.log("--- " + key);
-      game = await ST.loadCombination(
-        stProvider,
-        game,
-        value.mintI0,
-        value.mintI1,
-        value.mintO,
-        value.params,
-      )
-    }
-
-
-    // ---------------------- LOAD REQUIREMENTS ----------------------------------
-    console.log("Loading Requirements...");
-    for (const [key, value] of Object.entries(requirements)) {
-      console.log("--- " + key);
-      game = await ST.loadRequirements(
-        stProvider,
-        game,
-        value.mint,
-        await ST.createLoadRequirementParams(stProvider, game, value.params),
-      )
-    }
-
-    // ---------------------- START GAME ----------------------------------
-    console.log("Starting Game...");
-    await ST.startStopCountdown(
+    game = await V0.startGame(
       stProvider,
       game,
-      ST.createTestStartStop(true, {
-        cheaterTime: new anchor.BN(0),
-      }),
-    )
+    );
 
-    console.log( await ST.gameToString(stProvider, game.game) );
+    console.log(await ST.gameToString(
+      stProvider,
+      game
+    ));
 
     console.log("Starting in: ");
     await sleep(300);
@@ -163,100 +96,63 @@ const main = async() => {
     console.log("1");
     await sleep(300);
 
-    // ---------------------- CREATE PLAYERS ----------------------------------
-    console.log("Creating Players...");
-    for (const [key, value] of Object.entries(players)) {
-      console.log("--- " + key);
-      value.playerAccount = await ST.createPlayerAccount(
-        value.stProvider,
-        game,
-        {name: key}
-      )
-    }
-    console.log(
-      await ST.playerToString(
-        players.player0.stProvider,
-        players.player0.playerAccount,
-      )
+    // ---------------------- CREATE PLAYER ----------------------------------
+    console.log("Creating Player...");
+    player1.playerAccount = await ST.createPlayerAccount(
+      player1.stProvider,
+      game,
+      {name: "OG"}
     );
-
-    // ---------------------- SHOULD FAIL ----------------------------------
-    // console.log("Did fail? " + await testGuarded(
-    //   ST.startSpeedrun(
-    //     players.player0.stProvider,
-    //     game,
-    //     players.player0.playerAccount,
-    //   ) as any
-    // ))
 
     // ---------------------- HASH ----------------------------------
     console.log("Grabbing Keys...");
+    for (const [key, value] of Object.entries(V0.ITEMS)) {
+      console.log("--- " + key);
+      if(
+        value.params.itemType === ST.GameItemType.item &&
+        !value.params.isReplayToken &&
+        !value.params.isWrongAnswerItem
+      ){
+        let hash = ST.hashWallet(
+          player1.stProvider,
+          value.params.mintBytes,
+          value.params.mintTailSeed,
+        );
 
-    players.player0.playerAccount = await ST.hashItem(
-      players.player0.stProvider,
-      game,
-      players.player0.playerAccount,
-      items.key0.mint,
-      {
-        hash: [0,0,0,0]
+        player1.playerAccount = await ST.hashItem(
+          player1.stProvider,
+          game,
+          player1.playerAccount,
+          value.mint,
+          { hash }
+        );
       }
-    )
+    }
 
-    players.player0.playerAccount = await ST.hashItem(
-      players.player0.stProvider,
-      game,
-      players.player0.playerAccount,
-      items.key1.mint,
-      {
-        hash: [0,0,0,0]
-      }
-    )
-
-    players.player0.playerAccount = await ST.hashItem(
-      players.player0.stProvider,
-      game,
-      players.player0.playerAccount,
-      items.key2.mint,
-      {
-        hash: ST.hashWallet(
-          players.player0.stProvider,
-          items.key2.params.mintBytes,
-          items.key2.params.mintTailSeed,
-        )
-      }
-    )
-
-    players.player0.playerAccount = await ST.hashItem(
-      players.player0.stProvider,
-      game,
-      players.player0.playerAccount,
-      items.key2.mint,
-      {
-        hash: [0,0,0,0]
-      }
-    )
-    
-    players.player0.playerAccount = await ST.hashItem(
-      players.player0.stProvider,
-      game,
-      players.player0.playerAccount,
-      items.key2.mint,
-      {
-        hash: [0,0,0,0]
-      }
-    )
+    // ---------------------- BROKEN KEYS ----------------------------------
+    console.log("Breaking Keys...");
+    for (let i = 0; i < 2; i++) {
+      console.log("--- SNAP " + i);
+      player1.playerAccount = await ST.hashItem(
+        player1.stProvider,
+        game,
+        player1.playerAccount,
+        V0.ITEMS.blueKey.mint,
+        { hash: ST.NULL_MINT_BYTES }
+      );
+    }
 
     // ---------------------- COMBO ----------------------------------
     console.log("Forging Keys...");
     let forgeParams = await ST.createForgeParams(
-      players.player0.stProvider,
+      player1.stProvider,
       game,
       0
     );
-    players.player0.playerAccount = await ST.forgeItem(
-      players.player0.stProvider,
+    player1.playerAccount = await ST.forgeItem(
+      player1.stProvider,
       game,
-      players.player0.playerAccount,
+      player1.playerAccount,
       forgeParams.mints.mintI0,
       forgeParams.mints.mintI1,
       forgeParams.mints.mintO,
@@ -264,26 +160,102 @@ const main = async() => {
     )
 
     // ---------------------- TREASURE ----------------------------------
-    console.log("Grabbing Treasure...");
-    players.player0.playerAccount = await ST.hashItem(
-      players.player0.stProvider,
+    console.log("Opening Black Chest...");
+    player1.playerAccount = await ST.hashItem(
+      player1.stProvider,
       game,
-      players.player0.playerAccount,
-      items.treasure.mint,
-      {
-        hash: [0,0,0,0]
-      }
+      player1.playerAccount,
+      V0.ITEMS.blackChest.mint,
+      { hash: ST.NULL_MINT_BYTES },
+    );
+
+    console.log("Grabbing Replay Token...");
+    player1.playerAccount = await ST.hashItem(
+      player1.stProvider,
+      game,
+      player1.playerAccount,
+      V0.ITEMS.replayToken.mint,
+      { hash: ST.NULL_MINT_BYTES },
+    );
+
+
+    console.log("Opening White Chest...");
+    player1.playerAccount = await ST.hashItem(
+      player1.stProvider,
+      game,
+      player1.playerAccount,
+      V0.ITEMS.whiteChest.mint,
+      { hash: ST.NULL_MINT_BYTES },
+    );
+
+    console.log("Grabbing real treasure...");
+    player1.playerAccount = await ST.hashItem(
+      player1.stProvider,
+      game,
+      player1.playerAccount,
+      V0.ITEMS.realTreasure.mint,
+      { hash: ST.NULL_MINT_BYTES },
+    );
+
+    await sleep(1000 * 30);
+    // ---------------------- SUPERNOVA ----------------------------------
+    console.log("Supernova... ")
+    for (const [key, value] of Object.entries(V0.ITEMS)) {
+      console.log("--- " + key);
+      game = await ST.supernova(
+        stProvider,
+        game,
+        value.mint,
+      );
+    }
+
+    await sleep(1000 * 2);
+    // ---------------------- SPEEDRUN ----------------------------------
+    console.log("Starting speedrun... ")
+    player1.playerAccount = await ST.startSpeedrun(
+      player1.stProvider,
+      game,
+      player1.playerAccount,
+    );
+
+    player1.playerAccount = await ST.hashItem(
+      player1.stProvider,
+      game,
+      player1.playerAccount,
+      game.items[0].mint,
+      { hash: ST.hashWallet(
+        player1.stProvider,
+        game.items[0].mintBytes,
+        game.items[0].mintTailSeed
+      ) }
+    );
+
+    console.log("Send to a friend... ")
+    await helpers.txSPL(
+      player1.stProvider.provider,
+      game.replayTokenMint,
+      player2.stProvider.owner,
+      1
+    );
+
+    player2.playerAccount = await ST.createPlayerAccount(
+      player2.stProvider,
+      game,
+      {name: "Friend"}
     )
 
-    players.player0.playerAccount = await ST.hashItem(
-      players.player0.stProvider,
+    player2.playerAccount = await ST.hashItem(
+      player2.stProvider,
       game,
-      players.player0.playerAccount,
-      items.replayToken.mint,
-      {
-        hash: [0,0,0,0]
-      }
-    )
+      player2.playerAccount,
+      game.items[0].mint,
+      { hash: ST.hashWallet(
+        player2.stProvider,
+        game.items[0].mintBytes,
+        game.items[0].mintTailSeed
+      ) }
+    );
+
 
     console.log(await ST.gameToString(
       stProvider,
@@ -291,9 +263,102 @@ const main = async() => {
     ))
 
     console.log(await ST.playerToString(
-      players.player0.stProvider,
-      players.player0.playerAccount,
+      player1.stProvider,
+      player1.playerAccount,
     ))
+
+    console.log(await ST.playerToString(
+      player2.stProvider,
+      player2.playerAccount,
+    ))
+
+    // console.log(await ST.playerToString(
+    //   players.player0.stProvider,
+    //   players.player0.playerAccount,
+    // ))
+
+    // players.player0.playerAccount = await ST.hashItem(
+    //   players.player0.stProvider,
+    //   game,
+    //   players.player0.playerAccount,
+    //   items.key0.mint,
+    //   {
+    //     hash: [0,0,0,0]
+    //   },
+    // )
+
+    // console.log(await ST.playerToString(
+    //   players.player0.stProvider,
+    //   players.player0.playerAccount,
+    // ))
+
+    // console.log(await ST.gameToString(
+    //   stProvider,
+    //   game.game,
+    // ))
+
+    // // ---------------------- REPLAY PLAYER ----------------------------------
+    // console.log("Sending a Replay Token... ")
+    // await helpers.txSPL(
+    //   players.player0.stProvider.provider,
+    //   items.replayToken.mint,
+    //   players.player1.stProvider.owner,
+    //   1
+    // );
+
+    // console.log("Creating Replay Player ")
+    // players.player1.playerAccount = await ST.createPlayerAccount(
+    //   players.player1.stProvider,
+    //   game,
+    //   {name: "Replay"}
+    // );
+
+    // players.player1.playerAccount = await ST.hashItem(
+    //   players.player1.stProvider,
+    //   game,
+    //   players.player1.playerAccount,
+    //   items.key0.mint,
+    //   {
+    //     hash: [0,0,0,0]
+    //   },
+    // )
+
+    // console.log(await ST.doesMeetReq(
+    //   players.player1.stProvider,
+    //   game,
+    //   players.player1.playerAccount,
+    //   items.key0.mint,
+    // ));
+    // console.log(await ST.doesMeetReq(
+    //   players.player1.stProvider,
+    //   game,
+    //   players.player1.playerAccount,
+    //   items.treasure.mint,
+    // ));
+    // // players.player1.playerAccount = await ST.hashItem(
+    // //   players.player1.stProvider,
+    // //   game,
+    // //   players.player1.playerAccount,
+    // //   items.treasure.mint,
+    // //   {
+    // //     hash: [0,0,0,0]
+    // //   },
+    // // )
+
+    // console.log(await ST.playerToString(
+    //   players.player0.stProvider,
+    //   players.player0.playerAccount,
+    // ))
+
+    // console.log(await ST.playerToString(
+    //   players.player1.stProvider,
+    //   players.player1.playerAccount,
+    // ))
+
+    // console.log(await ST.gameToString(
+    //   stProvider,
+    //   game.game,
+    // ))
 
     console.log("... to the moon! 🌑")
   }
@@ -308,8 +373,6 @@ const main = async() => {
       }
     });
   }
-
-
   
   const runMain = async () => {
     try {

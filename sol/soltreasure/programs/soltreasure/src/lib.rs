@@ -1,7 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, TokenAccount, Transfer, Burn, Mint};
 use spl_associated_token_account::get_associated_token_address;
-use std::convert::Into;
 
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 
@@ -279,24 +278,25 @@ pub mod soltreasure {
         if burn_index == game.items.len(){ return Err(error!(ErrorCode::ItemDoesNotExist)) }
         if game.items[burn_index].burned { return Err(error!(ErrorCode::AlreadyBurned)) }
 
-
-        let seeds = &[
-            game.to_account_info().key.as_ref(),
-            &[game.nonce],
-        ];
-        let signer = &[&seeds[..]];
-        let cpi_accounts = Burn {
-            mint: ctx.accounts.item_mint.to_account_info().clone(),
-            to: ctx.accounts.item_vault.to_account_info().clone(),
-            authority: ctx.accounts.gatekeeper.to_account_info().clone(),
-        };
-        let cpi_program = ctx.accounts.token_program.clone();
-        let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer);
-
-        let token_tx_result = token::burn(cpi_ctx, item_vault.amount);
-
-        if !token_tx_result.is_ok() {
-            return Err(error!(ErrorCode::CouldNotTX))
+        if item_vault.amount > 0 {
+            let seeds = &[
+                game.to_account_info().key.as_ref(),
+                &[game.nonce],
+            ];
+            let signer = &[&seeds[..]];
+            let cpi_accounts = Burn {
+                mint: ctx.accounts.item_mint.to_account_info().clone(),
+                to: ctx.accounts.item_vault.to_account_info().clone(),
+                authority: ctx.accounts.gatekeeper.to_account_info().clone(),
+            };
+            let cpi_program = ctx.accounts.token_program.clone();
+            let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer);
+    
+            let token_tx_result = token::burn(cpi_ctx, item_vault.amount);
+    
+            if !token_tx_result.is_ok() {
+                return Err(error!(ErrorCode::CouldNotTX))
+            }
         }
 
         // Update State
@@ -348,7 +348,7 @@ pub mod soltreasure {
         player_account.run_percent = 0;
 
         player_account.og_percent = 0;
-        player_account.is_speedrunning = false;
+        player_account.is_speedrunning = is_recreation;
 
         for i in 0..game.items.len() {
             player_account.inventory.push(
@@ -492,9 +492,9 @@ pub mod soltreasure {
         }
 
         // Check Items
-        let item_index = get_item_index_from_mint(&ctx.accounts.player_vault_or_replay.mint, &game.items);
+        let item_index = get_item_index_from_mint(&ctx.accounts.game_vault.mint, &game.items);
         let bad_item_index = get_item_index_from_mint(&game.wrong_answer_mint, &game.items);
-        let inventory_index = get_inventory_item_index_from_mint(&ctx.accounts.player_vault_or_replay.mint, &player_account.inventory);
+        let inventory_index = get_inventory_item_index_from_mint(&ctx.accounts.game_vault.mint, &player_account.inventory);
         let bad_inventory_index = get_inventory_item_index_from_mint(&game.wrong_answer_mint, &player_account.inventory);
         
         if item_index == game.items.len() { return Err(error!(ErrorCode::ItemDoesNotExist)) }
@@ -506,7 +506,7 @@ pub mod soltreasure {
         let amount = player_account.inventory[inventory_index].amount - player_account.inventory[inventory_index].minted_count;
         let bad_amount = player_account.inventory[bad_inventory_index].amount - player_account.inventory[bad_inventory_index].minted_count;
 
-        if amount == 0 && bad_amount == 0{ return Err(error!(ErrorCode::NoneToMint)) }
+        if amount == 0 && bad_amount == 0 {  return Err(error!(ErrorCode::NoneToMint)) }
 
         // If ! Recreation
         if !is_recreation {
@@ -621,29 +621,34 @@ pub mod soltreasure {
         if !is_recreation { player_account.og_percent = player_account.run_percent; }
 
         if is_recreation {
-            // Set Speedboard
-            let player_percent = player_account.run_percent;
-            let player_time = player_account.run_percent_timestamp - player_account.run_start;
-            let player_entry = GameLeaderboardInfo {
-                name: player_account.name.clone(),
-                player: player_account.player,
-                run_start: player_account.run_start,
-                run_percent: player_account.run_percent,
-                run_percent_timestamp: player_account.run_percent_timestamp,
-            };
-            let bump_index = get_leaderbaord_bump_index(
-                &game.speedboard,
-                game.leaderboard_count,
-                &player_account.player,
-                player_percent,
-                player_time,
-            );
 
-            if bump_index == !0 { 
-                game.speedboard.push(player_entry); 
-            } else if bump_index < game.speedboard.len() {
-                game.speedboard[bump_index] = player_entry;
+            // Set Speedboard
+            if player_account.is_speedrunning {
+                let player_percent = player_account.run_percent;
+                let player_time = player_account.run_percent_timestamp - player_account.run_start;
+                let player_entry = GameLeaderboardInfo {
+                    name: player_account.name.clone(),
+                    player: player_account.player,
+                    game_start: game.start_date,
+                    run_start: player_account.run_start,
+                    run_percent: player_account.run_percent,
+                    run_percent_timestamp: player_account.run_percent_timestamp,
+                };
+                let bump_index = get_leaderbaord_bump_index(
+                    &game.speedboard,
+                    game.leaderboard_count,
+                    &player_account.player,
+                    player_percent,
+                    player_time,
+                );
+
+                if bump_index == !0 { 
+                    game.speedboard.push(player_entry); 
+                } else if bump_index < game.speedboard.len() {
+                    game.speedboard[bump_index] = player_entry;
+                }
             }
+
         } else {
             // Set Leaderboard
             let player_percent = player_account.run_percent;
@@ -651,6 +656,7 @@ pub mod soltreasure {
             let player_entry = GameLeaderboardInfo {
                 name: player_account.name.clone(),
                 player: player_account.player,
+                game_start: game.start_date,
                 run_start: player_account.run_start,
                 run_percent: player_account.run_percent,
                 run_percent_timestamp: player_account.run_percent_timestamp,
@@ -766,8 +772,6 @@ pub struct CreateGame<'info> {
             params.combination_count as usize,
             params.leaderboard_count as usize,
         ),
-        seeds = [ coach.key().as_ref(), ],
-        bump
     )]
     pub game: Account<'info, Game>,
     /// CHECK: PDA, no need to check
@@ -963,7 +967,6 @@ pub struct Supernova<'info> {
     #[account(
         mut, 
         constraint = &item_vault.owner == gatekeeper.key
-        && item_vault.amount > 0
     )]
     pub item_vault: Account<'info, TokenAccount>,
 
@@ -1211,71 +1214,6 @@ pub struct ForgeItemParams {
     combination_index: u8,
 }
 
-
-// // ------------ Forge Item -------------------------------
-// #[derive(Accounts)]
-// pub struct ForgeItem<'info> {
-//     #[account(mut)]
-//     pub game: Box<Account<'info, Game>>, 
-//     /// CHECK: PDA, no need to check
-//     #[account(
-//         seeds = [game.to_account_info().key.as_ref()],
-//         bump = game.nonce,
-//     )]
-//     gatekeeper: AccountInfo<'info>,
-
-//     #[account(
-//         mut, 
-//         has_one = player,
-//         constraint = player_account.player == player.key() 
-//         && player_account.game == game.key(),
-//     )]
-//     pub player_account: Box<Account<'info, Player>>,
-
-//     // Game Vaults
-//     #[account(
-//         mut, 
-//         constraint = &input_0_vault.owner == gatekeeper.key
-//         && player_input_0_vault.mint == input_0_vault.mint
-//     )]
-//     pub input_0_vault: Box<Account<'info, TokenAccount>>,
-//     #[account(
-//         mut, 
-//         constraint = &input_1_vault.owner == gatekeeper.key
-//         && input_1_vault.mint == input_1_vault.mint
-//     )]
-//     pub input_1_vault: Box<Account<'info, TokenAccount>>,
-//     #[account(
-//         mut, 
-//         constraint = &output_vault.owner == gatekeeper.key
-//         && output_vault.mint == player_output_vault.mint
-//     )]
-//     pub output_vault: Box<Account<'info, TokenAccount>>,
-
-//     // Player Vaults
-//     #[account(
-//         mut, 
-//         constraint = &player_input_0_vault.owner == player.key
-//     )]
-//     pub player_input_0_vault: Box<Account<'info, TokenAccount>>,
-//     #[account(
-//         mut, 
-//         constraint = &player_input_1_vault.owner == player.key
-//     )]
-//     pub player_input_1_vault: Box<Account<'info, TokenAccount>>,
-//     #[account(
-//         mut, 
-//         constraint = &player_output_vault.owner == player.key
-//     )]
-//     pub player_output_vault: Box<Account<'info, TokenAccount>>,
-
-//     // Signers
-//     #[account(mut)]
-//     pub player: Signer<'info>,    
-//     /// CHECK: Global Account
-//     pub token_program: AccountInfo<'info>, 
-// }
-
 // // ------------ TEST STACK -------------------------------
 // #[derive(Accounts)]
 // pub struct TestStack<'info> {
@@ -1394,12 +1332,13 @@ pub fn get_game_combination_size () -> usize {
 pub struct GameLeaderboardInfo {
     pub name: String,
     pub player: Pubkey,
+    pub game_start: u64,
     pub run_start: u64,
     pub run_percent_timestamp: u64,
     pub run_percent: u8,
 }
 pub fn get_leaderboard_info_size () -> usize {
-    return (MAX_NAME_LEN) + 32 + 8 + 8 + 1;
+    return (MAX_NAME_LEN) + 32 + 8 + 8 + 8 + 1;
 }
 
 #[account]
@@ -1457,80 +1396,7 @@ pub fn get_game_size (
         8 + (leaderboard_count as usize * get_leaderboard_info_size());
 }
 
-// ENUM - Error Codes
-#[error_code]
-pub enum ErrorCode {
-    #[msg("General Error")]
-    GeneralError,
-    #[msg("Name too long")]
-    NameTooLong,
-    #[msg("Could not TX")]
-    CouldNotTX,
-    #[msg("Game has already started")]
-    IsPlaying,
-    #[msg("Game has not started")]
-    NotPlaying,
-    #[msg("The game has not ended yet")]
-    StillPlaying,
-    #[msg("Item does not exists")]
-    ItemDoesNotExist,
-    #[msg("Inventory item does not exists")]
-    ItemDoesNotExistInInventory,
-    #[msg("Does not have replay token or is OG")]
-    DoesNotHaveReplay,
-
-    #[msg("Bad gatekeeper")]
-    BadGatekeeper,
-
-    #[msg("Not enough spl in coach's vault")]
-    NotEnoughInCoachesVault,
-    #[msg("Item already exists")]
-    ItemAlreadyExists,
-    #[msg("Bad tail seed")]
-    BadTailSeed,
-    #[msg("Bad mint bytes")]
-    BadMintBytes,
-    #[msg("Max items loaded")]
-    MaxItemsLoaded,
-    #[msg("Bad item type")]
-    BadItemType,
-
-    #[msg("Max combos loaded")]
-    MaxCombosLoaded,
-    #[msg("Bad combo")]
-    BadCombo,
-
-    #[msg("Need reply token")]
-    NeedReplayToken,
-    #[msg("Need wrong answer item")]
-    NeedWrongAnswerItem,
-
-    #[msg("Start time > supernova")]
-    BadSupernovaTime,
-    #[msg("Start time + Cheater time > supernova")]
-    BadCheaterTime,
-
-    #[msg("Item has already burned")]
-    AlreadyBurned,
-
-    #[msg("Bad player account")]
-    BadPlayerAccount,
-
-    #[msg("Cannot hash a combo")]
-    IsCombo,
-    #[msg("Pumkin Eater...")]
-    IsPumkinEater,
-    #[msg("Does not meet reqs")]
-    DoesNotMeetReqs,
-    #[msg("Would mint/hash too many")]
-    WouldMintTooMany,
-
-    #[msg("Cannot mint from a recreation")]
-    IsRecreation,
-    #[msg("None to mint")]
-    NoneToMint,
-}
-
+// --------------- HELPERS ---------------------------------
 pub fn get_inventory_item_index_from_mint (
     mint: &Pubkey,
     inventory: &Vec<GameInventoryItem>,
@@ -1550,7 +1416,7 @@ pub fn get_item_index_from_mint (
 ) -> usize {
     let index = items.len();
     for i in 0..index {
-        if items[i].mint == *mint {
+        if &items[i].mint == mint {
             return i;
         }
     }
@@ -1625,8 +1491,6 @@ pub fn get_leaderbaord_bump_index(
     let mut should_place = false;
     let mut bump_index = leaderboard.len();
 
-    if leaderboard.len() < leaderboard_max as usize { return !0; }
-
     for i in 0..leaderboard.len() {
         let comp_percent = leaderboard[i].run_percent;
         let comp_time = leaderboard[i].run_percent_timestamp - leaderboard[i].run_start;
@@ -1657,9 +1521,88 @@ pub fn get_leaderbaord_bump_index(
         }
     }
 
+    if bump_index == leaderboard.len() && leaderboard.len() < leaderboard_max as usize { 
+        return !0; 
+    }
+
     return bump_index;
 }
 
+// --------------- ERRORS ---------------------------------
+#[error_code]
+pub enum ErrorCode {
+    #[msg("General Error")]
+    GeneralError,
+    #[msg("Name too long")]
+    NameTooLong,
+    #[msg("Could not TX")]
+    CouldNotTX,
+    #[msg("Game has already started")]
+    IsPlaying,
+    #[msg("Game has not started")]
+    NotPlaying,
+    #[msg("The game has not ended yet")]
+    StillPlaying,
+    #[msg("Item does not exists")]
+    ItemDoesNotExist,
+    #[msg("Inventory item does not exists")]
+    ItemDoesNotExistInInventory,
+    #[msg("Does not have replay token or is OG")]
+    DoesNotHaveReplay,
+
+    #[msg("Bad gatekeeper")]
+    BadGatekeeper,
+
+    #[msg("Not enough spl in coach's vault")]
+    NotEnoughInCoachesVault,
+    #[msg("Item already exists")]
+    ItemAlreadyExists,
+    #[msg("Bad tail seed")]
+    BadTailSeed,
+    #[msg("Bad mint bytes")]
+    BadMintBytes,
+    #[msg("Max items loaded")]
+    MaxItemsLoaded,
+    #[msg("Bad item type")]
+    BadItemType,
+
+    #[msg("Max combos loaded")]
+    MaxCombosLoaded,
+    #[msg("Bad combo")]
+    BadCombo,
+
+    #[msg("Need reply token")]
+    NeedReplayToken,
+    #[msg("Need wrong answer item")]
+    NeedWrongAnswerItem,
+
+    #[msg("Start time > supernova")]
+    BadSupernovaTime,
+    #[msg("Start time + Cheater time > supernova")]
+    BadCheaterTime,
+
+    #[msg("Item has already burned")]
+    AlreadyBurned,
+
+    #[msg("Bad player account")]
+    BadPlayerAccount,
+
+    #[msg("Cannot hash a combo")]
+    IsCombo,
+    #[msg("Pumkin Eater...")]
+    IsPumkinEater,
+    #[msg("Does not meet reqs")]
+    DoesNotMeetReqs,
+    #[msg("Would mint/hash too many")]
+    WouldMintTooMany,
+
+    #[msg("Cannot mint from a recreation")]
+    IsRecreation,
+    #[msg("None to mint")]
+    NoneToMint,
+}
+
+// --------------- TESTS ---------------------------------
 // #[derive(Debug, Clone, AnchorSerialize, AnchorDeserialize)]
 // #[account]
 // pub struct TestStruct {
@@ -1668,19 +1611,26 @@ pub fn get_leaderbaord_bump_index(
 //     pub name: Vec<u8>,
 // }
 
-#[test]
-pub fn test () {
-    // let foo = [0_u8; 4096 - 89];
+// #[test]
+// pub fn test () {
+//     let player = Pubkey::from_str("4YjAYbmdHXC1QUUoQc363QKitVYoxw9qxCVk5J4ZAYDg");
+//     let tail = 1;
+//     let mint = [0,1,2,3];
+//     let hash = [215,80,94,49];
 
-    // msg!("{:?}", mem::size_of::<Game>());
-    // let test1 = Pubkey::new_unique();
-    // let test2 = Pubkey::new_unique();
-    // let test3 = test2.clone();
 
-    // println!("\nOne {}", test1);
-    // println!("Two {}", test2);
-    // println!("Three {}\n", test3);
-
-    // println!("\n One == Two [{}]", test1 == test2);
-    // println!("\n Two == Three [{}]", &test2 == &test3);
-}
+//     match player {
+//         Ok(p) => {
+//             let did_match = check_for_correct_hash(
+//                 &hash,
+//                 &mint,
+//                 &p,
+//                 tail
+//             );
+//             println!("Maybe? {}", did_match);
+//         },
+//         Err(e) => {
+//             println!("Naughty {}", e)
+//         }
+//     }
+// }

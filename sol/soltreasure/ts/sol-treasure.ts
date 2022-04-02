@@ -15,9 +15,14 @@ export enum GameItemType {
     comb = 0x02,
 }
 
+export enum LeaderboardType {
+    og,
+    speed,
+}
 export interface GameLeaderboardInfo {
     name: string,
     player: web3.PublicKey,
+    gameStart: BN,
     runStart: BN,
     runPercentTimestamp: BN,
     runPercent: number,
@@ -182,17 +187,17 @@ export class STProvider {
 // --------- FUNCTIONS -----------------------------------------
 export const getGameAccount = async (
     stProvider: STProvider,
-    stKey: web3.PublicKey | GameAccount,
+    gameKey: web3.PublicKey | GameAccount,
     shouldUpdate?: boolean,
 ) => { 
-    if((stKey as GameAccount).game){
+    if((gameKey as GameAccount).game){
         if( shouldUpdate ){
-            return (await stProvider.program.account.game.fetch((stKey as GameAccount).game)) as GameAccount; 
+            return (await stProvider.program.account.game.fetch((gameKey as GameAccount).game)) as GameAccount; 
         } else {
-            return await stKey as GameAccount;
+            return await gameKey as GameAccount;
         }
     }
-    return (await stProvider.program.account.game.fetch(stKey as web3.PublicKey)) as GameAccount; 
+    return (await stProvider.program.account.game.fetch(gameKey as web3.PublicKey)) as GameAccount; 
 }
 
 export const getPlayerAccount = async (
@@ -210,24 +215,13 @@ export const getPlayerAccount = async (
     return (await stProvider.program.account.player.fetch(playerAccountKey as web3.PublicKey)) as PlayerAccount; 
 }
 
-export const findGameByCoach = async (
-    stProvider: STProvider,
-    coach?: web3.PublicKey,
-) => {
-    return await web3.PublicKey.findProgramAddress(
-        [
-            coach?.toBuffer() ?? stProvider.owner.toBuffer(),
-        ],
-        stProvider.program.programId,
-    );
-}
 
 export const findPlayerAccount = async (
     stProvider: STProvider,
-    stKey: web3.PublicKey | GameAccount,
+    gameKey: web3.PublicKey | GameAccount,
     player?: web3.PublicKey,
 ) => {
-    const game = await getGameAccount(stProvider, stKey);
+    const game = await getGameAccount(stProvider, gameKey);
 
     return await web3.PublicKey.findProgramAddress(
         [
@@ -241,12 +235,13 @@ export const findPlayerAccount = async (
 export const createGame = async (
     stProvider: STProvider,
     params: CreateGameParams,
+    gameKeypair?: web3.Keypair 
 ) => {
     const owner = stProvider.owner;
-    let [gameKey, gameNonce] = await findGameByCoach(stProvider);
+    const gameKP = gameKeypair ?? web3.Keypair.generate();
 
     const [gatekeeper, nonce] = await web3.PublicKey.findProgramAddress(
-        [gameKey.toBuffer()],
+        [gameKP.publicKey.toBuffer()],
         stProvider.program.programId
     );
 
@@ -256,26 +251,26 @@ export const createGame = async (
         params,
         {
             accounts: {
-                game: gameKey,
+                game: gameKP.publicKey,
                 gatekeeper: gatekeeper,
                 coach: owner,
                 systemProgram: web3.SystemProgram.programId,
             },
-            signers: [],
+            signers: [gameKP],
             instructions: [],
         }
     );
 
-    return getGameAccount(stProvider, gameKey, true);
+    return getGameAccount(stProvider, gameKP.publicKey, true);
 }
 
 export const loadItem = async (
     stProvider: STProvider,
-    stKey: web3.PublicKey | GameAccount,
+    gameKey: web3.PublicKey | GameAccount,
     mint: web3.PublicKey,
     params: LoadItemsParams,
 ) => {
-    const game = await getGameAccount(stProvider, stKey);
+    const game = await getGameAccount(stProvider, gameKey);
     const owner = stProvider.owner;
 
     const ownerVault = await helpers.getAssociatedTokenAddress(
@@ -322,13 +317,13 @@ export const loadItem = async (
 
 export const loadCombination = async (
     stProvider: STProvider,
-    stKey: web3.PublicKey | GameAccount,
+    gameKey: web3.PublicKey | GameAccount,
     mintI0: web3.PublicKey,
     mintI1: web3.PublicKey,
     mintO: web3.PublicKey,
     params: LoadCombinationsParams,
 ) => {
-    const game = await getGameAccount(stProvider, stKey);
+    const game = await getGameAccount(stProvider, gameKey);
     const owner = stProvider.owner;
 
     const input0 = await helpers.getAssociatedTokenAddress(mintI0, game.gatekeeper, true);
@@ -356,11 +351,11 @@ export const loadCombination = async (
 
 export const loadRequirements = async (
     stProvider: STProvider,
-    stKey: web3.PublicKey | GameAccount,
+    gameKey: web3.PublicKey | GameAccount,
     mint: web3.PublicKey,
     params: LoadRequirementsParams,
 ) => {
-    const game = await getGameAccount(stProvider, stKey);
+    const game = await getGameAccount(stProvider, gameKey);
     const owner = stProvider.owner;
 
     const itemVault = await helpers.getAssociatedTokenAddress(mint, game.gatekeeper, true);
@@ -384,10 +379,10 @@ export const loadRequirements = async (
 
 export const startStopCountdown = async (
     stProvider: STProvider,
-    stKey: web3.PublicKey | GameAccount,
+    gameKey: web3.PublicKey | GameAccount,
     params: StartStopCountdownParams,
 ) => {
-    const game = await getGameAccount(stProvider, stKey);
+    const game = await getGameAccount(stProvider, gameKey);
     const owner = stProvider.owner;
     
     await stProvider.program.rpc.startStopCountdown(
@@ -407,10 +402,10 @@ export const startStopCountdown = async (
 
 export const supernova = async (
     stProvider: STProvider,
-    stKey: web3.PublicKey | GameAccount,
+    gameKey: web3.PublicKey | GameAccount,
     mint: web3.PublicKey,
 ) => {
-    const game = await getGameAccount(stProvider, stKey);
+    const game = await getGameAccount(stProvider, gameKey);
     const owner = stProvider.owner;
 
     const itemVault = await helpers.getAssociatedTokenAddress(mint, game.gatekeeper, true);
@@ -435,10 +430,10 @@ export const supernova = async (
 
 export const createPlayerAccount = async (
     stProvider: STProvider,
-    stKey: web3.PublicKey | GameAccount,
+    gameKey: web3.PublicKey | GameAccount,
     params: CreatePlayerParams,
 ) => {
-    const game = await getGameAccount(stProvider, stKey);
+    const game = await getGameAccount(stProvider, gameKey);
     const player = stProvider.owner;
 
     const [ playerAccount, bump ] = await findPlayerAccount(
@@ -504,10 +499,10 @@ export const createPlayerAccount = async (
 
 export const startSpeedrun = async (
     stProvider: STProvider,
-    stKey: web3.PublicKey | GameAccount,
+    gameKey: web3.PublicKey | GameAccount,
     playerAccountKey: web3.PublicKey | PlayerAccount,
 ) => {
-    const game = await getGameAccount(stProvider, stKey);
+    const game = await getGameAccount(stProvider, gameKey);
     const playerAccount = await getPlayerAccount(stProvider, playerAccountKey);
     const player = stProvider.owner;
 
@@ -529,12 +524,12 @@ export const startSpeedrun = async (
 
 export const hashItem = async (
     stProvider: STProvider,
-    stKey: web3.PublicKey | GameAccount,
+    gameKey: web3.PublicKey | GameAccount,
     playerAccountKey: web3.PublicKey | PlayerAccount,
     mint: web3.PublicKey,
     params: HashItemParams,
 ) => {
-    const game = await getGameAccount(stProvider, stKey);
+    const game = await getGameAccount(stProvider, gameKey);
     const playerAccount = await getPlayerAccount(stProvider, playerAccountKey);
     const player = stProvider.owner;
 
@@ -613,14 +608,14 @@ export const hashItem = async (
 
 export const forgeItem = async (
     stProvider: STProvider,
-    stKey: web3.PublicKey | GameAccount,
+    gameKey: web3.PublicKey | GameAccount,
     playerAccountKey: web3.PublicKey | PlayerAccount,
     mintI0: web3.PublicKey,
     mintI1: web3.PublicKey,
     mintO: web3.PublicKey,
     params: ForgeItemParams,
 ) => {
-    const game = await getGameAccount(stProvider, stKey);
+    const game = await getGameAccount(stProvider, gameKey);
     const playerAccount = await getPlayerAccount(stProvider, playerAccountKey);
     const player = stProvider.owner;
 
@@ -761,12 +756,111 @@ export const itemTypeToString = (itemType: GameItemType) => {
     return "Unkown";
 }
 // --------- GAME HELPERS -----------------------------------------
+export const getItemByMint = async (
+    stProvider: STProvider,
+    gameKey: web3.PublicKey | GameAccount,
+    mint: web3.PublicKey
+) => {
+    const game = await getGameAccount(stProvider, gameKey);
+
+    for (let i = 0; i < game.items.length; i++){
+        if( mint.equals(game.items[i].mint) ) return game.items[i];
+    }
+
+    throw new Error("Item not found");
+}
+
+export const getInventoryItemByMint = async (
+    stProvider: STProvider,
+    playerAccountKey: web3.PublicKey | PlayerAccount,
+    mint: web3.PublicKey,
+) => {
+    const playerAccount = await getPlayerAccount(stProvider, playerAccountKey);
+
+    for (let i = 0; i < playerAccount.inventory.length; i++){
+        if( mint.equals(playerAccount.inventory[i].mint) ) return playerAccount.inventory[i];
+    }
+
+    throw new Error("Item not found");
+}
+
+export const doesMeetReq = async (
+    stProvider: STProvider,
+    gameKey: web3.PublicKey | GameAccount,
+    playerAccountKey: web3.PublicKey | PlayerAccount,
+    mint: web3.PublicKey
+) => {
+    const game = await getGameAccount(stProvider, gameKey);
+    const playerAccount = await getPlayerAccount(stProvider, playerAccountKey);
+    const player = stProvider.owner;
+
+    let item = await getItemByMint(
+        stProvider,
+        game,
+        mint
+    );
+
+    let mints: web3.PublicKey[] = [];
+    for (let i = 0; i < game.items.length; i++) {
+        if(!item.requirements.and(game.items[i].id).eq(new BN(0))){
+            mints.push(game.items[i].mint);
+        }
+    }
+
+    for (let i = 0; i < mints.length; i++) {
+        for (let j = 0; j < playerAccount.inventory.length; j++) {
+            if(mints[i].equals(playerAccount.inventory[j].mint)){
+                if(playerAccount.inventory[j].mintedCount == 0) return false;
+            }
+        }        
+    }
+
+    return true;
+}
+
+export const leaderboardSort = (
+    a: GameLeaderboardInfo,
+    b: GameLeaderboardInfo,
+) => {
+    if(a.runPercent > b.runPercent){ return 1; }
+    if(a.runPercent < b.runPercent){ return -1; }
+
+    let aTime = a.runPercentTimestamp.sub(a.gameStart);
+    let bTime = b.runPercentTimestamp.sub(b.gameStart);
+
+    return aTime.cmp(bTime)
+}
+export const speedboardSort = (
+    a: GameLeaderboardInfo,
+    b: GameLeaderboardInfo,
+) => {
+    if(a.runPercent > b.runPercent){ return 1; }
+    if(a.runPercent < b.runPercent){ return -1; }
+
+    let aTime = a.runPercentTimestamp.sub(a.runStart);
+    let bTime = b.runPercentTimestamp.sub(b.runStart);
+
+    return aTime.cmp(bTime)
+}
+
+export const sortLeaderboard = (
+    entries: GameLeaderboardInfo[],
+    type: LeaderboardType,
+) => {
+    switch(type){
+        case LeaderboardType.og: return [...entries.sort(leaderboardSort)];
+        case LeaderboardType.speed: return [...entries.sort(speedboardSort)];
+    }
+
+    return [...entries];
+}
+
 export const hashWallet = (
     stProvider: STProvider,
     mintBytes: number[],
     tail: number,
 ) => {
-    const wallet = stProvider.owner.toBytes();
+    const wallet = [...stProvider.owner.toBytes()];
     let hash = [...NULL_MINT_BYTES];
 
     if(tail > 16 ) return hash;
@@ -777,23 +871,33 @@ export const hashWallet = (
     for(let i = 0; i < hash.length; i++)
         hash[i] = wallet[wallet.length - 1 - tail] ^ wallet[mintBytes[i]]
 
+    // console.log(`"Player Key: ${stProvider.owner}`);
+    // console.log(`"Wallet Len: ${wallet.length}`);
+    // console.log(`"Wallet:     [${wallet}]`);
+    // console.log(`"Tail:       ${tail}`);
+    // console.log(`"Mint:       [${mintBytes}]`);
+    // console.log(`"Hash:       [${hash}]\n`);
+
+    // [50, 37, 53, 127]
+    // [14,31,167,9]
+
     return hash;
 }
 
 export const getTimeTillSupernova = async (
     stProvider: STProvider,
-    stKey: web3.PublicKey | GameAccount,
+    gameKey: web3.PublicKey | GameAccount,
     mint: web3.PublicKey
 ) => {
-    const game = await getGameAccount(stProvider, stKey);
+    const game = await getGameAccount(stProvider, gameKey);
     return Math.min(0, (BNToDate(game.supernovaDate).getTime() - Date.now()))
 }
 
 export const getIsPlaying = async (
     stProvider: STProvider,
-    stKey: web3.PublicKey | GameAccount,
+    gameKey: web3.PublicKey | GameAccount,
 ) => {
-    const game = await getGameAccount(stProvider, stKey);
+    const game = await getGameAccount(stProvider, gameKey);
 
     if(game.startDate.eq(NULL_DATE)) return false;
 
@@ -802,9 +906,9 @@ export const getIsPlaying = async (
 
 export const getIsRecreation = async (
     stProvider: STProvider,
-    stKey: web3.PublicKey | GameAccount,
+    gameKey: web3.PublicKey | GameAccount,
 ) => {
-    const game = await getGameAccount(stProvider, stKey);
+    const game = await getGameAccount(stProvider, gameKey);
 
     if(game.startDate.eq(NULL_DATE)) return false;
 
@@ -814,10 +918,10 @@ export const getIsRecreation = async (
 
 export const getItemID = async (
     stProvider: STProvider,
-    stKey: web3.PublicKey | GameAccount,
+    gameKey: web3.PublicKey | GameAccount,
     mint: web3.PublicKey
 ) => {
-    const game = await getGameAccount(stProvider, stKey);
+    const game = await getGameAccount(stProvider, gameKey);
 
     for (let i = 0; i < game.items.length; i++) {
         if(mint.equals(game.items[i].mint)) return game.items[i].id;
@@ -828,14 +932,14 @@ export const getItemID = async (
 
 export const createLoadRequirementParams = async (
     stProvider: STProvider,
-    stKey: web3.PublicKey | GameAccount,
+    gameKey: web3.PublicKey | GameAccount,
     reqItems: web3.PublicKey[],
 ) => {
-    const game = await getGameAccount(stProvider, stKey);
+    const game = await getGameAccount(stProvider, gameKey);
     let req = new BN(0);
 
     for (let i = 0; i < reqItems.length; i++) {
-        req = req.or(await getItemID(stProvider, stKey, reqItems[i]))
+        req = req.or(await getItemID(stProvider, gameKey, reqItems[i]))
     }
 
     return {
@@ -845,10 +949,10 @@ export const createLoadRequirementParams = async (
 
 export const createForgeParams = async (
     stProvider: STProvider,
-    stKey: web3.PublicKey | GameAccount,
+    gameKey: web3.PublicKey | GameAccount,
     comboIndex: number
 ) => {
-    const game = await getGameAccount(stProvider, stKey);
+    const game = await getGameAccount(stProvider, gameKey);
 
     if(comboIndex >= game.combinations.length){
         throw new Error("Bad combo index");
@@ -877,9 +981,9 @@ export const createForgeParams = async (
 
 export const gameToString = async (
     stProvider: STProvider,
-    stKey: web3.PublicKey | GameAccount,
+    gameKey: web3.PublicKey | GameAccount,
 ) => {
-    const game = await getGameAccount(stProvider, stKey);
+    const game = await getGameAccount(stProvider, gameKey);
 
     let string = "\n";
     string += `---------- SOL-TREASURE -------------\n`;
@@ -1008,7 +1112,8 @@ export const gameInventoryToString = (
 }
 
 // --------- GAME TESTERS -----------------------------------------
-export interface TestItemParams {
+
+export interface MinItemParams {
     name?: string,
     itemType?: GameItemType,
     mintTailSeed?: number,
@@ -1022,12 +1127,12 @@ export interface TestItemParams {
     amountToTx?: anchor.BN,
     amountToMake?: number,
   }
-  export const createTestGameItem = async (
-    provider: anchor.Provider,
-    params: TestItemParams,
+  export const createMinGameItem = (
+    mint: web3.PublicKey,
+    params: MinItemParams,
   ) => {
     return {
-      mint: (await helpers.createSPL(provider, params.amountToMake ?? 1000000)).mint,
+      mint: mint,
       params: {
         name: params.name ?? "Test Item",
         itemType: params.itemType ?? GameItemType.item,
@@ -1035,26 +1140,26 @@ export interface TestItemParams {
         mintBytes: params.mintBytes ?? NULL_MINT_BYTES,
         isReplayToken: params.isReplayToken ?? false,
         isWrongAnswerItem: params.isWrongAnswerItem ?? false,
-        percentPerItem: params.percentPerItem ?? 1,
+        percentPerItem: params.percentPerItem ?? 0,
         itemsPerMint: params.itemsPerMint ?? 1,
         maxItemsPerInventory: params.maxItemsPerInventory ?? 1,
-        costPerItem: params.costPerItem ?? new anchor.BN(1),
-        amountToTx: params.amountToTx ?? new anchor.BN(params.amountToMake ?? 1000000),
+        costPerItem: params.costPerItem ?? new anchor.BN(0),
+        amountToTx: params.amountToTx ?? new anchor.BN(params.amountToMake ?? 0),
       } as LoadItemsParams,
     };
   }
   
-  export interface TestCombinationParams {
+  export interface MinCombinationParams {
     name?: string,
     input0Amount?: number,
     input1Amount?: number,
     outputAmount?: number,
   }
-  export const createTestCombination = async (
+  export const createMinCombination = (
     mintI0: web3.PublicKey,
     mintI1: web3.PublicKey,
     mintO: web3.PublicKey,
-    params: TestCombinationParams,
+    params: MinCombinationParams,
   ) => {
     return {
       mintI0: mintI0,
@@ -1069,20 +1174,32 @@ export interface TestItemParams {
     }
   }
 
-  export interface TestStartParams {
-    countdownTime?: BN,
-    supernovaDate?: BN,
-    cheaterTime?: BN,
+  export const createMinReq = (
+    mint: web3.PublicKey,
+    params: web3.PublicKey[]
+  ) => {
+    return {
+        mint: mint,
+        params: [
+            ...params
+        ]
+    }
   }
-  export const createTestStartStop = (
+
+  export interface MinStartParams {
+    countdownTime?: number,
+    gameTime?: number,
+    cheaterTime?: number,
+  }
+  export const createMinStartStop = (
     playing: boolean,
-    params: TestStartParams,
+    params: MinStartParams,
   ) => {
     return {
         playing: playing,
-        countdownTime: params.countdownTime ?? new BN(0),
-        supernovaDate: params.supernovaDate ?? DateToBN(Date.now() + 1000 * 60 * 30),
-        cheaterTime: params.cheaterTime ?? new BN(60 * 1),
+        countdownTime: new BN(params.countdownTime ?? 0),
+        supernovaDate: DateToBN(Date.now() + (params.gameTime ?? (1000 * 60 * 30))),
+        cheaterTime: new BN(params.cheaterTime ?? 0),
     } as StartStopCountdownParams;
   }
 
