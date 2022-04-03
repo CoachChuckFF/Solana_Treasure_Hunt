@@ -3,7 +3,7 @@ import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import { codeToHexString, getDronieCode } from "../models/hashes";
-import { TreasureProvider } from "../models/solTreasure";
+import { STProvider } from "../models/sol-treasure";
 import { Vector3 } from "three";
 import { PuzzlePageFrame, PuzzlePageParams } from "../views/puzzleCommons";
 import { ST_PUZZLE_STATE } from "../models/state";
@@ -137,7 +137,7 @@ function sosCode(cmd:string){
 
 function runEmulator(
     program:string, 
-    provider:TreasureProvider, 
+    provider:STProvider, 
     byteCB:(hash:number, index:number)=>void, 
     winCB:()=>void,
 ){
@@ -479,7 +479,7 @@ export function DroniesPuzzlePage(props:any){
     }
 
     const {
-        treasureProvider: [treasureProvider],
+        stProvider: [stProvider],
         devMode: [devMode, setDevMode],
         cameraPosition: [cameraPostion, setCameraPosition],
         globalState: [globalState],
@@ -632,7 +632,7 @@ export function DroniesPuzzlePage(props:any){
 
     const winCB = () => {
         setBytes(
-            getDronieCode(treasureProvider, 5)
+            getDronieCode(stProvider, 5)
         );
     }
     const bytesCB = (hash:number, index:number) => {
@@ -655,7 +655,7 @@ export function DroniesPuzzlePage(props:any){
         if(devMode){
             newResponse = runDevEmulator(handleSpace(true), fkCB, locCB)
         } else {
-            newResponse = (runEmulator(handleSpace(true), treasureProvider, bytesCB, winCB) ?? '');
+            newResponse = (runEmulator(handleSpace(true), stProvider, bytesCB, winCB) ?? '');
         }
         if(newResponse === response){
             // driveState();

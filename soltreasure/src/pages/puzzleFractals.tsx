@@ -121,7 +121,7 @@ export function FractalsPuzzlePage(props:any){
 
 
     const {
-        treasureProvider: [treasureProvider],
+        stProvider: [stProvider],
         globalState: [globalState],
         puzzleState: [puzzleState, setPuzzleState],
         gameState: [gameState, setGameState],
@@ -132,7 +132,7 @@ export function FractalsPuzzlePage(props:any){
     }, [puzzleState]);
 
     const onFractal = (id:number) => {
-        let char = id.toString();
+        let char = FRACTALS[id].char;
         setActiveFractal(id);
 
         let newCombination = combination + char;
@@ -142,9 +142,8 @@ export function FractalsPuzzlePage(props:any){
         setCombination(newCombination);
         setBytes(
             getFractalCodes(
-                treasureProvider,
-                newCombination,
-                FRACTAL_SOLUTION === newCombination,
+                stProvider,
+                newCombination
             )
         )
     }
@@ -156,7 +155,12 @@ export function FractalsPuzzlePage(props:any){
         title: "[RF8]",
         codes: bytes,
         currentCodes: gameState.whiteMintBytes,
-        onClose: (bytes)=>{},
+        onClose: (bytes)=>{
+            setGameState({
+                ...gameState,
+                whiteMintBytes: bytes,
+            });
+        },
         onClosed: ()=>{setPuzzleState(ST_PUZZLE_STATE.noPuzzle)}
     }
 

@@ -56,13 +56,13 @@ const NOOTS:NootInfo[] = [
         img: 'https://www.arweave.net/EImqZ7GmraVINv5xcsHlmSdTN77WJSLwrtHJFSdwXkU?ext=png',
         title: 'NOOT',
         id: 6,
-        url: "https://solscan.io/token/2ct6MNqzxoAv2guPoZQtrKd9pznfcAgd7MYaXHxNr5cW#metadata",
+        url: "https://solscan.io/token/HZy1GBpjJcsEJkJCEytqzu4nRgEwrU3S9AbwgAqpGDd#metadata",
     },
     {
         img: 'https://www.arweave.net/EImqZ7GmraVINv5xcsHlmSdTN77WJSLwrtHJFSdwXkU?ext=png',
         title: 'NOOT',
         id: 7,
-        url: "https://solscan.io/token/HZy1GBpjJcsEJkJCEytqzu4nRgEwrU3S9AbwgAqpGDd#metadata",
+        url: "https://solscan.io/token/2ct6MNqzxoAv2guPoZQtrKd9pznfcAgd7MYaXHxNr5cW#metadata",
     },
     {
         img: 'https://www.arweave.net/EImqZ7GmraVINv5xcsHlmSdTN77WJSLwrtHJFSdwXkU?ext=png',
@@ -126,7 +126,7 @@ function SolScan(props:any){
                 target="_blank"
                 href={url}
             > 
-            {`View 00${props.activeNoot + 1} on Solscan 👀`}
+            {`View 00${props.activeNoot} on Solscan 👀`}
             </a>
         </div>
     )
@@ -139,7 +139,7 @@ export function NootPuzzlePage(props:any){
     const [bytes, setBytes] = useState(NULL_MINT_BYTES);
 
     const {
-        treasureProvider: [treasureProvider],
+        stProvider: [stProvider],
         globalState: [globalState],
         puzzleState: [puzzleState, setPuzzleState],
         gameState: [gameState, setGameState],
@@ -159,7 +159,7 @@ export function NootPuzzlePage(props:any){
     }, []);
 
     useEffect(() => {
-        setBytes(getNootCode(treasureProvider, activeNoot))
+        setBytes(getNootCode(stProvider, activeNoot))
     }, [activeNoot]);
 
     const shuffleArray = (array:any) => {
@@ -177,7 +177,7 @@ export function NootPuzzlePage(props:any){
         puzzle: ST_PUZZLE_STATE.noot,
         currentPuzzleState: puzzleState,
         globalState: globalState,
-        title: "Find the real NOOT, NOOT NOOT",
+        title: "Find Noot... Noot Noot",
         codes: bytes,
         currentCodes: gameState.blueMintBytes,
         onClose: (bytes)=>{

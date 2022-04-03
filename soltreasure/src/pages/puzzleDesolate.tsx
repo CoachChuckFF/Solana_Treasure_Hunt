@@ -98,7 +98,7 @@ export function DesolatePuzzlePage(props:any){
     const [colorCodes, setColorCodes] = useState([0x00, 0x00, 0x00])
 
     const {
-        treasureProvider: [treasureProvider],
+        stProvider: [stProvider],
         globalState: [globalState],
         puzzleState: [puzzleState, setPuzzleState],
         gameState: [gameState, setGameState],
@@ -109,7 +109,7 @@ export function DesolatePuzzlePage(props:any){
     }, [puzzleState]);
 
     useEffect(() => {
-        setBytes(getDesolatesCode(treasureProvider, colorCodes[0], colorCodes[1], colorCodes[2]))
+        setBytes(getDesolatesCode(stProvider, colorCodes[0], colorCodes[1], colorCodes[2]))
     }, [colorCodes]);
 
     const toDesolate = () => {

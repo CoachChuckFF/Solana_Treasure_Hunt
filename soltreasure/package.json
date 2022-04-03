@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@coach-chuck/solana-helpers": "^0.0.1",
     "@emotion/react": "^11.8.2",
     "@emotion/styled": "^11.8.1",
     "@fortawesome/fontawesome-pro": "^6.1.0",
@@ -31,11 +32,13 @@
     "buffer": "^6.0.3",
     "rand-seed": "^1.0.1",
     "react": "^17.0.2",
+    "react-app-polyfill": "^3.0.0",
     "react-dom": "^17.0.2",
     "react-scripts": "5.0.0",
     "three": "^0.138.3",
     "troika-three-text": "^0.46.3",
     "typescript": "^4.6.2",
+    "uifx": "^2.0.7",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

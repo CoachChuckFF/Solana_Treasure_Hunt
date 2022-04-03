@@ -6,13 +6,21 @@ import * as STState from "../models/state";
 import * as STS from "../models/space";
 import { PublicKey } from '@solana/web3.js';
 import { Vector3 } from 'three';
-import { TreasureProvider } from "../models/solTreasure";
+import { GameAccount, getPlayerAccount, PlayerAccount, STProvider } from "../models/sol-treasure";
 
 // TODO Change to Player State
 export interface Store {
-    treasureProvider: [
-        TreasureProvider,
-        React.Dispatch<React.SetStateAction<TreasureProvider>>
+    gameAccount: [
+        GameAccount,
+        React.Dispatch<React.SetStateAction<GameAccount>>
+    ],
+    playerAccount: [
+        PlayerAccount,
+        React.Dispatch<React.SetStateAction<PlayerAccount>>
+    ],
+    stProvider: [
+        STProvider,
+        React.Dispatch<React.SetStateAction<STProvider>>
     ],
     devMode: [
         boolean,
@@ -69,7 +77,9 @@ export interface Store {
 
 export const logoutOfStore = (store: Store) => {
     if( store.actionCrank[1] !== null) store.actionCrank[1]();
-    if( store.treasureProvider[1] !== null) store.treasureProvider[1](TreasureProvider.empty());
+    if( store.gameAccount[1] !== null) store.gameAccount[1](STState.NULL_GAME_ACCOUNT);
+    if( store.playerAccount[1] !== null) store.playerAccount[1](STState.NULL_PLAYER_ACCOUNT);
+    if( store.stProvider[1] !== null) store.stProvider[1](STProvider.empty());
     if( store.devMode[1] !== null) store.devMode[1](STState.NULL_DEV_MODE);
     if( store.isLoading[1] !== null) store.isLoading[1](STState.NULL_IS_LOADING);
     if( store.snackbar[2] !== null) store.snackbar[2](STSnackbar.NULL_SNACKBAR);
@@ -82,7 +92,9 @@ export const logoutOfStore = (store: Store) => {
 }
 
 export const NULL_STORE: Store = {
-    treasureProvider: [(null as any), (null as any)],
+    gameAccount: [STState.NULL_GAME_ACCOUNT, (null as any)],
+    playerAccount: [STState.NULL_PLAYER_ACCOUNT, (null as any)],
+    stProvider: [STState.NULL_PROVIDER, (null as any)],
     devMode: [STState.NULL_DEV_MODE, (null as any)],
     isLoading: [STState.NULL_IS_LOADING, (null as any)],
     snackbar: [STSnackbar.NULL_SNACKBAR, (null as any), (null as any)],
@@ -100,8 +112,14 @@ export const StoreContext = React.createContext<Store>(NULL_STORE)
 
 export default function StoreProvider({ children }:any) {
 
-    // Dev Mode
-    const [treasureProvider, setTreasureProvider] = React.useState(TreasureProvider.empty());
+    // Game Account
+    const [gameAccount, setGameAccount] = React.useState(STState.NULL_GAME_ACCOUNT);
+
+    // Player Account
+    const [playerAccount, setPlayerAccount] = React.useState(STState.NULL_PLAYER_ACCOUNT);
+
+    // Provider
+    const [stProvider, setTreasureProvider] = React.useState(STProvider.empty());
 
     // Dev Mode
     const [devMode, setDevMode] = React.useState(STState.NULL_DEV_MODE);
@@ -158,7 +176,9 @@ export default function StoreProvider({ children }:any) {
     const updateCameraPosition = (newState: STWorldSpace.STSpace) => { setCameraPosition( STState.getNewCameraPosition(newState) );}
 
     const store: Store = {
-        treasureProvider: [treasureProvider, setTreasureProvider],
+        gameAccount: [gameAccount, setGameAccount], 
+        playerAccount: [playerAccount, setPlayerAccount], 
+        stProvider: [stProvider, setTreasureProvider],
         devMode: [devMode, setDevMode],
         isLoading: [isLoading, setIsLoading],
         snackbar: [snackbar, showSnackbar, setSnackbar],

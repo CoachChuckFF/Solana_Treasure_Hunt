@@ -254,6 +254,7 @@ function getHUDState(
                 ...NULL_HUD_STATE,
                 enabled: canTryMint || canBreak,
                 text: !canTryMint ? "Solve White" : (canBreak ? "Break Key" : "Try Mint Bytes"),
+                codes: gameState.whiteMintBytes,
             } as HUDState;
         case STS.ST_CAMERA_SLOTS.sslot1:
             return {
@@ -266,9 +267,9 @@ function getHUDState(
             let canFix = STState.canFixKey(gameState, globalState);
             return {
                 ...NULL_HUD_STATE,
-                enabled: false,
+                enabled: true,
                 title: "Items: ",
-                text: canForge ? ((canFix) ? "Forge Items" : "Nothing Useful") : "Enter BH Forge",
+                text: canForge ? ((canFix) ? "Forge Items" : "Nothing Useful") : "Enter Forge",
             } as HUDState;
         case STS.ST_CAMERA_SLOTS.slot2:
             canTryMint = STState.canTryMint(gameState.blueMintBytes);

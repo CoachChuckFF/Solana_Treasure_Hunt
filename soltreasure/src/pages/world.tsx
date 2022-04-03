@@ -30,6 +30,7 @@ import { TextWoraround } from "../controllers/renderers";
 import { ST_COLORS } from "../models/theme";
 import { getCountdownString } from "../models/clock";
 import { lerp } from "three/src/math/MathUtils";
+import { FXs, playByte } from "../sounds/music-man";
 
 
 const PI = Math.PI;
@@ -117,7 +118,7 @@ function STText(props:any) {
 
     return (
             <TextWoraround
-                objRef={params.objRef}
+                objRef={ params.objRef }
                 position={ params.space.pos.toArray() } 
                 rotation={ params.space.rot.toArray() }
                 fontSize={ params.fontSize ?? 0.34 }
@@ -277,7 +278,7 @@ function Supernova(props:any) {
 
 function MainChestOpened() {
     const timerRef = React.useRef<any>();
-    const chestRef = React.useRef<Group>();
+    const chestRef = React.useRef<any>();
     const tokenRef = React.useRef<Group>();
 
     useFrame(({ clock, camera }) => { 
@@ -319,12 +320,30 @@ function MainChestOpened() {
 }
 
 function Timer(props:any) {
-    const ref = React.useRef();
+    const ref = React.useRef<any>();
     const [message, setMessage] = React.useState('Loading...');
     const [color, setColor] = React.useState('#FFFFFF');
+    const [lastTime, setLastTime] = React.useState(Math.trunc(Date.now() / 1000));
 
+    React.useEffect(() => {
+        if(lastTime % 2 === 0){
+            playByte(
+                (lastTime % 2 === 0) ? 
+                    FXs.tick : FXs.tock,
+                true,
+            )
+        }
+
+    }, [ lastTime ]);
 
     useFrame(({ clock }) => {
+        if( !props.visable ){
+            if(ref.current){
+                ref.current.visible = false;
+            }
+            return;
+        }
+
         if(props.globalState === STState.ST_GLOBAL_STATE.reconstruction){
             setMessage("TODO");
             setColor("#4FA5C4");
@@ -369,6 +388,7 @@ function Timer(props:any) {
                     setMessage("IT!");
                     setColor("#9945FF");
                 } else {
+                    setLastTime(Math.trunc(Date.now() / 1000));
                     setMessage(getCountdownString(props.gameState.supernova));
                     setColor("#FFFFFF");
                 }
@@ -454,6 +474,7 @@ function Chest(props:any) {
         }
 
         if(props.isSecret){
+
             if(whiteLockRef.current){
                 let whiteLock = getItemPos(xOffset, yOffset, -0.37, 0.4, 0.89, 1);
                 whiteLockRef.current.position.x = whiteLock.x;
@@ -617,6 +638,7 @@ function Inventory(props:any) {
                 params={{
                     file: STS.BlueKeyGLB,
                     objRef: blueKeyRef,
+                    canHighlight: true,
                     space: {
                         ...STS.HubIndex0,
                         scale: STS.keyScale
@@ -627,6 +649,7 @@ function Inventory(props:any) {
                 params={{
                     file: STS.GreenKeyGLB,
                     objRef: greenKeyRef,
+                    canHighlight: true,
                     space: {
                         ...STS.HubIndex0,
                         scale: STS.keyScale
@@ -637,6 +660,7 @@ function Inventory(props:any) {
                 params={{
                     file: STS.PurpleKeyGLB,
                     objRef: purpleKeyRef,
+                    canHighlight: true,
                     space: {
                         ...STS.HubIndex0,
                         scale: STS.keyScale
@@ -647,6 +671,7 @@ function Inventory(props:any) {
                 params={{
                     file: STS.BrokenKeyGLB,
                     objRef: brokenKeyRef,
+                    canHighlight: true,
                     space: {
                         ...STS.HubIndex0,
                         scale: STS.keyScale
@@ -657,6 +682,7 @@ function Inventory(props:any) {
                 params={{
                     file: STS.BlackKeyGLB,
                     objRef: blackKeyRef,
+                    canHighlight: true,
                     space: {
                         ...STS.HubIndex0,
                         scale: STS.keyScale
@@ -667,6 +693,7 @@ function Inventory(props:any) {
                 params={{
                     file: STS.WhiteKeyGLB,
                     objRef: whiteKeyRef,
+                    canHighlight: true,
                     space: {
                         ...STS.HubIndex0,
                         scale: STS.keyScale
@@ -704,7 +731,7 @@ function Leaderboard(props:any) {
             title={"LEADERBOARDS"}
             body={leaders}
             deltaY={props.deltaY}
-            space={STS.HubIndex1}
+            space={{...STS.HubIndex1}}
         />
     );
 }
@@ -715,7 +742,18 @@ function Story(props:any) {
             title={"STORY"}
             body={STState.getStory()}
             deltaY={props.deltaY}
-            space={STS.HubIndex5}
+            space={{
+                pos: new Vector3(
+                    STS.HubIndex5.pos.x,
+                    STS.HubIndex5.pos.y + 0.5,
+                    STS.HubIndex5.pos.z,
+                ),
+                rot: new Vector3(
+                    STS.HubIndex5.rot.x,
+                    STS.HubIndex5.rot.y,
+                    STS.HubIndex5.rot.z,
+                ),
+            }}
         />
     );
 }
@@ -802,17 +840,21 @@ function Lock(props:any) {
         }
     });
 
+    let safeSpace = {
+        pos: (props.space as STS.STSpace).pos.clone(),
+        rot: (props.space as STS.STSpace).rot.clone(),
+        scale: STS.scaleLock,
+    } as STS.STSpace;
+
+    if(!props.locked){ safeSpace.rot.y = getYRot(getTheta()); }
+    safeSpace.pos.y = getYPos(getTheta());
+
     return (
         <STGLBFile 
             params={{
                 file: props.locked ? props.lock : props.unlock,
                 objRef: lockRef,
-                space: {
-                    ...props.space,
-                    pos: (props.space as STS.STSpace).pos.setY(getYPos(getTheta())),
-                    rot: props.locked ? props.space.rot : (props.space as STS.STSpace).rot.setY(getYRot(getTheta())),
-                    scale: STS.scaleLock
-                },
+                space: safeSpace,
             } as GLBParams}
         /> 
     );
@@ -1007,21 +1049,21 @@ function STController(props:any){
 
 // Loads the skybox texture and applies it to the scene.
 function SkyBox() {
-    const { scene } = useThree();
+    // const { scene } = useThree();
 
-    React.useEffect(() => {
-        const loader = new CubeTextureLoader();
-        const texture = loader.load([
-            STS.SKYBOX_PX,
-            STS.SKYBOX_NX,
-            STS.SKYBOX_PY,
-            STS.SKYBOX_NY,
-            STS.SKYBOX_PZ,
-            STS.SKYBOX_NZ,
-          ]);
-          // Set the scene background property to the resulting texture.
-          scene.background = texture;
-    }, []);
+    // React.useEffect(() => {
+    //     const loader = new CubeTextureLoader();
+    //     const texture = loader.load([
+    //         STS.SKYBOX_PX,
+    //         STS.SKYBOX_NX,
+    //         STS.SKYBOX_PY,
+    //         STS.SKYBOX_NY,
+    //         STS.SKYBOX_PZ,
+    //         STS.SKYBOX_NZ,
+    //       ]);
+    //       // Set the scene background property to the resulting texture.
+    //       scene.background = texture;
+    // }, []);
 
     return null;
 }
@@ -1049,6 +1091,8 @@ export function STWorld() {
     }, []);
 
     const onScroll = (event:any) => {
+
+
         setScrollDeltaY(event.deltaY);
     }
 
@@ -1067,7 +1111,7 @@ export function STWorld() {
                     <Lock secret={false} locked={gameState.blueKey === 0} index={2} lock={STS.BlueLockGLB} unlock={STS.BlueUnlockGLB} space={STS.HubIndex2} />
                     <Lock secret={false} locked={gameState.greenKey === 0} index={3} lock={STS.GreenLockGLB} unlock={STS.GreenUnlockGLB} space={STS.HubIndex3} />
                     <Lock secret={false} locked={gameState.purpleKey === 0} index={4} lock={STS.PurpleLockGLB} unlock={STS.PurpleUnlockGLB} space={STS.HubIndex4} />
-                    <Story />
+                    <Story deltaY={scrollDeltaY}/>
                     <gridHelper position={STS.MainArea.toArray()} args={[10, 10, ST_COLORS.purple, ST_COLORS.grey]}/>
                 </React.Suspense>
                 <React.Suspense fallback={null}>
@@ -1080,18 +1124,20 @@ export function STWorld() {
                     <gridHelper position={STS.SecretArea.toArray()} args={[10, 10, ST_COLORS.white, ST_COLORS.grey]}/>
                 </React.Suspense>
                 <React.Suspense fallback={null}>
+                    <Inventory gameState={gameState} globalState={globalState} />
                     <Title 
                         globalState={globalState}
                     />
                     <SkyBox/>
                     <Stars
                         radius={100} // Radius of the inner sphere (default=100)
-                        depth={50} // Depth of area where stars should fit (default=50)
+                        depth={100} // Depth of area where stars should fit (default=50)
                         count={5000} // Amount of stars (default=5000)
                         factor={10} // Size factor (default=4)
                         saturation={0.55} // Saturation 0-1 (default=0)
                         fade={true} // Faded dots (default=false)
                     />
+
                     <EffectComposer multisampling={8} autoClear={false}>
                         <Bloom intensity={0.13} luminanceThreshold={0.08} luminanceSmoothing={0} />
                     </EffectComposer>

@@ -1,6 +1,6 @@
 import { PublicKey } from '@solana/web3.js';
-import { TreasureProvider } from './solTreasure';
-import { NULL_MINT_CODES } from './state';
+import { FRACTAL_SOLUTION, NULL_MINT_CODES } from './state';
+import { STProvider } from './sol-treasure';
 import Rand from 'rand-seed';
 
 const PUBKEYSIZE = 32;
@@ -9,7 +9,7 @@ function arrayToByte(wallet:PublicKey, puzzle:number, index:number){
     return wallet.toBytes()[PUBKEYSIZE - 1 - puzzle] ^ wallet.toBytes()[index];
 }
 
-function codesToByteArray(provider:TreasureProvider, puzzle:number, zero:number, one:number, two:number, three:number){
+function codesToByteArray(provider:STProvider, puzzle:number, zero:number, one:number, two:number, three:number){
     if(provider.valid){
         let wallet = provider.provider.wallet.publicKey;
         return [
@@ -37,7 +37,7 @@ export function codeToHexString(code?:number){
     return `0x${code == null || code === -1 ? '??' : code.toString(16).padStart(2, '0').toUpperCase()}`;
 }
 
-export function getGuideCodes(provider:TreasureProvider){
+export function getGuideCodes(provider:STProvider){
     return codesToByteArray(
         provider,
         0,
@@ -48,7 +48,7 @@ export function getGuideCodes(provider:TreasureProvider){
     );
 }
 
-export function getNootCode(provider:TreasureProvider, noot:number){
+export function getNootCode(provider:STProvider, noot:number){
     return codesToByteArray(
         provider,
         noot,
@@ -59,11 +59,11 @@ export function getNootCode(provider:TreasureProvider, noot:number){
     );
 }
 
-export function getDronieCode(provider:TreasureProvider, xorIndex:number){
+export function getDronieCode(provider:STProvider, xorIndex:number){
 
     return codesToByteArray(
         provider,
-        PUBKEYSIZE - 1 - xorIndex,
+        xorIndex,
         0,
         1, 
         2,
@@ -71,7 +71,7 @@ export function getDronieCode(provider:TreasureProvider, xorIndex:number){
     );
 }
 
-export function getDesolatesCode(provider:TreasureProvider, r:number, g:number, b:number){
+export function getDesolatesCode(provider:STProvider, r:number, g:number, b:number){
 
     return codesToByteArray(
         provider,
@@ -79,19 +79,27 @@ export function getDesolatesCode(provider:TreasureProvider, r:number, g:number, 
         r & 0x0F,
         g & 0x0F,
         b & 0x0F,
-        r & 0x0F + g & 0x0F + b & 0x0F,
+        Math.min(
+            PUBKEYSIZE - 1,
+            (r & 0x0F) + (g & 0x0F) + (b & 0x0F)
+        ),
     );
 }
 
-export function getFractalCodes(provider:TreasureProvider, combination:string, isCorrect:boolean){
+export function getFractalCodes(provider:STProvider, combination:string){
+    // TTQPHHPT
 
-    if(!isCorrect){
+    console.log(combination);
+
+    if(combination !== FRACTAL_SOLUTION){
         if(combination.length === 0){
             return NULL_MINT_CODES;
         } else {
             return getRandomCodes(combination);
         }
     }
+
+    console.log("here");
 
     return codesToByteArray(
         provider,

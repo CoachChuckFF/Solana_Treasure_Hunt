@@ -133,7 +133,6 @@ class OrbitControls extends EventDispatcher {
 
 		this.saveState = function () {
 
-			console.log("Saved");
 			scope.target0.copy( scope.target );
 			scope.position0.copy( scope.object.position );
 			scope.zoom0 = scope.object.zoom;
@@ -142,7 +141,6 @@ class OrbitControls extends EventDispatcher {
 
 		this.reset = function () {
 
-			console.log("Reset");
 			scope.target.copy( scope.target0 );
 			scope.object.position.copy( scope.position0 );
 			scope.object.zoom = scope.zoom0;

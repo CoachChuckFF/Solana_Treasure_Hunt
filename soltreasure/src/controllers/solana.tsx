@@ -34,10 +34,20 @@ export const connectWallet = (onlyIfTrusted?: boolean) => {
 
 
 export const getProvider = () => {
-    const connection = new anchor.web3.Connection(NETWORK, OPTS.preflightCommitment as any);
+    const opts = anchor.Provider.defaultOptions()
     const provider = new anchor.Provider(
-      connection, getSolanaWallet(), OPTS.preflightCommitment as any,
+      new anchor.web3.Connection("http://localhost:8899", opts.preflightCommitment),
+      getSolanaWallet(),
+      opts,
     );
+    // anchor.setProvider(provider);
+    // const connection = new anchor.web3.Connection(NETWORK, OPTS.preflightCommitment as any);
+    // const provider = new anchor.Provider(
+    //   connection, getSolanaWallet(), OPTS.preflightCommitment as any,
+    // );
+
+    
+
     return provider;
 }
 

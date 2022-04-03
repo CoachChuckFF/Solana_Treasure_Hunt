@@ -7,8 +7,10 @@ import * as STClock from "./clock";
 import { PublicKey } from "@solana/web3.js"
 import { Vector3 } from 'three';
 import { addDays } from "./clock";
+import { GAME_KEY, INDEXES } from "./v0";
+import { BNToDate, findPlayerAccount, GameAccount, getGameAccount, getPlayerAccount, PlayerAccount, STProvider } from "./sol-treasure";
 
-export const FRACTAL_SOLUTION = "TTQPHH";
+export const FRACTAL_SOLUTION = "TTQPHHPT";
 
 //TODO Update these with SOL TREASURE
 export enum ST_CHEST_TYPES {
@@ -21,7 +23,7 @@ export enum ST_CHEATER_TIMES {
 }
 
 export enum ST_GLOBAL_STATE {
-    supernova = "-1. Supernova",
+    supernova = "-2. Supernova",
     notConnected = "0. Connect your wallet",
     playing = "1. Playing",
     reconstruction = "2. Reconstruction",
@@ -43,6 +45,10 @@ export interface GameState {
     runStart: Date;
     runPercentTimestamp: Date;
     runPercent: number;
+    ogPercent: number;
+
+    // State
+    isSpeedrunning: boolean;
 
     // Codes
     blueMintBytes: number[];
@@ -63,9 +69,10 @@ export interface GameState {
     whiteKey: number;
 
     // Prizes
-    main: number;
-    secret: number;
-    replay: number;
+    blackChest: number;
+    whiteChest: number;
+    replayToken: number;
+    realTreasure: number;
 }
 
 export const NULL_SUPERNOVA = addDays(0xFFF);
@@ -77,6 +84,8 @@ export const NULL_GAME_STATE: GameState = {
     runStart: NULL_START_DATE,
     runPercentTimestamp: NULL_TIMESTAMP,
     runPercent: 0,
+    ogPercent: 0,
+    isSpeedrunning: false,
     blueMintBytes: NULL_MINT_CODES,
     greenMintBytes: NULL_MINT_CODES,
     purpleMintBytes: NULL_MINT_CODES,
@@ -89,9 +98,10 @@ export const NULL_GAME_STATE: GameState = {
     brokenKey: 0,
     blackKey: 0,
     whiteKey: 0,
-    main: 0,
-    secret: 0,
-    replay: 0,
+    blackChest: 0,
+    whiteChest: 0,
+    replayToken: 0,
+    realTreasure: 0,
 };
 export const NULL_GLOBAL_STATE = ST_GLOBAL_STATE.notConnected;
 export const NULL_PUZZLE_STATE = ST_PUZZLE_STATE.noPuzzle;
@@ -100,6 +110,9 @@ export const NULL_CAMERA_POSITION = STWorldSpace.NullSpace;
 export const NULL_IS_LOADING = false;
 export const NULL_DEV_MODE = false;
 export const NULL_ACTION_CRANK = 0;
+export const NULL_GAME_ACCOUNT = {} as GameAccount;
+export const NULL_PLAYER_ACCOUNT = {} as PlayerAccount;
+export const NULL_PROVIDER = {} as STProvider;
 
 export const getNewGameState = ( newState: any ) => {
     return Object.assign(
@@ -124,6 +137,7 @@ export const getNewCameraPosition = ( newState: STWorldSpace.STSpace) => {
         }
     ) as STWorldSpace.STSpace;
 }
+
 
 export const isReconstruction = ( globalState: ST_GLOBAL_STATE ) => {
     return (globalState === ST_GLOBAL_STATE.reconstruction ? true : false);
@@ -180,9 +194,9 @@ export const canFixKey = ( state: GameState, globalState: ST_GLOBAL_STATE ) => {
 
 export const didUnlockChest = ( state: GameState, chest: ST_CHEST_TYPES, ) => {
     if(chest === ST_CHEST_TYPES.secret){
-        return state.secret > 0;
+        return state.whiteChest > 0;
     } else {
-        return state.main > 0;
+        return state.blackChest > 0;
     }
 }
 
@@ -204,4 +218,74 @@ export const getStory = () => {
 
     return "The object is simple. Mint each key for each lock. Do this BEFORE the supernova... Once this happens all unclaimed SFTs will be burned. Each key will cost a total of 0.05 SOL - if you input a wrong answer, you'll mint a broken key at 0.03. You'll need a total of ~0.255 Sol to 100% this thing... Happy Hunting! \n\n Love,\n Coach Chuck\n\n";
     
+}
+
+
+export const updateGameState = (
+    gameAccount: GameAccount,
+    playerAccount: PlayerAccount,
+) => {
+    const gameState: GameState = {
+        ...NULL_GAME_STATE,
+        supernova: BNToDate(gameAccount.supernovaDate),
+        runStart: BNToDate(playerAccount.runStart),
+        runPercentTimestamp: BNToDate(playerAccount.runPercentTimestamp),
+        runPercent: playerAccount.runPercent,
+        ogPercent: playerAccount.ogPercent,
+        isSpeedrunning: playerAccount.isSpeedrunning,
+        blueMintBytes: NULL_MINT_CODES,
+        greenMintBytes: NULL_MINT_CODES,
+        purpleMintBytes: NULL_MINT_CODES,
+        whiteMintBytes: NULL_MINT_CODES,
+        forgeItemOne: PublicKey.default,
+        forgeItemTwo: PublicKey.default,
+        blueKey: playerAccount.inventory[INDEXES.blueKey].mintedCount,
+        greenKey: playerAccount.inventory[INDEXES.greenKey].mintedCount,
+        purpleKey: playerAccount.inventory[INDEXES.purpleKey].mintedCount,
+        brokenKey: playerAccount.inventory[INDEXES.brokenKey].mintedCount,
+        blackKey: playerAccount.inventory[INDEXES.blackKey].mintedCount,
+        whiteKey: playerAccount.inventory[INDEXES.whiteKey].mintedCount,
+        blackChest: playerAccount.inventory[INDEXES.blackChest].mintedCount,
+        whiteChest: playerAccount.inventory[INDEXES.whiteChest].mintedCount,
+        replayToken: playerAccount.inventory[INDEXES.replayToken].mintedCount,
+        realTreasure: playerAccount.inventory[INDEXES.realTreasure].mintedCount,
+    }
+    return gameState;
+}
+
+export const initGameState = async (
+    stProvider: STProvider,
+    onNeedsPlayerCB: (
+        newGameAccount: GameAccount,
+    ) => void,
+    onSuccess: (
+        newGameAccount: GameAccount,
+        newPlayerAccount: PlayerAccount,
+    ) => void,
+) => {
+    const game = await getGameAccount(
+        stProvider,
+        GAME_KEY
+    );
+
+    try {
+        const player = await getPlayerAccount(
+            stProvider,
+            (await findPlayerAccount(
+                stProvider,
+                game
+            ))[0]
+        );
+
+        onSuccess(
+            game,
+            player,
+        );
+
+    } catch (error) {
+        // Creating 
+        onNeedsPlayerCB(
+            game,
+        );
+    }
 }
