@@ -38,19 +38,27 @@ export const getSecondsToSupernova = (supernova: Date) => {
     return dateToUnix(supernova) - dateToUnix();
 }
 
+export const getMSToSupernova = (supernova: Date) => {
+    return supernova.getTime() - Date.now();
+}
+
 export const getCountdownString = (supernova: Date) => {
-    const unixTime = getSecondsToSupernova(supernova);
+    return(getTimeString(getMSToSupernova(supernova)));
+}
 
-    var hours = Math.floor((unixTime) / _hour);
-    var minutes = Math.floor((unixTime % _hour) / _minute);
-    var seconds = Math.floor((unixTime % _minute) / _second);
-    var ms = Math.floor((unixTime % _second));
+export const getTimeString = (timeInMS: number) => {
+    if(timeInMS < 0) timeInMS = 0;
 
-    if(hours === 0){
-        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}:${String(ms).padStart(3, '0')}`;
-    } else {
-        return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-    }
+    const hours = Math.floor((timeInMS) / _hour);
+    const minutes = Math.floor((timeInMS % _hour) / _minute);
+    const seconds = Math.floor((timeInMS % _minute) / _second);
+
+    let string = ``;
+    if(hours > 0) string += `${String(hours).padStart(2, '0')}:`;
+    if(minutes > 0) string += `${String(minutes).padStart(2, '0')}:`;
+    string += `${String(seconds).padStart(2, '0')}`;
+
+    return string;
 }
 
 export const dateToUnix = (date?:Date) => {

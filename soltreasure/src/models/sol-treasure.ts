@@ -775,6 +775,19 @@ export const itemTypeToString = (itemType: GameItemType) => {
     return "Unkown";
 }
 // --------- GAME HELPERS -----------------------------------------
+export const checkAllBurned = async (
+    stProvider: STProvider,
+    gameKey: web3.PublicKey | GameAccount,
+) => {
+    const game = await getGameAccount(stProvider, gameKey);
+
+    for (let i = 0; i < game.items.length; i++){
+        if(!game.items[i].burned) return false;
+    }
+
+    return true;
+}
+
 export const getItemByMint = async (
     stProvider: STProvider,
     gameKey: web3.PublicKey | GameAccount,

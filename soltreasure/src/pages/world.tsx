@@ -13,7 +13,8 @@ import {
     Vector3,
     PointLight,
     Shape,
-    GridHelper
+    GridHelper,
+    Color
 } from "three";
 import { Camera, Canvas, useFrame, useThree } from "@react-three/fiber";
 import { EffectComposer, Bloom } from '@react-three/postprocessing'
@@ -28,10 +29,11 @@ import * as STS from "../models/space";
 
 import { TextWoraround } from "../controllers/renderers";
 import { ST_COLORS } from "../models/theme";
-import { getCountdownString } from "../models/clock";
+import { getCountdownString, getTimeString } from "../models/clock";
 import { lerp } from "three/src/math/MathUtils";
 import { FXs, playByte } from "../sounds/music-man";
-
+import { BNToDate, GameAccount, LeaderboardType, sortLeaderboard } from "../models/sol-treasure";
+import { BN } from "@project-serum/anchor";
 
 const PI = Math.PI;
 const TRI = Math.sqrt(3)/2;
@@ -41,6 +43,20 @@ const HexTheta = (2*PI/6);
 const Thirty = HexTheta / 2;
 const HubZ = Math.sin(Thirty) * (TRI * HubRadius)
 const HubX = Math.cos(Thirty) * (TRI * HubRadius)
+
+
+const P0 = 0;
+const P1 = 0.34;
+const P2 = 1.56;
+const P3 = 0.64;
+const P4 = 1;
+const EASE = (t:number) => {
+    let p0 = lerp(P0, P1, t);
+    let p1 = lerp(P1, P2, t);
+    let p2 = lerp(P2, P3, t);
+    let p3 = lerp(P3, P4, t);
+    return lerp(p0, p3, t);
+}
 
 // Builders -----------------
 interface GLBParams {
@@ -152,6 +168,8 @@ function Title(props:any) {
         }
     });
 
+    if(props.globalState === STState.ST_GLOBAL_STATE.supernova) return null;
+
     return (
         <STText params={{
             text: "Sol-Treasure",
@@ -165,13 +183,18 @@ function Title(props:any) {
 
 function BlackHole(props:any) {
     const blackHoleRef = React.useRef<Group>();
+    const miniBlackHoleRef = React.useRef<Group>();
     // const textRef = React.useRef<any>();
 
     useFrame(({ clock, camera }) => { 
         if( blackHoleRef.current ){
-            blackHoleRef.current.rotation.x  -= 0.0001;
-            blackHoleRef.current.rotation.y  -= 0.0003;
-            blackHoleRef.current.rotation.z  -= 0.0005;
+            blackHoleRef.current.rotation.x  -= 0.001;
+            blackHoleRef.current.rotation.y  -= 0.003;
+            blackHoleRef.current.rotation.z  -= 0.005;
+        }
+
+        if( miniBlackHoleRef.current ){
+            miniBlackHoleRef.current.rotation.y  -= 0.003;
         }
     });
 
@@ -181,6 +204,9 @@ function BlackHole(props:any) {
             <Dodecahedron scale={10} ref={blackHoleRef} position={STS.SecretArea.toArray()}>
                 <meshBasicMaterial attach="material" color="black" />
             </Dodecahedron>
+            <Dodecahedron scale={0.55} ref={miniBlackHoleRef} position={STS.SecretArea.toArray()}>
+                <meshBasicMaterial attach="material" color="black" />
+            </Dodecahedron>
         </group>
     );
 }
@@ -188,16 +214,13 @@ function BlackHole(props:any) {
 function BlackHoleForge(props:any) {
     const blackHoleRef = React.useRef<Group>();
     const materialRef = React.useRef<any>();
+    const brokenKeyRef = React.useRef<any>();
     // const textRef = React.useRef<any>();
 
     const getScale = () => {
-        return (Math.sin(Date.now() / 8000) * 0.13) + 1;
+        return (Math.sin(Date.now() / 5000) * 0.1) + 1;
     }
 
-    // const getColor = () => {
-    //     let hex = Math.floor(lerp(0xEA, 0x00, Math.min(1.0, Math.sin(Date.now() / 8000) * 0.13) + 1));
-    //     return `#${hex.toString(16)}${hex.toString(16)}${hex.toString(16)}`;
-    // }
 
     useFrame(({ clock, camera }) => { 
         if( blackHoleRef.current ){
@@ -211,9 +234,10 @@ function BlackHoleForge(props:any) {
             blackHoleRef.current.scale.z = scale;
         }
 
-        // if( materialRef.current ){
-        //     materialRef.current.color = getColor();
-        // }
+        if( blackHoleRef.current ){
+            brokenKeyRef.current.position.y = STS.SHubIndex2.pos.y + 1.055 + (Math.sin(Date.now() / 1000) * 0.089);
+        }
+
     });
 
     let pos = STS.SHubIndex2.pos.toArray();
@@ -221,14 +245,29 @@ function BlackHoleForge(props:any) {
 
     return (
         <group>
-            <pointLight intensity={0.1} position={STS.SecretArea.toArray()}/>
             <Dodecahedron 
                 scale={getScale()} 
                 ref={blackHoleRef} 
                 position={pos}
             >   
-                <meshBasicMaterial ref={materialRef} attach="material" color={"black"} />
+                <meshBasicMaterial ref={materialRef} attach="material" color={"grey"} />
             </Dodecahedron>
+            <STGLBFile 
+                params={{
+                    file: ((props.gameState as STState.GameState).blackKey === 0) ? STS.BrokenKeyGLB : STS.BlackKeyGLB,
+                    objRef: brokenKeyRef,
+                    canHighlight: true,
+                    space: {
+                        ...STS.SHubIndex2,
+                        pos: new Vector3(
+                            STS.SHubIndex2.pos.x - 1,
+                            STS.SHubIndex2.pos.y + 1.055,
+                            STS.SHubIndex2.pos.z - 0.55,
+                        ),
+                        scale: 0.55,
+                    },
+                } as GLBParams}
+            /> 
         </group>
     );
 }
@@ -236,15 +275,37 @@ function BlackHoleForge(props:any) {
 function Supernova(props:any) {
     const supernovaRef = React.useRef<Group>();
     const sunRef = React.useRef<Group>();
+    const [SNT, setSNT] = React.useState(0);
     // const textRef = React.useRef<any>();
+
+    const SND = 22000;
+    const SNS = 189;
 
     useFrame(({ clock, camera }) => { 
         if( supernovaRef.current ){
             supernovaRef.current.rotation.y  -= 0.003;
+            if(
+                props.globalState === STState.ST_GLOBAL_STATE.supernova
+                && SNT !== 0
+            ){
+                const scale = (Math.sin((Math.min(Date.now() - SNT, SND) / SND) * PI/2) * SNS) + STS.scaleMiniLock;
+                supernovaRef.current.scale.x = scale;
+                supernovaRef.current.scale.y = scale;
+                supernovaRef.current.scale.z = scale;
+
+            } else if(
+                props.globalState === STState.ST_GLOBAL_STATE.supernova
+                && SNT === 0
+            ){
+                setSNT(Date.now())
+            }
+
         }
         if( sunRef.current ){
             sunRef.current.rotation.y  -= 0.003;
         }
+
+
 
         // if( textRef.current ){
         //     textRef.current.position.y = Math.sin(
@@ -276,10 +337,22 @@ function Supernova(props:any) {
     );
 }
 
-function MainChestOpened() {
+function MainChestOpened(props:any) {
     const timerRef = React.useRef<any>();
     const chestRef = React.useRef<any>();
     const tokenRef = React.useRef<Group>();
+
+    const getScoreString = () => {
+        const gameState = (props.gameState as STState.GameState);
+        let time = gameState.runPercentTimestamp.getTime() - 
+            ((gameState.isSpeedrunning) ? 
+                gameState.runPercentTimestamp.getTime():
+                gameState.gameStart.getTime()
+            );
+
+        return `${gameState.runPercent}% in ${getTimeString(time)}`;
+
+    }
 
     useFrame(({ clock, camera }) => { 
         if(chestRef.current){
@@ -297,11 +370,14 @@ function MainChestOpened() {
 
     return (
         <group>
-            {/* <Timer bomb={props.bomb} opened={true} run={props.run} state={props.state} puzzleState={props.puzzleState}/> */}
             <STText params={{
-                text: "hi",
-                objRef: timerRef,
-                space: STS.HubIndex1
+                text: getScoreString(),
+                color: "#FFFFFF",
+                fontSize: 0.34,
+                space: {
+                    pos: STS.HubIndex0.pos.clone().add(new Vector3(0, STS.EyeLevel + 0.80, 0)),
+                    rot: new Vector3(0,PI/32,0)
+                }
             } as TextParams}/>
             <STGLBFile params={{
                 file: STS.ChestOpenedGLB,
@@ -319,6 +395,47 @@ function MainChestOpened() {
     );
 }
 
+function SecretChestOpened(props:any) {
+    const timerRef = React.useRef<any>();
+    const chestRef = React.useRef<any>();
+    const tokenRef = React.useRef<Group>();
+
+    useFrame(({ clock, camera }) => { 
+        if(chestRef.current){
+            chestRef.current.position.x = STS.SHubIndex0.pos.x + Math.sin(clock.getElapsedTime()) * 0.021;
+            chestRef.current.position.y = STS.SHubIndex0.pos.y + Math.sin(clock.getElapsedTime()/2) * 0.021;
+        }
+
+        if(tokenRef.current){
+            tokenRef.current.position.x = STS.SHubIndex0.pos.x + Math.sin(clock.getElapsedTime()) * 0.021
+            tokenRef.current.position.y = STS.SHubIndex0.pos.y + Math.sin(clock.getElapsedTime()/2) * 0.021 + 1
+            tokenRef.current.rotation.y += PI / 300;
+            // tokenRef.current.position.y = 0.4 + Math.sin(clock.getElapsedTime() + PI/8) * 0.089;
+        }
+    });
+
+    return (
+        <group>
+            <STGLBFile params={{
+                file: STS.WhiteChestOpenedGLB,
+                objRef: chestRef,
+                space: {...STS.SHubIndex0, scale: STS.scaleChest},
+            } as GLBParams} />
+            <STGLBFile 
+                params={{
+                    file: STS.MirrorGLB,
+                    objRef: tokenRef,
+                    space: {
+                        ...STS.SHubIndex0, 
+                        pos: STS.SHubIndex0.pos.clone().add(new Vector3(0, -0.34, 0)),
+                        scale: STS.scaleChest
+                    },
+                } as GLBParams}
+            /> 
+        </group>
+    );
+}
+
 function Timer(props:any) {
     const ref = React.useRef<any>();
     const [message, setMessage] = React.useState('Loading...');
@@ -326,13 +443,13 @@ function Timer(props:any) {
     const [lastTime, setLastTime] = React.useState(Math.trunc(Date.now() / 1000));
 
     React.useEffect(() => {
-        if(lastTime % 2 === 0){
-            playByte(
-                (lastTime % 2 === 0) ? 
-                    FXs.tick : FXs.tock,
-                true,
-            )
-        }
+        // if(lastTime % 2 === 0){
+        //     playByte(
+        //         (lastTime % 2 === 0) ? 
+        //             FXs.tick : FXs.tock,
+        //         true,
+        //     )
+        // }
 
     }, [ lastTime ]);
 
@@ -378,18 +495,9 @@ function Timer(props:any) {
                 } else if(state > 23) {
                     setMessage("IN...");
                     setColor("#4FA5C4");
-                } else if(state === 10 && props.gameState.main > 0) {
-                    setMessage("YOU");
-                    setColor("#9945FF");
-                } else if(state === 9 && props.gameState.main > 0) {
-                    setMessage("DID");
-                    setColor("#9945FF");
-                } else if(state === 8 && props.gameState.main > 0) {
-                    setMessage("IT!");
-                    setColor("#9945FF");
                 } else {
                     setLastTime(Math.trunc(Date.now() / 1000));
-                    setMessage(getCountdownString(props.gameState.supernova));
+                    setMessage(`${props.gameState.runPercent}%  ` + getCountdownString(props.gameState.supernova));
                     setColor("#FFFFFF");
                 }
             }
@@ -402,7 +510,7 @@ function Timer(props:any) {
             objRef: ref,
             text: message,
             color: color,
-            fontSize: 0.5,
+            fontSize: 0.4,
             space: {
                 pos: STS.HubIndex0.pos.clone().add(new Vector3(0, STS.EyeLevel + 0.69, 0)),
                 rot: new Vector3(0,PI/32,0)
@@ -586,7 +694,8 @@ function Inventory(props:any) {
     const blueKeyRef = React.useRef<Group>();
     const greenKeyRef = React.useRef<Group>();
     const purpleKeyRef = React.useRef<Group>();
-    const brokenKeyRef = React.useRef<Group>();
+    const brokenKey0Ref = React.useRef<Group>();
+    const brokenKey1Ref = React.useRef<Group>();
     const blackKeyRef = React.useRef<Group>();
     const whiteKeyRef = React.useRef<Group>();
 
@@ -594,7 +703,8 @@ function Inventory(props:any) {
         blueKeyRef,
         greenKeyRef,
         purpleKeyRef,
-        brokenKeyRef,
+        brokenKey0Ref,
+        brokenKey1Ref,
         blackKeyRef,
         whiteKeyRef
     ];
@@ -605,8 +715,9 @@ function Inventory(props:any) {
             case 1: return gameState.greenKey;
             case 2: return gameState.purpleKey;
             case 3: return gameState.brokenKey;
-            case 4: return gameState.blackKey;
-            case 5: return gameState.whiteKey;
+            case 4: return gameState.brokenKey;
+            case 5: return gameState.blackKey;
+            case 6: return gameState.whiteKey;
         }
 
         return 0;
@@ -616,7 +727,9 @@ function Inventory(props:any) {
         for(var i = 0; i < refs.length; i++){  
             let ref = refs[i] as React.MutableRefObject<Group>;
             let amount = indexToAmount(i);
+
             if(amount > 0 && globalState === STState.ST_GLOBAL_STATE.playing){
+                if(i === 4 && amount === 1) { ref.current.visible = false; continue; }
                 ref.current.position.copy( camera.position );
                 ref.current.rotation.copy( camera.rotation );
                 ref.current.updateMatrix();
@@ -670,7 +783,18 @@ function Inventory(props:any) {
             <STGLBFile 
                 params={{
                     file: STS.BrokenKeyGLB,
-                    objRef: brokenKeyRef,
+                    objRef: brokenKey0Ref,
+                    canHighlight: true,
+                    space: {
+                        ...STS.HubIndex0,
+                        scale: STS.keyScale
+                    },
+                } as GLBParams}
+            /> 
+            <STGLBFile 
+                params={{
+                    file: STS.BrokenKeyGLB,
+                    objRef: brokenKey1Ref,
                     canHighlight: true,
                     space: {
                         ...STS.HubIndex0,
@@ -705,26 +829,47 @@ function Inventory(props:any) {
 }
 
 function Leaderboard(props:any) { 
-    const tempLeaders = [
-        {
-            wallet: 'HAzgWmFC2TGw1Ry6C3h2i2eAnnbrD91wDremBSxXBgCB',
-            time: '0:34',
-        },
-        {
-            wallet: '7RawqnUsUxA8pnb8nAUTgyzRaLVRYwR9yzPR3gfzbdht',
-            time: '0:55',
-        },
-        {
-            wallet: 'JD5C5Bsp3q9jeC5S57QuSCDDfpeKzXvRkfPB3Td6x3Wh',
-            time: '1:21',
-        },
-    ]
+    const [leaders, setLeaders] = React.useState('');
 
-    let leaders = "";
+    React.useEffect(() => {
+        if((props.gameAccount as GameAccount).leaderboard == null) return;
 
-    for(var i = 0; i < tempLeaders.length; i++){
-        leaders += `${i+1}: ${tempLeaders[i].wallet.substring(0, 5)} in ${tempLeaders[i].time}\n`;
-    }
+        const leaderboard = (props.gameAccount as GameAccount).leaderboard;
+        const speedboard = (props.gameAccount as GameAccount).leaderboard;
+        const startTime = BNToDate((props.gameAccount as GameAccount).startDate).getTime();
+        const endTime = BNToDate((props.gameAccount as GameAccount).supernovaDate).getTime();
+        const sortedLB = [...sortLeaderboard(leaderboard, LeaderboardType.og)];
+        const sortedSB = [...sortLeaderboard(speedboard, LeaderboardType.speed)];
+    
+        let string = '- OG Players -\n';
+        for (let i = 0; i < sortedLB.length; i++) {
+            string += `#${i+1}  `;
+            string += sortedLB[i].name.substring(0,3);
+            string += "             ";
+            string += `${sortedLB[i].runPercent}%   `;
+            string += `[${getTimeString( BNToDate(sortedLB[i].runPercentTimestamp).getTime() - startTime)}]`;
+        }
+
+        string += '\n ';
+        string += '\n- Speedrunners -\n';
+        if( Date.now() > endTime ){
+            for (let i = 0; i < sortedSB.length; i++) {
+                string += `#${i+1}  `;
+                string += sortedSB[i].name.substring(0,3);
+                string += "             ";
+                string += `${sortedSB[i].runPercent}%   `;
+                string += `[${getTimeString( BNToDate(sortedSB[i].runPercentTimestamp).getTime() - startTime)}]`;
+            }
+        } else {
+            string += "Open after Supernova";
+        }
+
+
+        setLeaders(string);
+
+
+    }, [props.gameAccount]);
+
 
     return (
         <TitleNText
@@ -732,6 +877,37 @@ function Leaderboard(props:any) {
             body={leaders}
             deltaY={props.deltaY}
             space={{...STS.HubIndex1}}
+        />
+    );
+}
+
+function Speedboard(props:any) { 
+
+    if((props.gameAccount as GameAccount).speedboard == null) return null;
+
+console.log("here");
+    const leaderboard = (props.gameAccount as GameAccount).speedboard;
+    const endTime = BNToDate((props.gameAccount as GameAccount).supernovaDate).getTime();
+    const sorted = [...sortLeaderboard(leaderboard, LeaderboardType.speed)];
+
+    let leaders = '';
+    for (let i = 0; i < sorted.length; i++) {
+        leaders += sorted[i].name.substring(0,3) + ":";
+        leaders += "             ";
+        leaders += `${sorted[i].runPercent}%   `;
+        leaders += `[${getTimeString( BNToDate(sorted[i].runPercentTimestamp).getTime() - BNToDate(sorted[i].runStart).getTime())}]`;
+    }
+
+    if(Date.now() < endTime){
+        leaders = 'Speedrunning will open up after the supernova.';
+    }
+
+    return (
+        <TitleNText
+            title={"SPEEDBOARD"}
+            body={leaders}
+            deltaY={props.deltaY}
+            space={{...STS.SHubIndex0}}
         />
     );
 }
@@ -959,6 +1135,10 @@ function STController(props:any){
 
         if(controller && lightRef.current){
 
+            if(props.globalState === STState.ST_GLOBAL_STATE.playing && Date.now() > (props.gameState as STState.GameState).supernova.getTime()){
+                props.setGlobalState(STState.ST_GLOBAL_STATE.supernova);
+            }
+
             if(lastDevMode !== props.devMode){
                 setLastDevMode( props.devMode);
                 setTick(Date.now());
@@ -973,7 +1153,7 @@ function STController(props:any){
 
             // Get Target Position
             let targetPos = STS.MainCamera.pos;
-            if(props.devMode){
+            if(props.devMode && props.globalState !== STState.ST_GLOBAL_STATE.supernova){
                 targetPos = (props.cameraPosition.pos as Vector3).clone().add(STS.CameraOffset);
             }
 
@@ -1073,7 +1253,8 @@ export function STWorld() {
     const [assetsLoaded, setAssetsLoaded] = React.useState(false);
 
     const {
-        globalState: [globalState],
+        gameAccount: [gameAccount],
+        globalState: [globalState, setGlobalState],
         devMode: [devMode],
         cameraPosition: [cameraPosition],
         cameraSlot: [cameraSlot, setCameraSlot],
@@ -1105,9 +1286,12 @@ export function STWorld() {
                 camera={{position: STS.StartingCamera.pos.toArray(), rotation: STS.StartingCamera.rot.toArray(), fov: STS.Fov}}
             >
                 <React.Suspense fallback={null}>
-                    <Supernova />
-                    <Chest globalState={globalState} gameState={gameState} isSecret={false}/>
-                    <Leaderboard deltaY={scrollDeltaY}/>
+                    <Supernova globalState={globalState} />
+                    {(gameState.blackChest === 0) ? 
+                        <Chest globalState={globalState} gameState={gameState} isSecret={false}/>: 
+                        <MainChestOpened globalState={globalState} gameState={gameState}/>
+                    }
+                    <Leaderboard deltaY={scrollDeltaY} gameAccount={gameAccount}/>
                     <Lock secret={false} locked={gameState.blueKey === 0} index={2} lock={STS.BlueLockGLB} unlock={STS.BlueUnlockGLB} space={STS.HubIndex2} />
                     <Lock secret={false} locked={gameState.greenKey === 0} index={3} lock={STS.GreenLockGLB} unlock={STS.GreenUnlockGLB} space={STS.HubIndex3} />
                     <Lock secret={false} locked={gameState.purpleKey === 0} index={4} lock={STS.PurpleLockGLB} unlock={STS.PurpleUnlockGLB} space={STS.HubIndex4} />
@@ -1116,11 +1300,14 @@ export function STWorld() {
                 </React.Suspense>
                 <React.Suspense fallback={null}>
                     <BlackHole />
-                    <Chest isSecret={true} globalState={globalState} gameState={gameState}/>
+                    {(gameState.whiteChest === 0) ? 
+                        <Chest isSecret={true} globalState={globalState} gameState={gameState}/>:
+                        <SecretChestOpened globalState={globalState} gameState={gameState}/>
+                    }
                     <Lock secret={true} locked={gameState.whiteKey === 0} index={5} lock={STS.WhiteLockGLB} unlock={STS.WhiteUnlockGLB} space={STS.SHubIndex5} />
                     <Lock secret={true} locked={gameState.blackKey === 0} index={1} lock={STS.BlackLockGLB} unlock={STS.BlackUnlockGLB} space={STS.SHubIndex1} />
                     <Lock secret={true} locked={gameState.greenKey === 0} index={3} lock={STS.GreenLockGLB} unlock={STS.GreenUnlockGLB} space={STS.SHubIndex3} />
-                    <BlackHoleForge />
+                    <BlackHoleForge gameState={gameState}/>
                     <gridHelper position={STS.SecretArea.toArray()} args={[10, 10, ST_COLORS.white, ST_COLORS.grey]}/>
                 </React.Suspense>
                 <React.Suspense fallback={null}>
@@ -1145,6 +1332,8 @@ export function STWorld() {
                 <STController 
                     onScroll={onScroll}
                     globalState={globalState}
+                    setGlobalState={setGlobalState}
+                    gameState={gameState}
                     devMode={devMode}
                     cameraPosition={cameraPosition}
                     cameraSlot={cameraSlot}

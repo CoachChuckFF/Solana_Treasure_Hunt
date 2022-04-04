@@ -19,7 +19,7 @@ import { DesolatePuzzlePage } from './pages/puzzleDesolate';
 import { RugPuzzlePage } from './pages/puzzleRug';
 import { FractalsPuzzlePage } from './pages/puzzleFractals';
 import { ForgePage } from './pages/forge';
-import { createPlayerAccount, forgeItem, GameAccount, gameToString, hashItem, NULL_MINT_BYTES, PlayerAccount, STProvider } from './models/sol-treasure';
+import { BNToDate, checkAllBurned, createPlayerAccount, forgeItem, GameAccount, gameToString, hashItem, NULL_MINT_BYTES, PlayerAccount, STProvider } from './models/sol-treasure';
 import { GAME_KEY, INDEXES, ITEMS } from './models/v0';
 import { web3 } from '@project-serum/anchor';
 import { BG_SOUND, FXs, playByte } from './sounds/music-man';
@@ -44,6 +44,7 @@ function Loop(){
     puzzleState: [puzzleState, setPuzzleState],
     actionCrank: [actionCrank, crankAction],
     globalState: [globalState, setGlobalState],
+    curtains: [curtains, drawCurtains, setCurtains],
     logout: [logout],
   } = React.useContext(StoreContext);
   const [playingMusic, setPlayingMusic] = React.useState(false);
@@ -208,49 +209,106 @@ function Loop(){
   const createPlayerWorkflow = (
     newGameAccount: GameAccount,
   ) => {
-    createPlayerAccount(
-      stProvider,
-      newGameAccount,
-      { name: "Tod" }
-    ).then((newPlayerAccount)=>{
 
-      showSnackbar(
-        "Welcome player! Please create a Sol-Treasure account (1-time only)",
-        SNACKBAR_SEVERITY.info,
-        5000,
-      );
-
-      onAccountsLoaded(
+    const cb = () => {
+      createPlayerAccount(
+        stProvider,
         newGameAccount,
-        newPlayerAccount,
-      )
-    }).catch((error)=>{
-      showSnackbar(
-        "Could not create player account",
-        SNACKBAR_SEVERITY.error
-      );
-    });
+        { name: stProvider.owner.toString().substring(0,3).toUpperCase() }
+      ).then((newPlayerAccount)=>{
+  
+        onAccountsLoaded(
+          newGameAccount,
+          newPlayerAccount,
+        )
+      }).catch((error)=>{
+        showSnackbar(
+          "Could not create player account",
+          SNACKBAR_SEVERITY.error
+        );
+      });
+    }
+
+    const isRecon = BNToDate(newGameAccount.supernovaDate).getTime() < Date.now();
+
+    let message = "";
+    if(isRecon){
+      message = "Welcome player! You'll need to have at least 1 Replay Token to create an account.\n Tap/Click to continue...";
+    } else {
+      message = "Welcome player! Please create a Sol-Treasure account (1-time only).\n Tap/Click to continue...";
+    }
+
+    drawCurtains(
+      message,
+      true,
+      cb,
+    );
   }
 
   const onAccountsLoaded = (
     newGameAccount: GameAccount,
     newPlayerAccount: PlayerAccount,
   ) => {
+
     setGameAccount(newGameAccount);
     setPlayerAccount(newPlayerAccount);
+
   }
 
   // On Player Account Change
   React.useEffect(() => {
     if ( stProvider.valid ) {
 
-      setGameState(
-        STState.updateGameState(
-          gameAccount,
-          playerAccount,
-        )
+      const newGameState = STState.updateGameState(
+        gameAccount,
+        playerAccount,
       );
-      setGlobalState(STState.ST_GLOBAL_STATE.playing);
+
+      const isRecon = BNToDate(gameAccount.supernovaDate).getTime() < Date.now();
+
+      const updateState = () => {
+        setGameState(
+          STState.updateGameState(
+            gameAccount,
+            playerAccount,
+          )
+        );
+
+
+        if(isRecon){
+          
+          checkAllBurned(
+            stProvider,
+            gameAccount,
+          ).then((allBurned)=>{
+            if(allBurned){
+              setGlobalState(STState.ST_GLOBAL_STATE.reconstruction);
+            } else {
+              drawCurtains("Supernova in Process...");
+              setGlobalState(STState.ST_GLOBAL_STATE.supernova);
+            }
+          })
+        } else {
+          setGlobalState(STState.ST_GLOBAL_STATE.playing);
+
+        }
+
+      }
+
+
+      if(gameState.supernova !== STState.NULL_SUPERNOVA){
+        if(gameState.brokenKey < newGameState.brokenKey) { drawCurtains("SNAP!", false, updateState); return;}
+        if(gameState.blackKey < newGameState.blackKey) { drawCurtains("FORGED!", false, updateState); return;}
+        if(gameState.blueKey < newGameState.blueKey) { drawCurtains("CLICK!", false, updateState); return;}
+        if(gameState.greenKey < newGameState.greenKey) { drawCurtains("CLICK!", false, updateState); return;}
+        if(gameState.purpleKey < newGameState.purpleKey) { drawCurtains("CLICK!", false, updateState); return;}
+        if(gameState.whiteKey < newGameState.whiteKey) { drawCurtains("CLICK!", false, updateState); return;}
+        if(gameState.blackChest < newGameState.blackChest) { drawCurtains("You did it!", true, updateState); return;}
+        if(gameState.whiteChest < newGameState.whiteChest) { drawCurtains("You're the real Treasure!", true, updateState); return;}
+      }
+
+      updateState();
+
 
     } else {
       setGlobalState(STState.ST_GLOBAL_STATE.notConnected)
@@ -267,8 +325,6 @@ function Loop(){
   // On Login
   React.useEffect(() => {
     if ( stProvider.valid ) {
-
-      setPlayingMusic(true);
       
       STState.initGameState(
         stProvider,

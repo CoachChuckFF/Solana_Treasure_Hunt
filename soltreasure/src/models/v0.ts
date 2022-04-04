@@ -13,7 +13,7 @@ const sol = (sol:number) => {
     return new BN(Math.floor(sol * web3.LAMPORTS_PER_SOL));
 }
 
-export const GAME_KEY = new web3.PublicKey('8U6GcZXwCGxGJ8Y2FoBNWmttXBsq7c5fVG952wuXtvCF');
+export const GAME_KEY = new web3.PublicKey('8UEsYk52r2NZkSz36jYvFyraqe3odKxTVmY7qM8ZG8a4');
 
 export const GAME_SETTINGS = {
     // countdownTime: _MS_PER_MIN * 3, //3 Min

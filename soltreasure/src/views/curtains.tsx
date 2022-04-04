@@ -6,12 +6,14 @@ import TestButton from './hud';
 
 export interface CurtainsInfo {
     showing: boolean,
+    clickToDismiss: boolean,
     message: string,
     cb?: () => void,
 };
 
 export const NULL_CURTAINS: CurtainsInfo = {
     showing: false,
+    clickToDismiss: false,
     message: "",
 };
 
@@ -26,6 +28,7 @@ export function TestCurtains() {
 
         drawCurtains(
             count.toString(),
+            false,
             () => {console.log("test curtains done")}
         );
     };
@@ -43,17 +46,32 @@ export function STCurtains() {
         curtains: [state, drawCurtains, setCurtains],
     } = React.useContext(StoreContext)
 
+
+    const dismisss = () => {
+
+    }
+
+    const onClick = () => {
+        // if( state.clickToDismiss ){
+        //     if( state.cb ) state.cb();
+        //     setTimeout(()=>{
+        //         setCurtains(NULL_CURTAINS);
+        //     }, 999);
+        // }
+    }
+
     React.useEffect(() => {
         if( state.showing ){
             if( ref.current ){
                 ref.current.className = "scene-change";
             }
-            setTimeout(()=>{
-                if( state.cb ) state.cb();
-            }, 999);
-            setTimeout(()=>{
-                setCurtains(NULL_CURTAINS);
-            }, 1999);
+
+                setTimeout(()=>{
+                    if( state.cb ) state.cb();
+                }, 999);
+                setTimeout(()=>{
+                    setCurtains(NULL_CURTAINS);
+                }, 1999);
         } else {
             if( ref.current ){
                 ref.current.className = "scene-overlay";
@@ -65,7 +83,7 @@ export function STCurtains() {
 
     if(!state.showing) return null;
     return (
-        <div ref={ref} className="scene-overlay">
+        <div ref={ref} className="scene-overlay" onClick={onClick}>
             <div className="message">
                 {state.message}
             </div>

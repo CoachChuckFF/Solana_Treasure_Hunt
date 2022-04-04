@@ -6,7 +6,7 @@ import { codeToHexString, getDronieCode } from "../models/hashes";
 import { STProvider } from "../models/sol-treasure";
 import { Vector3 } from "three";
 import { PuzzlePageFrame, PuzzlePageParams } from "../views/puzzleCommons";
-import { ST_PUZZLE_STATE } from "../models/state";
+import { ST_GLOBAL_STATE, ST_PUZZLE_STATE } from "../models/state";
 import { StoreContext } from "../controllers/store";
 import { ST_COLORS, ST_THEME_COLORS } from "../models/theme";
 import * as STS from "../models/space";
@@ -274,7 +274,7 @@ function sosDevCode(cmd:string){
 
 function runDevEmulator(
     program:string, 
-    fkCB:()=>void, 
+    snCB:()=>void, 
     locCB:(vec:Vector3)=>void,
 ){
 
@@ -285,6 +285,11 @@ function runDevEmulator(
 
     if(codes[0] === 'SOS'){
         return sosDevCode(codes.length > 1 ? codes[1] : "");
+    }
+
+    if(codes[0] === 'SN'){
+        snCB();
+        return "Triggering Supernova in 5... 4... 3... 2... 1...";
     }
 
     // if(codes[0].includes('FK')){
@@ -482,7 +487,7 @@ export function DroniesPuzzlePage(props:any){
         stProvider: [stProvider],
         devMode: [devMode, setDevMode],
         cameraPosition: [cameraPostion, setCameraPosition],
-        globalState: [globalState],
+        globalState: [globalState, setGlobalState],
         puzzleState: [puzzleState, setPuzzleState],
         gameState: [gameState, setGameState],
     } = useContext(StoreContext)
@@ -639,12 +644,10 @@ export function DroniesPuzzlePage(props:any){
         bytes[index] = hash;
         setBytes([...bytes]);
     }
-    const fkCB = () =>{
-        if(props.puzzleState.broken){
-            console.log("Fix Key");
-        } else {
-            console.log("Could not fix key");
-        }
+    const snCB = () =>{
+        setTimeout(()=>{
+            setGlobalState(ST_GLOBAL_STATE.supernova);
+        }, 5000);
     }
     const locCB = (pos:Vector3) =>{
         setCameraPosition({...STS.StartingCamera, pos: pos});
@@ -653,7 +656,7 @@ export function DroniesPuzzlePage(props:any){
     const runProgram = () => {
         let newResponse = "...";
         if(devMode){
-            newResponse = runDevEmulator(handleSpace(true), fkCB, locCB)
+            newResponse = runDevEmulator(handleSpace(true), snCB, locCB)
         } else {
             newResponse = (runEmulator(handleSpace(true), stProvider, bytesCB, winCB) ?? '');
         }

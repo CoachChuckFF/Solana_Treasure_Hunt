@@ -42,6 +42,7 @@ export enum ST_PUZZLE_STATE {
 export interface GameState {
     // Metrics
     supernova: Date;
+    gameStart: Date;
     runStart: Date;
     runPercentTimestamp: Date;
     runPercent: number;
@@ -81,6 +82,7 @@ export const NULL_TIMESTAMP = addDays(0xFF0);
 export const NULL_MINT_CODES = [-1, -1, -1, -1];
 export const NULL_GAME_STATE: GameState = {
     supernova: NULL_SUPERNOVA,
+    gameStart: NULL_START_DATE,
     runStart: NULL_START_DATE,
     runPercentTimestamp: NULL_TIMESTAMP,
     runPercent: 0,
@@ -228,6 +230,7 @@ export const updateGameState = (
     const gameState: GameState = {
         ...NULL_GAME_STATE,
         supernova: BNToDate(gameAccount.supernovaDate),
+        gameStart: BNToDate(gameAccount.startDate),
         runStart: BNToDate(playerAccount.runStart),
         runPercentTimestamp: BNToDate(playerAccount.runPercentTimestamp),
         runPercent: playerAccount.runPercent,

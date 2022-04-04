@@ -44,6 +44,7 @@ export interface Store {
         STCurtains.CurtainsInfo,
         ( 
             message: string, 
+            clickToDismiss?: boolean,
             cb?: ()=>void 
         ) => void,
         React.Dispatch<React.SetStateAction<STCurtains.CurtainsInfo>>
@@ -146,11 +147,12 @@ export default function StoreProvider({ children }:any) {
 
     // Curtains
     const [curtains, setCurtains] = React.useState(STCurtains.NULL_CURTAINS);
-    const drawCurtains = ( message: string, cb?: ()=>void ) => {
+    const drawCurtains = ( message: string, clickToDismiss: boolean = false, cb?: ()=>void ) => {
         setCurtains({
             showing: true,
-            message: message,
-            cb: cb
+            clickToDismiss,
+            message,
+            cb,
         });
     }
 

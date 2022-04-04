@@ -1787,6 +1787,11 @@
     "bn.js" "^5.1.2"
     "buffer-layout" "^1.2.0"
 
+"@rbxts/cubic-bezier@^1.0.3":
+  "integrity" "sha512-4GQdouEOhCtH8ztunno6UhRa4+l86lYFUje17xn/CsI+aSUKFk2TqcgI1yeerok9+wdJEd80a/Jf3pijHBNR9Q=="
+  "resolved" "https://registry.npmjs.org/@rbxts/cubic-bezier/-/cubic-bezier-1.0.3.tgz"
+  "version" "1.0.3"
+
 "@react-spring/animated@~9.4.4":
   "integrity" "sha512-e9xnuBaUTD+NolKikUmrGWjX8AVCPyj1GcEgjgq9E+0sXKv46UY7cm2EmB6mUDTxWIDVKebARY++xT4nGDraBQ=="
   "resolved" "https://registry.npmjs.org/@react-spring/animated/-/animated-9.4.4.tgz"
@@ -2188,6 +2193,11 @@
   "version" "7.14.2"
   dependencies:
     "@babel/types" "^7.3.0"
+
+"@types/bezier-js@^4.1.0":
+  "integrity" "sha512-ElU16s8E6Pr6magp8ihwH1O8pbUJASbMND/qgUc9RsLmP3lMLHiDMRXdjtaObwW5GPtOVYOsXDUIhTIluT+yaw=="
+  "resolved" "https://registry.npmjs.org/@types/bezier-js/-/bezier-js-4.1.0.tgz"
+  "version" "4.1.0"
 
 "@types/bn.js@^4.11.5":
   "integrity" "sha512-pqr857jrp2kPuO9uRjZ3PwnJTjoQy+fcdxvBTvHm6dkmEL9q+hDD/2j/0ELOBPtPnS8LjCX0gI9nbl8lVkadpg=="
@@ -3294,6 +3304,11 @@
   "integrity" "sha1-3DQxT05nkxgJP8dgJyUl+UvyXBY="
   "resolved" "https://registry.npmjs.org/batch/-/batch-0.6.1.tgz"
   "version" "0.6.1"
+
+"bezier-js@^6.1.0":
+  "integrity" "sha512-oc8fkHqG0R+dQuNiXVbPMB0cc8iDqkLAjbA2gq26QmV8tZqW9GGI7iNEX1ioRWlZperQS7v5BX03+9FLVWZbSw=="
+  "resolved" "https://registry.npmjs.org/bezier-js/-/bezier-js-6.1.0.tgz"
+  "version" "6.1.0"
 
 "bfj@^7.0.2":
   "integrity" "sha512-+e/UqUzwmzJamNF50tBV6tZPTORow7gQ96iFow+8b562OdMpEK0BcJEq2OSPEDmAbSMBQ7PKZ87ubFkgxpYWgw=="
