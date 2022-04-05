@@ -1,0 +1,38 @@
+{
+    "name": "White Key",
+    "symbol": "ST-V0",
+    "description": "Proof you've solved the white puzzle in Sol-Treasure",
+    "seller_fee_basis_points": 300,
+    "collection": {
+      "name": "Sol-Treasure",
+      "family": "V0"
+    },
+    "image": "https://arweave.net/l-CB7NTWakvvH5a7S2tvEv01ezGIsHGFbD0VvJSJR-0?ext=png",
+    "animation_url": "https://arweave.net/MPl_90mVS_QbSXEqkfpReyJUKHlvvPD4-v_JWR3o9H0?ext=glb",
+    "external_url": "https://sol-treasure.io/",
+    "attributes": [
+      {
+        "trait_type": "Message",
+        "value": "Worth 1%"
+      }
+    ],
+    "properties": {
+      "files": [
+        {
+          "uri": "https://arweave.net/l-CB7NTWakvvH5a7S2tvEv01ezGIsHGFbD0VvJSJR-0?ext=png",
+          "type": "image/png"
+        },
+        {
+          "uri": "https://arweave.net/MPl_90mVS_QbSXEqkfpReyJUKHlvvPD4-v_JWR3o9H0?ext=glb",
+          "type": "application/octet-stream"
+        }
+      ],
+      "category": "vr",
+      "creators": [
+        {
+          "address": "4YjAYbmdHXC1QUUoQc363QKitVYoxw9qxCVk5J4ZAYDg",
+          "share": 100
+        }
+      ]
+    }
+  }

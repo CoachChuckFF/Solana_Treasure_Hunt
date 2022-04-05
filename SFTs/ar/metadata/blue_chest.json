@@ -1,0 +1,27 @@
+{
+  "name": "Blue Chest",
+  "symbol": "ST-V0H",
+  "description": "Blue chest for the DESOLATEs Puzzle",
+  "collection": {
+    "name": "Sol-Treasure",
+    "family": "V0 Helpers"
+  },
+  "seller_fee_basis_points": 300,
+  "external_url": "https://sol-treasure.io/",
+  "animation_url": "https://arweave.net/9iBVnYBlOmHaf41i3LQ6-lDrXVs76jpbe69NjJRXaho?ext=glb",
+  "properties": {
+    "files": [
+      {
+        "uri": "https://arweave.net/9iBVnYBlOmHaf41i3LQ6-lDrXVs76jpbe69NjJRXaho?ext=glb",
+        "type": "application/octet-stream"
+      }
+    ],
+    "category": "vr",
+    "creators": [
+      {
+        "address": "4YjAYbmdHXC1QUUoQc363QKitVYoxw9qxCVk5J4ZAYDg",
+        "share": 100
+      }
+    ]
+  }
+}

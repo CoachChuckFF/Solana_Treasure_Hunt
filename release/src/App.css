@@ -102,10 +102,10 @@ body {
 }
 
 .puzzle-area {
-  /* background-color: red; */
+  /* background-color: blue; */
   width: 89%;
   max-width: 555px;
-  height: 67vh;
+  height: 72vh;
   top: 8vh;
   left: 0; 
   right: 0; 
@@ -116,7 +116,6 @@ body {
   font-size: x-large;
   font-weight: bold;
   color: #EAEAEA;
-  padding-bottom: 3vh;
 }
 
 .hub-controls {
@@ -129,7 +128,8 @@ body {
 .puzzle-controls {
   width: 89%;
   max-width: 555px;
-  height: 25vh;
+  /* background-color: #005C67; */
+  height: 20vh;
   bottom: 0;
   left: 0; 
   right: 0; 
@@ -173,11 +173,13 @@ body {
 .puzzle-code-header {
   width: 100%;
   font-weight: bold;
+  color: #777777;
   text-shadow: 3px 3px 5px black;
 }
 
 .puzzle-code {
   width: 100%;
+  color: #777777;
   text-shadow: 3px 3px 5px black;
 }
 
@@ -251,7 +253,7 @@ body {
   display: block;
   margin-left: auto;
   margin-right: auto;
-  height: 33%;
+  height: 20%;
   width: 100%;
   max-width: 555px;
   text-align: left;
@@ -276,7 +278,8 @@ body {
   display: block;
   margin-left: auto;
   margin-right: auto;
-  height: 50%;
+  /* background-color: #14F195; */
+  height: 40%;
   width: 100%;
   max-width: 555px;
   text-align: left;
@@ -286,13 +289,24 @@ body {
   display: block;
   margin-left: auto;
   margin-right: auto;
-  height: 50%;
+  /* background-color: #4FA5C4; */
+  height: 30%;
   width: 100%;
   max-width: 555px;
   text-align: left;
 }
 
-/* Dronie */
+.dronie-controls {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  height: 10%;
+  width: 100%;
+  max-width: 555px;
+  text-align: left;
+}
+
+/* DESOLATEs */
 
 .nft-image {
   width: 90%;
@@ -475,6 +489,148 @@ body {
   border: 5px solid #9945FF;
 }
 
+.demo-center {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
+
+.demo-top {
+  position: block;
+  height: 40%;
+  width: 100%;
+}
+
+.demo-bottom {
+  position: relative;
+  height: 40%;
+  width: 100%;
+}
+
+.demo-left {
+  display: inline-flex;
+  justify-content: center;
+  height: 100%;
+  width: 50%;
+}
+
+.demo-right {
+  display: inline-flex;
+  justify-content: center;
+  width: 50%;
+  height: 100%;
+}
+
+.demo-speed {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  height: 10%;
+  width: 100%;
+}
+
+.demo-image {
+  position: block;
+  margin: auto;
+  width: 90%;
+}
+.demo-image img:hover{
+  transition: all 150ms ease;
+  border: 5px solid #6F4F00;
+}
+.demo-image img{
+  display: block;
+  margin: auto;
+  border: 5px solid #000;
+  border-radius: 13px;
+  max-height: 80%;
+  max-width: 80%;
+  object-fit: contain;
+  transition: all 150ms ease;
+}
+
+.demo-selected {
+  position: block;
+  margin: auto;
+  width: 90%;
+}
+.demo-selected img{
+  display: block;
+  margin: auto;
+  border: 5px solid #FFB600;
+  border-radius: 13px;
+  max-height: 80%;
+  max-width: 80%;
+  object-fit: contain;
+  transition: all 150ms ease;
+}
+.demo-selected img:hover {
+  transition: all 150ms ease;
+  border: 5px solid #FFB600;
+}
+
+.demo-solscan {
+  width: 100%;
+  height: 100%;
+}
+.demo-solscan a {
+  color: #EAEAEA;
+  font-size: large;
+  font-weight: bold;
+  text-align: center;
+  vertical-align: middle;
+  text-decoration: none;
+  transition: all 150ms ease;
+}
+.demo-solscan a:hover {
+  color: #FFB600;
+}
+
+.rug-top {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  /* background-color: #14F195; */
+  height: 20%;
+  width: 100%;
+  max-width: 555px;
+  text-align: left;
+}
+
+.rug-bottom {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  /* background-color: #14F195; */
+  height: 20%;
+  width: 100%;
+  max-width: 555px;
+  text-align: left;
+}
+
+.rug-middle {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  /* background-color: #14F195; */
+  height: 60%;
+  width: 100%;
+  max-width: 555px;
+  text-align: left;
+}
+
+.rug-terminal {
+  height: 10vh;
+  width: 100%;
+  max-width: 555px;
+  line-height: 130%;
+  overflow-wrap: break-word;
+  text-align: left;
+  font-size: x-large;
+  color: #EEEEEE;
+  font-weight: bold;
+  padding-bottom: 3vh;
+}
 
 .terminal {
   height: 10vh;

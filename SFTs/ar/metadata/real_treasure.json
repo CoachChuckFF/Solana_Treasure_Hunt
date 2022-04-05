@@ -1,0 +1,38 @@
+{
+    "name": "Real Treasure",
+    "symbol": "ST-V0",
+    "description": "You're the real treasure! Get it?!",
+    "collection": {
+      "name": "Sol-Treasure",
+      "family": "V0"
+    },
+    "attributes": [
+      {
+        "trait_type": "Message",
+        "value": "❤️ You're gonna make it ❤️"
+      }
+    ],
+    "seller_fee_basis_points": 300,
+    "external_url": "https://sol-treasure.io/",
+    "animation_url": "https://arweave.net/HR-ALR1ClAJzyQvVoJPvzDhxJADhYyukzME-SnqatjY?ext=glb",
+    "image": "https://arweave.net/fH2z2n3Q5UwlpvyM4N79d6Bfo_ZDuZBSfKJOdbYfvHU?ext=png",
+    "properties": {
+      "files": [
+        {
+          "uri": "https://arweave.net/HR-ALR1ClAJzyQvVoJPvzDhxJADhYyukzME-SnqatjY?ext=glb",
+          "type": "application/octet-stream"
+        },
+        {
+          "uri": "https://arweave.net/fH2z2n3Q5UwlpvyM4N79d6Bfo_ZDuZBSfKJOdbYfvHU?ext=png",
+          "type": "image/png"
+        }
+      ],
+      "category": "vr",
+      "creators": [
+        {
+          "address": "4YjAYbmdHXC1QUUoQc363QKitVYoxw9qxCVk5J4ZAYDg",
+          "share": 100
+        }
+      ]
+    }
+  }

@@ -1,0 +1,14 @@
+[features]
+seeds = false
+[programs.localnet]
+soltreasure = "7w7DKnyDkhNK8q8KMvSGbDE2UBHoMiyf3bAaGThjd4Cf"
+
+[registry]
+url = "https://anchor.projectserum.com"
+
+[provider]
+cluster = "localnet"
+wallet = "/Users/drkrueger/.config/solana/programs/sol-treasure.json"
+
+[scripts]
+test = "ts-node tests/tests.ts"

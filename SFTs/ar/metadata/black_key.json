@@ -1,0 +1,38 @@
+{
+    "name": "Black Key",
+    "symbol": "ST-V0",
+    "description": "Proof you've figured out how to forge in Sol-Treasure",
+    "collection": {
+      "name": "Sol-Treasure",
+      "family": "V0"
+    },
+    "attributes": [
+        {
+            "trait_type": "Message",
+            "value": "Worth 1%"
+        }
+    ],
+    "seller_fee_basis_points": 300,
+    "external_url": "https://sol-treasure.io/",
+    "animation_url": "https://arweave.net/K8YTuVuGoZNRMxbXv_I8bv6rEKiR9jzmKCn5imsntN4?ext=glb",
+    "image": "https://arweave.net/g-TP4O-jaipEg8M0jmZEuqE6y_WfHNOOmj6HuyqPIxs?ext=png",
+    "properties": {
+      "files": [
+        {
+          "uri": "https://arweave.net/K8YTuVuGoZNRMxbXv_I8bv6rEKiR9jzmKCn5imsntN4?ext=glb",
+          "type": "application/octet-stream"
+        },
+        {
+          "uri": "https://arweave.net/g-TP4O-jaipEg8M0jmZEuqE6y_WfHNOOmj6HuyqPIxs?ext=png",
+          "type": "image/png"
+        }
+      ],
+      "category": "vr",
+      "creators": [
+        {
+          "address": "4YjAYbmdHXC1QUUoQc363QKitVYoxw9qxCVk5J4ZAYDg",
+          "share": 100
+        }
+      ]
+    }
+  }

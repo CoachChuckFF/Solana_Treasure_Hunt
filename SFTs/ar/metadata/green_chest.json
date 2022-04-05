@@ -1,0 +1,27 @@
+{
+  "name": "Green Chest",
+  "symbol": "ST-V0H",
+  "description": "Green chest for the DESOLATEs Puzzle",
+  "collection": {
+    "name": "Sol-Treasure",
+    "family": "V0 Helpers"
+  },
+  "seller_fee_basis_points": 300,
+  "external_url": "https://sol-treasure.io/",
+  "animation_url": "https://arweave.net/88Nq6kThK6EzlNavEmo0riwvC1vTgstPxCi4j_JhmQw?ext=glb",
+  "properties": {
+    "files": [
+      {
+        "uri": "https://arweave.net/88Nq6kThK6EzlNavEmo0riwvC1vTgstPxCi4j_JhmQw?ext=glb",
+        "type": "application/octet-stream"
+      }
+    ],
+    "category": "vr",
+    "creators": [
+      {
+        "address": "4YjAYbmdHXC1QUUoQc363QKitVYoxw9qxCVk5J4ZAYDg",
+        "share": 100
+      }
+    ]
+  }
+}

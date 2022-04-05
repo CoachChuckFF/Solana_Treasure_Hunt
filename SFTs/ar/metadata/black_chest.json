@@ -1,0 +1,38 @@
+{
+  "name": "Black Chest",
+  "symbol": "ST-V0",
+  "description": "Proof you've solved the blue, green and purple puzzles in Sol-Treasure",
+  "collection": {
+    "name": "Sol-Treasure",
+    "family": "V0"
+  },
+  "attributes": [
+    {
+      "trait_type": "Message",
+      "value": "There is still more to discover..."
+    }
+  ],
+  "seller_fee_basis_points": 300,
+  "external_url": "https://sol-treasure.io/",
+  "animation_url": "https://arweave.net/9g9YZs7d7NDBhwvFkO_Qdy7mwZ70n5yit2kcUw6aa_Q?ext=glb",
+  "image": "https://arweave.net/VtE-w4_ww1eAp1-HAH56owHSxsax1Vk40mYXPgTQKfY?ext=png",
+  "properties": {
+    "files": [
+      {
+        "uri": "https://arweave.net/9g9YZs7d7NDBhwvFkO_Qdy7mwZ70n5yit2kcUw6aa_Q?ext=glb",
+        "type": "application/octet-stream"
+      },
+      {
+        "uri": "https://arweave.net/VtE-w4_ww1eAp1-HAH56owHSxsax1Vk40mYXPgTQKfY?ext=png",
+        "type": "image/png"
+      }
+    ],
+    "category": "vr",
+    "creators": [
+      {
+        "address": "4YjAYbmdHXC1QUUoQc363QKitVYoxw9qxCVk5J4ZAYDg",
+        "share": 100
+      }
+    ]
+  }
+}

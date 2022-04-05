@@ -1,0 +1,38 @@
+{
+  "name": "White Chest",
+  "symbol": "ST-V0",
+  "description": "Proof you've solved all of the puzzles in Sol-Treasure",
+  "seller_fee_basis_points": 300,
+  "collection": {
+    "name": "Sol-Treasure",
+    "family": "V0"
+  },
+  "image": "https://arweave.net/-8YP86JTb3P8rRI4k4opFS0EeBUU09bZgLQ0FNDTY-E",
+  "animation_url": "https://arweave.net/XYi7FggKw5Dr2gfEWmAf7ZflLOEudl1yxJiY4vdvdM0",
+  "external_url": "https://sol-treasure.io/",
+  "attributes": [
+    {
+      "trait_type": "Message",
+      "value": "Have you found the [REDHERRING]?"
+    }
+  ],
+  "properties": {
+    "files": [
+      {
+        "uri": "https://arweave.net/-8YP86JTb3P8rRI4k4opFS0EeBUU09bZgLQ0FNDTY-E",
+        "type": "image/png"
+      },
+      {
+        "uri": "https://arweave.net/XYi7FggKw5Dr2gfEWmAf7ZflLOEudl1yxJiY4vdvdM0",
+        "type": "application/octet-stream"
+      }
+    ],
+    "category": "vr",
+    "creators": [
+      {
+        "address": "4YjAYbmdHXC1QUUoQc363QKitVYoxw9qxCVk5J4ZAYDg",
+        "share": 100
+      }
+    ]
+  }
+}

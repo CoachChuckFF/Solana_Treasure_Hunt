@@ -1,0 +1,38 @@
+{
+    "name": "Broken Key",
+    "symbol": "ST-V0",
+    "description": "Proof you attemped to incorrectly solve a puzzle in Sol-Treasure",
+    "seller_fee_basis_points": 300,
+    "collection": {
+      "name": "Sol-Treasure",
+      "family": "V0"
+    },
+    "image": "https://arweave.net/JJKLXJlhi-pYHxnEFKCMpEZ5TPU5vmmFvwEDlQ_pTAM?ext=png",
+    "animation_url": "https://arweave.net/gRstBO0S-Vnbdn22kypf03JOFZUmw7UCA3QRTHZZAq8?ext=glb",
+    "external_url": "https://sol-treasure.io/",
+    "attributes": [
+      {
+        "trait_type": "Message",
+        "value": "Worth 0% - Maybe you can use this for scrap?"
+      }
+    ],
+    "properties": {
+      "files": [
+        {
+          "uri": "https://arweave.net/JJKLXJlhi-pYHxnEFKCMpEZ5TPU5vmmFvwEDlQ_pTAM?ext=png",
+          "type": "image/png"
+        },
+        {
+          "uri": "https://arweave.net/gRstBO0S-Vnbdn22kypf03JOFZUmw7UCA3QRTHZZAq8?ext=glb",
+          "type": "application/octet-stream"
+        }
+      ],
+      "category": "vr",
+      "creators": [
+        {
+          "address": "4YjAYbmdHXC1QUUoQc363QKitVYoxw9qxCVk5J4ZAYDg",
+          "share": 100
+        }
+      ]
+    }
+  }

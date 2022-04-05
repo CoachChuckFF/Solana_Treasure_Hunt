@@ -1,0 +1,38 @@
+{
+    "name": "Purple Key",
+    "symbol": "ST-V0",
+    "description": "Proof you've solved the purple puzzle in Sol-Treasure",
+    "seller_fee_basis_points": 300,
+    "collection": {
+      "name": "Sol-Treasure",
+      "family": "V0"
+    },
+    "image": "https://arweave.net/SIO8pPCSCsqg0kM9fGNXOQohDHhNPJ8n8Lwv_tjyfQg?ext=png",
+    "animation_url": "https://arweave.net/yKQlwpI5K7PdDAmCfmFR6v_oWzKh0wjFtlDF25QtRks?ext=glb",
+    "external_url": "https://sol-treasure.io/",
+    "attributes": [
+      {
+        "trait_type": "Message",
+        "value": "Worth 32%"
+      }
+    ],
+    "properties": {
+      "files": [
+        {
+          "uri": "https://arweave.net/SIO8pPCSCsqg0kM9fGNXOQohDHhNPJ8n8Lwv_tjyfQg?ext=png",
+          "type": "image/png"
+        },
+        {
+          "uri": "https://arweave.net/yKQlwpI5K7PdDAmCfmFR6v_oWzKh0wjFtlDF25QtRks?ext=glb",
+          "type": "application/octet-stream"
+        }
+      ],
+      "category": "vr",
+      "creators": [
+        {
+          "address": "4YjAYbmdHXC1QUUoQc363QKitVYoxw9qxCVk5J4ZAYDg",
+          "share": 100
+        }
+      ]
+    }
+  }

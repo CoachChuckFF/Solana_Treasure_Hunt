@@ -1,0 +1,38 @@
+{
+    "name": "Blue Key",
+    "symbol": "ST-V0",
+    "description": "Proof you've solved the blue puzzle in Sol-Treasure",
+    "collection": {
+      "name": "Sol-Treasure",
+      "family": "V0"
+    },
+    "attributes": [
+        {
+            "trait_type": "Message",
+            "value": "Worth 22%"
+        }
+    ],
+    "seller_fee_basis_points": 300,
+    "external_url": "https://sol-treasure.io/",
+    "animation_url": "https://arweave.net/4o3efioXVTMYAXCerFtpiYBdDzVOuPb4VxQGHsncfk4?ext=glb",
+    "image": "https://arweave.net/gN9IcD4T4l7d71c1v5xTlVsvn0ByT-QyRNI3DE_002c?ext=png",
+    "properties": {
+      "files": [
+        {
+          "uri": "https://arweave.net/4o3efioXVTMYAXCerFtpiYBdDzVOuPb4VxQGHsncfk4?ext=glb",
+          "type": "application/octet-stream"
+        },
+        {
+          "uri": "https://arweave.net/gN9IcD4T4l7d71c1v5xTlVsvn0ByT-QyRNI3DE_002c?ext=png",
+          "type": "image/png"
+        }
+      ],
+      "category": "vr",
+      "creators": [
+        {
+          "address": "4YjAYbmdHXC1QUUoQc363QKitVYoxw9qxCVk5J4ZAYDg",
+          "share": 100
+        }
+      ]
+    }
+  }

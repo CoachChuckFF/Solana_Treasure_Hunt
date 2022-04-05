@@ -1,0 +1,27 @@
+{
+  "name": "Puzzle Title",
+  "symbol": "ST-V0H",
+  "description": "Puzzle title for the DESOLATEs Puzzle",
+  "collection": {
+    "name": "Sol-Treasure",
+    "family": "V0 Helpers"
+  },
+  "seller_fee_basis_points": 300,
+  "external_url": "https://sol-treasure.io/",
+  "image": "https://arweave.net/bHO8CxEOZEcwx42Oej6F3HsjPXF8uYY8YMq_0n0OtO8?ext=png",
+  "properties": {
+    "files": [
+      {
+        "uri": "https://arweave.net/bHO8CxEOZEcwx42Oej6F3HsjPXF8uYY8YMq_0n0OtO8?ext=png",
+        "type": "application/octet-stream"
+      }
+    ],
+    "category": "image",
+    "creators": [
+      {
+        "address": "4YjAYbmdHXC1QUUoQc363QKitVYoxw9qxCVk5J4ZAYDg",
+        "share": 100
+      }
+    ]
+  }
+}

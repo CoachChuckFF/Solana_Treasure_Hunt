@@ -1,0 +1,27 @@
+{
+  "name": "Clue 1",
+  "symbol": "ST-V0H",
+  "description": "Clue 1 for the DESOLATEs Puzzle",
+  "collection": {
+    "name": "Sol-Treasure",
+    "family": "V0 Helpers"
+  },
+  "seller_fee_basis_points": 300,
+  "external_url": "https://sol-treasure.io/",
+  "image": "https://arweave.net/anEbj2gI1xqqr7raf40lgWgUjVuzRqn8nDcenxVlnL4?ext=png",
+  "properties": {
+    "files": [
+      {
+        "uri": "https://arweave.net/anEbj2gI1xqqr7raf40lgWgUjVuzRqn8nDcenxVlnL4?ext=png",
+        "type": "application/octet-stream"
+      }
+    ],
+    "category": "image",
+    "creators": [
+      {
+        "address": "4YjAYbmdHXC1QUUoQc363QKitVYoxw9qxCVk5J4ZAYDg",
+        "share": 100
+      }
+    ]
+  }
+}

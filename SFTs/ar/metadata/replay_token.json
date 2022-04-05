@@ -1,0 +1,38 @@
+{
+    "name": "Replay Token",
+    "symbol": "ST-V0",
+    "description": "Allows you to freely play Sol-Treasure in Recreations Mode",
+    "seller_fee_basis_points": 300,
+    "collection": {
+      "name": "Sol-Treasure",
+      "family": "V0"
+    },
+    "image": "https://arweave.net/AVwhbS2Zc8sIOcgEIaTDCRhh-enHdpzNqZURNVFm_eI?ext=png",
+    "animation_url": "https://arweave.net/MtyZ1n5soAmvC6NTaabaotEVdvxp6yKMjSX--yNYA0U?ext=glb",
+    "external_url": "https://sol-treasure.io/",
+    "attributes": [
+      {
+        "trait_type": "Message",
+        "value": "This token holds the digital recreation of the Sol-Treasure micro-verse - allowing any holder to replay and speedrun the game after the supernova."
+      }
+    ],
+    "properties": {
+      "files": [
+        {
+          "uri": "https://arweave.net/AVwhbS2Zc8sIOcgEIaTDCRhh-enHdpzNqZURNVFm_eI?ext=png",
+          "type": "image/png"
+        },
+        {
+          "uri": "https://arweave.net/MtyZ1n5soAmvC6NTaabaotEVdvxp6yKMjSX--yNYA0U?ext=glb",
+          "type": "application/octet-stream"
+        }
+      ],
+      "category": "vr",
+      "creators": [
+        {
+          "address": "4YjAYbmdHXC1QUUoQc363QKitVYoxw9qxCVk5J4ZAYDg",
+          "share": 100
+        }
+      ]
+    }
+  }
