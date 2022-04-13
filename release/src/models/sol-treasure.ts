@@ -4,7 +4,7 @@ import * as helpers from "@coach-chuck/solana-helpers";
 import { web3, BN } from "@project-serum/anchor";
 
 // --------- DEFINES -----------------------------------------
-export const SOL_TREASURE_ID = new web3.PublicKey("7w7DKnyDkhNK8q8KMvSGbDE2UBHoMiyf3bAaGThjd4Cf");
+export const SOL_TREASURE_ID = new web3.PublicKey("GeHoPNKCypvmQy96y8DYxZBQf9gQiVW2NqVMUTxFG8a5");
 
 export const NULL_MINT_BYTES = [0,0,0,0];
 export const NULL_DATE = new BN(new BN(0).notn(64));

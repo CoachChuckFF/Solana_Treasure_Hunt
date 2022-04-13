@@ -24,11 +24,15 @@ const command = "spl-token transfer BSuCiPcSpWRT7PabVWyBDemgndb1gZX2mMMkqur5Gfxs
 const test = "https://arweave.net/NuSmhExsvXotBoCJ0CN9UFh8FOe37FhjIVi_E63sdaw"
 
 
-const COLLECTION = ITEMS.config.helper_collection
+const COLLECTION = ITEMS.config.collection;
 
-const META = require('../../ar/assets/fake.json')
-const URI = ITEMS.fakeNoot.json;
-const AMOUNT = ITEMS.fakeNoot.amount;
+const META = require('../../ar/metadata/purple_chest.json');
+const URI = ITEMS.purpleChest.json;
+const AMOUNT = ITEMS.purpleChest.amount;
+
+const SPL = undefined; //new anchor.web3.PublicKey('DEAj8PGJrszPvzoFEihCfNxcFTjEsSqGiwaFgUwehPz2');
+const METADATA = undefined; //new anchor.web3.PublicKey('3P3EGw8kw6CPAKccFCv9aEc2eY26vPmHVCzqvbQPvMps');
+const VERIFIED = undefined;
 
 const main = async () => {
     let ownerWallet = new NodeWallet(payerKeypair);
@@ -56,8 +60,11 @@ const main = async () => {
         URI,
         META,
         new anchor.BN(AMOUNT),
-        collectionData
-    )
+        collectionData,
+        SPL,
+        METADATA,
+        VERIFIED
+    );
 
     console.log("--------- SAVE THE FOLLOWING --------------\n");
     console.log(`SFT Mint:         ${SFTData.mint}`);

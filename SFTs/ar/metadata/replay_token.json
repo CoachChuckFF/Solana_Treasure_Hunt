@@ -7,8 +7,8 @@
       "name": "Sol-Treasure",
       "family": "V0"
     },
-    "image": "https://arweave.net/AVwhbS2Zc8sIOcgEIaTDCRhh-enHdpzNqZURNVFm_eI?ext=png",
-    "animation_url": "https://arweave.net/MtyZ1n5soAmvC6NTaabaotEVdvxp6yKMjSX--yNYA0U?ext=glb",
+    "image": "https://arweave.net/AVwhbS2Zc8sIOcgEIaTDCRhh-enHdpzNqZURNVFm_eI",
+    "animation_url": "https://arweave.net/MtyZ1n5soAmvC6NTaabaotEVdvxp6yKMjSX--yNYA0U",
     "external_url": "https://sol-treasure.io/",
     "attributes": [
       {
@@ -19,11 +19,11 @@
     "properties": {
       "files": [
         {
-          "uri": "https://arweave.net/AVwhbS2Zc8sIOcgEIaTDCRhh-enHdpzNqZURNVFm_eI?ext=png",
+          "uri": "https://arweave.net/AVwhbS2Zc8sIOcgEIaTDCRhh-enHdpzNqZURNVFm_eI",
           "type": "image/png"
         },
         {
-          "uri": "https://arweave.net/MtyZ1n5soAmvC6NTaabaotEVdvxp6yKMjSX--yNYA0U?ext=glb",
+          "uri": "https://arweave.net/MtyZ1n5soAmvC6NTaabaotEVdvxp6yKMjSX--yNYA0U",
           "type": "application/octet-stream"
         }
       ],

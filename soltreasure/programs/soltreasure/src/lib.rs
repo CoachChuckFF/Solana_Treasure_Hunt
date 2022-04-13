@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{self, TokenAccount, Transfer, Burn, Mint};
 use spl_associated_token_account::get_associated_token_address;
 
-declare_id!("7w7DKnyDkhNK8q8KMvSGbDE2UBHoMiyf3bAaGThjd4Cf");
+declare_id!("GeHoPNKCypvmQy96y8DYxZBQf9gQiVW2NqVMUTxFG8a5");
 
 macro_rules! null_key {() => {Pubkey::new_from_array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])}}
 macro_rules! get_id {($id_index:expr) => {0b1 << $id_index}}
@@ -620,12 +620,40 @@ pub mod soltreasure {
 
         if !is_recreation { player_account.og_percent = player_account.run_percent; }
 
-        if is_recreation {
+        if player_account.player != game.coach {
+            if is_recreation {
 
-            // Set Speedboard
-            if player_account.is_speedrunning {
+                // Set Speedboard
+                if player_account.is_speedrunning {
+                    let player_percent = player_account.run_percent;
+                    let player_time = player_account.run_percent_timestamp - player_account.run_start;
+                    let player_entry = GameLeaderboardInfo {
+                        name: player_account.name.clone(),
+                        player: player_account.player,
+                        game_start: game.start_date,
+                        run_start: player_account.run_start,
+                        run_percent: player_account.run_percent,
+                        run_percent_timestamp: player_account.run_percent_timestamp,
+                    };
+                    let bump_index = get_leaderbaord_bump_index(
+                        &game.speedboard,
+                        game.leaderboard_count,
+                        &player_account.player,
+                        player_percent,
+                        player_time,
+                    );
+    
+                    if bump_index == !0 { 
+                        game.speedboard.push(player_entry); 
+                    } else if bump_index < game.speedboard.len() {
+                        game.speedboard[bump_index] = player_entry;
+                    }
+                }
+    
+            } else {
+                // Set Leaderboard
                 let player_percent = player_account.run_percent;
-                let player_time = player_account.run_percent_timestamp - player_account.run_start;
+                let player_time = player_account.run_percent_timestamp - game.start_date;
                 let player_entry = GameLeaderboardInfo {
                     name: player_account.name.clone(),
                     player: player_account.player,
@@ -635,46 +663,21 @@ pub mod soltreasure {
                     run_percent_timestamp: player_account.run_percent_timestamp,
                 };
                 let bump_index = get_leaderbaord_bump_index(
-                    &game.speedboard,
+                    &game.leaderboard,
                     game.leaderboard_count,
                     &player_account.player,
                     player_percent,
                     player_time,
                 );
-
+    
                 if bump_index == !0 { 
-                    game.speedboard.push(player_entry); 
-                } else if bump_index < game.speedboard.len() {
-                    game.speedboard[bump_index] = player_entry;
+                    game.leaderboard.push(player_entry); 
+                } else if bump_index < game.leaderboard.len() {
+                    game.leaderboard[bump_index] = player_entry;
                 }
             }
+        } 
 
-        } else {
-            // Set Leaderboard
-            let player_percent = player_account.run_percent;
-            let player_time = player_account.run_percent_timestamp - game.start_date;
-            let player_entry = GameLeaderboardInfo {
-                name: player_account.name.clone(),
-                player: player_account.player,
-                game_start: game.start_date,
-                run_start: player_account.run_start,
-                run_percent: player_account.run_percent,
-                run_percent_timestamp: player_account.run_percent_timestamp,
-            };
-            let bump_index = get_leaderbaord_bump_index(
-                &game.leaderboard,
-                game.leaderboard_count,
-                &player_account.player,
-                player_percent,
-                player_time,
-            );
-
-            if bump_index == !0 { 
-                game.leaderboard.push(player_entry); 
-            } else if bump_index < game.leaderboard.len() {
-                game.leaderboard[bump_index] = player_entry;
-            }
-        }
 
         Ok(())
     }

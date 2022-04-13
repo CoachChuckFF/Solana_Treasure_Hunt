@@ -1,4 +1,4 @@
-import {Token, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, MintLayout} from "@solana/spl-token";
+import {Token, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, MintLayout, AccountInfo} from "@solana/spl-token";
 import {Program, Provider, BN, web3} from "@project-serum/anchor";
 import * as meta from "@metaplex/js";
 
@@ -23,19 +23,23 @@ const SolanaConnectionMainnet = new web3.Connection(
     SolanaClusterMainnet, 
     {
         commitment: SolanaDefaultCommitment,
-        confirmTransactionInitialTimeout: (1000 * 60 * 5),
+        confirmTransactionInitialTimeout: (1000 * 60 * 1),
     }
+);
+const SolanaConnectionLocalnet = new web3.Connection(
+    "http://localhost:8899", 
+    SolanaDefaultCommitment
 );
 
 // Pass in window.solana for wallet
 export const getSolanaProvider = (wallet: any, isDevnet: boolean = true) => {
     return new Provider(
         (isDevnet) ? SolanaConnectionDevnet : SolanaConnectionMainnet, 
+        // SolanaConnectionLocalnet,
         wallet, 
         {
             commitment: SolanaDefaultCommitment,
             // skipPreflight: true,
-            maxRetries: 10,
         }
     );
 }
@@ -385,6 +389,8 @@ export const getSFTData = async (
 
 export const createSFTCollection = async (
     provider: Provider,
+    name?: string,
+    uri?: string,
     symbol?: string,
     sellerFeeBasisPoints?: number,
 ) => {
@@ -397,8 +403,8 @@ export const createSFTCollection = async (
 
     const data = new meta.programs.metadata.DataV2({
         symbol: symbol ?? '',
-        name: 'Collection NFT',
-        uri: '',
+        name: name ?? 'Collection NFT',
+        uri: uri ?? '',
         sellerFeeBasisPoints: sellerFeeBasisPoints ?? 0,
         creators: [
             new meta.programs.metadata.Creator({
@@ -412,7 +418,7 @@ export const createSFTCollection = async (
     });
 
     const tx = new web3.Transaction();
-  
+    
     const collectionMetadataKey = await getMetadataKey(collectionSPL.mint);
     tx.add(
         ...new meta.programs.metadata.CreateMetadataV2(
@@ -461,6 +467,9 @@ export const createSFT = async (
     metadata: MetadataStruct | string,
     amount: BN,
     existingCollection?: SFTCollectionData,
+    exsitingSPL?: web3.PublicKey,
+    exsistingMeta?: web3.PublicKey,
+    isVerified?: boolean,
 ) => {
     const owner = provider.wallet.publicKey;
  
@@ -473,11 +482,20 @@ export const createSFT = async (
     }
 
     // Create the SPL
-    console.log("Creating SPL...");
-    const splToken = await createSPL(
-        provider,
-        amount.toNumber(),
-    );
+    let splToken = {} as AccountInfo;
+    if(exsitingSPL){
+        splToken = await getSPLAccount(
+            provider,
+            exsitingSPL,
+        )
+    } else {
+        console.log("Creating SPL...");
+        splToken = await createSPL(
+            provider,
+            amount.toNumber(),
+        );
+    }
+    console.log(`Mint = ${splToken.mint.toString()}`);
 
     // Get the Collection
     let collectionData = {} as SFTCollectionData;
@@ -485,9 +503,13 @@ export const createSFT = async (
         console.log("Creating Collection...");
         collectionData = await createSFTCollection(
             provider,
+            metadataStruct.name,
+            metadataURI,
             metadataStruct.symbol,
             metadataStruct.sellerFeeBasisPoints,
         );
+        console.log(`Collection ${collectionData.collectionMint.toString()}`);
+        return await {} as SFTData;
     } else {
         if(existingCollection){
             collectionData = existingCollection;
@@ -498,8 +520,8 @@ export const createSFT = async (
         collectionData.collectionMint,
     );
 
-    if( collectionMetadata.data.symbol !== metadataStruct.symbol ) { throw new Error("Collection Symbol does not match...") }
-    if( collectionMetadata.data.sellerFeeBasisPoints !== metadataStruct.sellerFeeBasisPoints ?? 0) { throw new Error("Collection seller points do not match...") }
+    // if( collectionMetadata.data.symbol !== metadataStruct.symbol ) { throw new Error("Collection Symbol does not match...") }
+    // if( collectionMetadata.data.sellerFeeBasisPoints !== metadataStruct.sellerFeeBasisPoints ?? 0) { throw new Error("Collection seller points do not match...") }
 
     const collection = new meta.programs.metadata.Collection({
         key: collectionData.collectionMint.toString(),
@@ -549,33 +571,40 @@ export const createSFT = async (
     const metadataKey = await getMetadataKey(splToken.mint);
 
     // Build the transaction
-    console.log("Creating Metadata...");
-    const createMetaTx = new meta.programs.metadata.CreateMetadataV2(
-        { feePayer: owner },
-        {
-          metadata: metadataKey,
-          metadataData,
-          updateAuthority: owner,
-          mint: splToken.mint,
-          mintAuthority: owner,
-        },
-    );
+    if(exsistingMeta === undefined) {
+        console.log("Creating Metadata...");
+        const createMetaTx = new meta.programs.metadata.CreateMetadataV2(
+            { feePayer: owner },
+            {
+            metadata: metadataKey,
+            metadataData,
+            updateAuthority: owner,
+            mint: splToken.mint,
+            mintAuthority: owner,
+            },
+        );
 
-    await provider.send(createMetaTx);
+        await provider.send(createMetaTx);
+    }
+    console.log(`Metadata ${metadataKey.toString()}`);
+
 
     // Verify Collection
-    console.log("Verifying Metadata...");
-    const verifyCollectionTx = new meta.programs.metadata.VerifyCollection(
-        { feePayer: owner },
-        {
-            metadata: metadataKey,
-            collectionAuthority: owner,
-            collectionMint: collectionData.collectionMint,
-            collectionMetadata: collectionData.collectionMetadata,
-            collectionMasterEdition: collectionData.collectionMasterEdition,
-        },
-    );
-    await provider.send(verifyCollectionTx);
+    if(isVerified === undefined || !isVerified){
+        console.log("Verifying Metadata...");
+        const verifyCollectionTx = new meta.programs.metadata.VerifyCollection(
+            { feePayer: owner },
+            {
+                metadata: metadataKey,
+                collectionAuthority: owner,
+                collectionMint: collectionData.collectionMint,
+                collectionMetadata: collectionData.collectionMetadata,
+                collectionMasterEdition: collectionData.collectionMasterEdition,
+            },
+        );
+        await provider.send(verifyCollectionTx);
+        console.log("verified");
+    }
 
     console.log("Signing Metadata...");
     const signMetadataTX = new meta.programs.metadata.SignMetadata(
@@ -586,6 +615,7 @@ export const createSFT = async (
         }
     )
     await provider.send(signMetadataTX);
+    console.log("Signed");
 
     return await getSFTData(
         provider,

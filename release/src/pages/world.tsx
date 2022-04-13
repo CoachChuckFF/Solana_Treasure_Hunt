@@ -1332,7 +1332,7 @@ export function STWorld() {
                     <Lock secret={false} locked={gameState.greenKey === 0} index={3} lock={STS.GreenLockGLB} unlock={STS.GreenUnlockGLB} space={STS.HubIndex3} />
                     <Lock secret={false} locked={gameState.purpleKey === 0} index={4} lock={STS.PurpleLockGLB} unlock={STS.PurpleUnlockGLB} space={STS.HubIndex4} />
                     <Story deltaY={scrollDeltaY}/>
-                    <gridHelper position={STS.MainArea.toArray()} args={[10, 10, ST_COLORS.purple, ST_COLORS.grey]}/>
+                    {/* <gridHelper position={STS.MainArea.toArray()} args={[10, 10, ST_COLORS.purple, ST_COLORS.grey]}/> */}
                 </React.Suspense>
                 <React.Suspense fallback={null}>
                     <BlackHole />
@@ -1344,15 +1344,15 @@ export function STWorld() {
                     <Lock secret={true} locked={gameState.blackKey === 0} index={1} lock={STS.BlackLockGLB} unlock={STS.BlackUnlockGLB} space={STS.SHubIndex1} />
                     <Lock secret={true} locked={gameState.greenKey === 0} index={3} lock={STS.GreenLockGLB} unlock={STS.GreenUnlockGLB} space={STS.SHubIndex3} />
                     <BlackHoleForge gameState={gameState}/>
-                    <gridHelper position={STS.SecretArea.toArray()} args={[10, 10, ST_COLORS.white, ST_COLORS.grey]}/>
+                    {/* <gridHelper position={STS.SecretArea.toArray()} args={[10, 10, ST_COLORS.white, ST_COLORS.grey]}/> */}
                 </React.Suspense>
                 <React.Suspense fallback={null}>
                     <RedHerring gameState={gameState}/>
-                    {/* <Inventory gameState={gameState} globalState={globalState} />
+                    <Inventory gameState={gameState} globalState={globalState} />
                     <Title 
                         globalState={globalState}
                     />
-                    <SkyBox/> */}
+                    <SkyBox/>
                     <Stars
                         radius={100} // Radius of the inner sphere (default=100)
                         depth={100} // Depth of area where stars should fit (default=50)

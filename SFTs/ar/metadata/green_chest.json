@@ -8,11 +8,11 @@
   },
   "seller_fee_basis_points": 300,
   "external_url": "https://sol-treasure.io/",
-  "animation_url": "https://arweave.net/88Nq6kThK6EzlNavEmo0riwvC1vTgstPxCi4j_JhmQw?ext=glb",
+  "animation_url": "https://arweave.net/88Nq6kThK6EzlNavEmo0riwvC1vTgstPxCi4j_JhmQw",
   "properties": {
     "files": [
       {
-        "uri": "https://arweave.net/88Nq6kThK6EzlNavEmo0riwvC1vTgstPxCi4j_JhmQw?ext=glb",
+        "uri": "https://arweave.net/88Nq6kThK6EzlNavEmo0riwvC1vTgstPxCi4j_JhmQw",
         "type": "application/octet-stream"
       }
     ],

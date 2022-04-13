@@ -163,7 +163,6 @@ export const canUnlockChest = ( state: GameState, chest: ST_CHEST_TYPES, globalS
     if(state.blueKey < 1) return false;
     if(state.greenKey < 1) return false;
     if(state.purpleKey < 1) return false;
-    if(likesPumkins(state, chest, globalState)) return false;
     if(supernovaHappened(state, globalState)) return false;
 
     if(chest === ST_CHEST_TYPES.secret){

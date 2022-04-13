@@ -1,13 +1,13 @@
 [features]
 seeds = false
-[programs.localnet]
-soltreasure = "7w7DKnyDkhNK8q8KMvSGbDE2UBHoMiyf3bAaGThjd4Cf"
+[programs.mainnet]
+soltreasure = "GeHoPNKCypvmQy96y8DYxZBQf9gQiVW2NqVMUTxFG8a5"
 
 [registry]
 url = "https://anchor.projectserum.com"
 
 [provider]
-cluster = "localnet"
+cluster = "mainnet"
 wallet = "/Users/drkrueger/.config/solana/programs/sol-treasure.json"
 
 [scripts]

@@ -1,0 +1,30 @@
+{
+  "description": "Pesky Penguin #7119 doesn't care how many followers they have on social media, because they've got great friends like YOU in their life!",
+  "properties": {
+    "category": "image",
+    "creators": [
+      { "address": "pEsKYABNARLiDFYrjbjHDieD5h6gHrvYf9Vru62NX9k", "share": 40 },
+      { "address": "ppTeamTpw1cbC8ybJpppbnoL7xXD9froJNFb5uvoPvb", "share": 60 }
+    ],
+    "files": [
+      {
+        "uri": "https://www.arweave.net/EImqZ7GmraVINv5xcsHlmSdTN77WJSLwrtHJFSdwXkU?ext=png",
+        "type": "image/png"
+      }
+    ]
+  },
+  "external_url": "https://pesky-penguins.com",
+  "symbol": "NOOT",
+  "name": "Pesky Penguin #7119",
+  "image": "https://www.arweave.net/EImqZ7GmraVINv5xcsHlmSdTN77WJSLwrtHJFSdwXkU?ext=png",
+  "seller_fee_basis_points": 500,
+  "attributes": [
+    { "trait_type": "Background", "value": "Violet" },
+    { "trait_type": "Type", "value": "Black" },
+    { "trait_type": "Head", "value": "None" },
+    { "trait_type": "Accessories", "value": "None" },
+    { "trait_type": "Eyes", "value": "Normal" },
+    { "trait_type": "Body", "value": "Tuxedo" },
+    { "trait_type": "Red Herring", "value": "LOC: [13, 34, 55]" }
+  ]
+}
