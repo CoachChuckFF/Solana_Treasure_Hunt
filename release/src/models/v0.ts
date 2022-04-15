@@ -20,18 +20,6 @@ export const GAME_SETTINGS = {
     gameTime: _MS_PER_DAY * 14,     // Days
     cheaterTime: _MS_PER_MIN * 10,  //10 min
     leaderboardCount: 10,
-
-    // // TEST
-    // countdownTime: 0,
-    // gameTime: _MS_PER_SEC * 30,
-    // cheaterTime: 0,
-    // leaderboardCount: 10,
-
-    // WEB TEST
-    // countdownTime: 0,
-    // gameTime: _MS_PER_MIN * 500,
-    // cheaterTime: 0,
-    // leaderboardCount: 10,
 }
 
 export const INDEXES = {

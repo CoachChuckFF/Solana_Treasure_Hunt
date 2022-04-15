@@ -2,14 +2,10 @@ import { useRef, useState, useEffect, useContext } from "react";
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import ImageList from '@mui/material/ImageList';
-import ImageListItem from '@mui/material/ImageListItem';
-import { Divider } from "@mui/material";
 import { ST_PUZZLE_STATE } from "../models/state";
 import { PuzzlePageFrame, PuzzlePageParams } from "../views/puzzleCommons";
 import { StoreContext } from "../controllers/store";
 import { DownIcon, UpIcon } from "../views/icons";
-import { AnyARecord } from "dns";
 import { getDesolatesCode } from "../models/hashes";
 
 const toColorCode = (colorCodes:number[]) => {

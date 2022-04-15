@@ -9,7 +9,6 @@ import Slide from '@mui/material/Slide';
 import { TransitionProps } from '@mui/material/transitions';
 import { StoreContext } from '../controllers/store';
 
-
 export interface PopupInfo {
     showing: boolean,
     title: string,

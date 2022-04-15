@@ -11,8 +11,8 @@ import Grid from '@mui/material/Grid';
 import { ConstCode, Header } from './commons';
 
 // Icons
-import { PuzzleIcon, WalletIcon, ChestIcon, KeyIcon, LeftIcon, LogoutIcon, TerminalIcon, ForgeIcon, BreakIcon, SpeedrunIcon, RefreshIcon } from './icons';
-import { codeToHexString, getGuideCodes } from '../models/hashes';
+import { PuzzleIcon, WalletIcon, ChestIcon, KeyIcon, LogoutIcon, TerminalIcon, ForgeIcon, BreakIcon, SpeedrunIcon, RefreshIcon } from './icons';
+import { codeToHexString  } from '../models/hashes';
 import { ST_COLORS, ST_THEME_COLORS } from '../models/theme';
 
 export default function TestButton(props:any) {

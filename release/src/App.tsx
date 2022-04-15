@@ -1,11 +1,9 @@
-import { ThemeProvider } from '@mui/material/styles';
 import React from 'react';
 import './App.css';
-import StoreProvider, { StoreContext, logoutOfStore } from './controllers/store';
+import StoreProvider, { StoreContext } from './controllers/store';
 import { STThemeProvider } from './models/theme';
-import { STCurtains, TestCurtains } from './views/curtains';
+import { STCurtains } from './views/curtains';
 import { PublicKey } from '@solana/web3.js';
-import STSnackbar, { SNACKBAR_SEVERITY, TestSnackbar } from './views/snackbar';
 import * as STS from './models/space';
 import * as STState from './models/state';
 import * as STSolana from './controllers/solana';
@@ -19,31 +17,20 @@ import { DesolatePuzzlePage } from './pages/puzzleDesolate';
 import { RugPuzzlePage } from './pages/puzzleRug';
 import { FractalsPuzzlePage } from './pages/puzzleFractals';
 import { ForgePage } from './pages/forge';
-import { BNToDate, checkAllBurned, createPlayerAccount, errorToString, forgeItem, GameAccount, gameToString, getGameAccount, getPlayerAccount, hashItem, hashTwoItems, NULL_MINT_BYTES, PlayerAccount, startSpeedrun, STProvider } from './models/sol-treasure';
-import { GAME_KEY, INDEXES, ITEMS } from './models/v0';
+import { BNToDate, checkAllBurned, createPlayerAccount, errorToString, forgeItem, GameAccount, getGameAccount, getPlayerAccount, hashItem, hashTwoItems, NULL_MINT_BYTES, PlayerAccount, startSpeedrun, STProvider } from './models/sol-treasure';
+import { INDEXES } from './models/v0';
 import { web3 } from '@project-serum/anchor';
 // import { BG_SOUND, FXs, playByte } from './sounds/music-man';
 import STPopup from './views/popup';
-
-function Ticker(){
-  const {
-    globalState: [globalState, setGlobalState],
-  } = React.useContext(StoreContext);
-  const [tick, setTick] = React.useState(0);
-
-  return null;
-}
 
 function Loop(){
   const {
     gameAccount: [gameAccount, setGameAccount],
     playerAccount: [playerAccount, setPlayerAccount],
     stProvider: [stProvider, setSTProvider],
-    snackbar: [snackbar, showSnackbar],
     devMode: [devMode, setDevMode],
     gameState: [gameState, setGameState],
     puzzleState: [puzzleState, setPuzzleState],
-    actionCrank: [actionCrank, crankAction],
     globalState: [globalState, setGlobalState],
     curtains: [curtains, drawCurtains, setCurtains],
     isLoading: [isLoading, setIsLoading],
@@ -376,7 +363,7 @@ function Loop(){
     }
 
     showPopup(
-      "You Ready?",
+      "You Ready?!",
       message,
       cb,
     )
@@ -505,7 +492,6 @@ function App() {
         <StoreProvider>
           <Loop/>
           <STWorld />
-          <Ticker />
           <STCurtains/>
           <STPopup />
         </StoreProvider>

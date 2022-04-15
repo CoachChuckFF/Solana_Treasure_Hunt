@@ -1,7 +1,4 @@
 
-import React from "react";
-import * as STSnackbar from "../views/snackbar";
-import * as STCurtains from "../views/curtains";
 import * as STWorldSpace from "./space";
 import * as STClock from "./clock";
 import { PublicKey } from "@solana/web3.js"
@@ -209,20 +206,6 @@ export const didUnlockChest = ( state: GameState, chest: ST_CHEST_TYPES, ) => {
 }
 
 export const getStory = () => {
-    // let normalRun = Math.abs(run[0] - run[1]);
-    // let fullRun = Math.abs(run[0] - run[2]);
-
-    // if(puzzleState.secret){
-    //     return "Congrats! You 100%'d this thing! AND you did it in " + getTimeString(fullRun) + '. You\'re the real treasure!\n\nLove,\nCoach Chuck';
-    // }
-
-    // if(puzzleState.regular){
-    //     return "Congrats! You've opened the chest! AND you did it in " + getTimeString(normalRun) + '. Give yourself a pat on the back! Oh, and remember to ignore the red herring... \n\nLove,\nCoach Chuck';
-    // }
-
-    // if(state === FSM.Reconstruction){
-    //     return "Welcome! The supernova has already happened... Hoever, if you're playing this right now, you're actually playing a digitally recreated world saved within a replay token or an OG sol-treasure account. You won't be able to mint anything, however, you can see how fast you can solve the puzzles! Happy Speedrunning!\n\nLove,\nCoach Chuck";
-    // }
 
     return "Welcome to the Sol-Treasure microverse, which is, going to explode soon... The star beneath you is going supernova. There is treasure trapped here, and when the supernova hits, everything remaining will be burned. Fortunately, if you can retrieve 99% of the collection, you'll be able to digitally recreate this little world! So your mission is simple: solve puzzles, mint keys, and discover the secrets before they are blown away forever. \n\n Each key costs 0.05, BUT a wrong answer results in a broken key at 0.025\n\nGood Luck!\n\n";
     

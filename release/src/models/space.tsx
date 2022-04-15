@@ -40,13 +40,6 @@ export const SupernovaGLB = "models/sol/supernova.glb";
 export const VimlandFont = 'fonts/Vimland.woff';
 export const VimlandChars = 'abcdefghijklmnopqrstuvwxyz';
 
-export const SKYBOX_PX = "img/skybox/px.png";
-export const SKYBOX_NX = "img/skybox/nx.png";
-export const SKYBOX_PY = "img/skybox/py.png";
-export const SKYBOX_NY = "img/skybox/ny.png";
-export const SKYBOX_PZ = "img/skybox/pz.png";
-export const SKYBOX_NZ = "img/skybox/nz.png";
-
 // MATHS ------------------
 const PI = Math.PI;
 const TRI = Math.sqrt(3)/2;

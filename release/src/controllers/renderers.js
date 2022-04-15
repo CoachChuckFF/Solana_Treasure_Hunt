@@ -2,8 +2,6 @@ import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry'
 import { extend } from '@react-three/fiber'
 import { Text } from "troika-three-text";
 import fonts from "../fonts/fonts";
-import { ST_COLORS } from "../models/theme";
-import React from 'react';
 
 extend({ TextGeometry })
 extend({ Text });

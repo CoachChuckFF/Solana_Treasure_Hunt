@@ -2,28 +2,18 @@ import * as React from "react";
 import { 
     useGLTF, 
     Stars, 
-    Environment,
-    Plane,
     Dodecahedron,
-    GradientTexture, 
 } from "@react-three/drei";
 import {
-    Clock,
-    CubeTextureLoader,
     Group,
     Vector3,
     PointLight,
-    Shape,
-    GridHelper,
-    Color
 } from "three";
-import { Camera, Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { EffectComposer, Bloom } from '@react-three/postprocessing'
 import { STControls } from "../controllers/worldController";
 import { preloadFont } from "troika-three-text";
 
-// import { curtains } from './curtains';
-// import { getGuideCodes, codeToHexString } from "./hashes";
 import { StoreContext } from "../controllers/store";
 import * as STState from '../models/state';
 import * as STS from "../models/space";
@@ -32,9 +22,8 @@ import { TextWoraround } from "../controllers/renderers";
 import { ST_COLORS } from "../models/theme";
 import { getCountdownString, getTimeString, getTimerString } from "../models/clock";
 import { lerp } from "three/src/math/MathUtils";
-import { FXs, playByte } from "../sounds/music-man";
+// import { FXs, playByte } from "../sounds/music-man";
 import { BNToDate, GameAccount, LeaderboardType, sortLeaderboard } from "../models/sol-treasure";
-import { BN } from "@project-serum/anchor";
 
 const PI = Math.PI;
 const TRI = Math.sqrt(3)/2;
@@ -185,9 +174,8 @@ function Title(props:any) {
 function BlackHole(props:any) {
     const blackHoleRef = React.useRef<Group>();
     const miniBlackHoleRef = React.useRef<Group>();
-    // const textRef = React.useRef<any>();
 
-    useFrame(({ clock, camera }) => { 
+    useFrame(() => { 
         if( blackHoleRef.current ){
             blackHoleRef.current.rotation.x  -= 0.001;
             blackHoleRef.current.rotation.y  -= 0.003;
@@ -216,7 +204,7 @@ function RedHerring(props:any) {
     const redHerringRef = React.useRef<Group>();
     const gameState = (props.gameState as STState.GameState);
 
-    useFrame(({ clock, camera }) => { 
+    useFrame(() => { 
         if( redHerringRef.current ){
             redHerringRef.current.rotation.x  -= 0.003;
             redHerringRef.current.rotation.y  -= 0.005;
@@ -261,7 +249,7 @@ function BlackHoleForge(props:any) {
     }
 
 
-    useFrame(({ clock, camera }) => { 
+    useFrame(() => { 
         if( blackHoleRef.current ){
             blackHoleRef.current.rotation.x  -= 0.001;
             blackHoleRef.current.rotation.y  -= 0.003;
@@ -319,7 +307,7 @@ function Supernova(props:any) {
     const SND = 22000;
     const SNS = 189;
 
-    useFrame(({ clock, camera }) => { 
+    useFrame(() => { 
         if( supernovaRef.current ){
             supernovaRef.current.rotation.y  -= 0.003;
             if(
@@ -343,13 +331,6 @@ function Supernova(props:any) {
             sunRef.current.rotation.y  -= 0.003;
         }
 
-
-
-        // if( textRef.current ){
-        //     textRef.current.position.y = Math.sin(
-        //         clock.getElapsedTime()/3
-        //     ) * 0.55;
-        // }
     });
 
     return (
@@ -392,7 +373,7 @@ function BlackChestOpened(props:any) {
 
     }
 
-    useFrame(({ clock, camera }) => { 
+    useFrame(({ clock }) => { 
         if(chestRef.current){
             chestRef.current.position.x = STS.HubIndex0.pos.x + Math.sin(clock.getElapsedTime()) * 0.021;
             chestRef.current.position.y = STS.HubIndex0.pos.y + Math.sin(clock.getElapsedTime()/2) * 0.021;
@@ -434,11 +415,10 @@ function BlackChestOpened(props:any) {
 }
 
 function WhiteChestOpened(props:any) {
-    const timerRef = React.useRef<any>();
     const chestRef = React.useRef<any>();
     const tokenRef = React.useRef<Group>();
 
-    useFrame(({ clock, camera }) => { 
+    useFrame(({ clock }) => { 
         if(chestRef.current){
             chestRef.current.position.x = STS.SHubIndex0.pos.x + Math.sin(clock.getElapsedTime()) * 0.021;
             chestRef.current.position.y = STS.SHubIndex0.pos.y + Math.sin(clock.getElapsedTime()/2) * 0.021;
@@ -591,7 +571,7 @@ function Chest(props:any) {
         );
     }
 
-    useFrame(({ clock, camera }) => {
+    useFrame(() => {
         let xOffset = getOffset(false);
         let yOffset = getOffset(true);
 
@@ -729,32 +709,6 @@ function Chest(props:any) {
     );
 }
 
-function InventoryBG (props:any) {
-    const yStart = 0.34;
-    const xSpan = 0.13;
-    const ySpan = 0.11;
-
-    const shape = new Shape()
-    shape.moveTo(-xSpan, yStart);
-    shape.lineTo(xSpan, yStart);
-    shape.lineTo(xSpan, yStart - ySpan);
-    shape.lineTo(-xSpan, yStart - ySpan);
-    shape.lineTo(-xSpan, yStart);
-
-    const extrudeSettings = {
-        curveSegments: 1,
-        steps: 1,
-        depth: 0,
-        bevelEnabled: false
-    }
-
-    return (
-        <mesh ref={props.objRef}>
-          <extrudeBufferGeometry attach="geometry" args={[shape, extrudeSettings]} />
-          <meshStandardMaterial wireframe={false} transparent={true} opacity={0.1} color="#EAEAEA"/>
-        </mesh>
-    );
-}
 
 function Inventory(props:any) {
     const gameState = props.gameState as STState.GameState;
@@ -959,37 +913,6 @@ function Leaderboard(props:any) {
     );
 }
 
-function Speedboard(props:any) { 
-
-    if((props.gameAccount as GameAccount).speedboard == null) return null;
-
-console.log("here");
-    const leaderboard = (props.gameAccount as GameAccount).speedboard;
-    const endTime = BNToDate((props.gameAccount as GameAccount).supernovaDate).getTime();
-    const sorted = [...sortLeaderboard(leaderboard, LeaderboardType.speed)];
-
-    let leaders = '';
-    for (let i = 0; i < sorted.length; i++) {
-        leaders += sorted[i].name.substring(0,3) + ":";
-        leaders += "             ";
-        leaders += `${sorted[i].runPercent}%   `;
-        leaders += `[${getTimeString( BNToDate(sorted[i].runPercentTimestamp).getTime() - BNToDate(sorted[i].runStart).getTime())}]`;
-    }
-
-    if(Date.now() < endTime){
-        leaders = 'Speedrunning will open up after the supernova.';
-    }
-
-    return (
-        <TitleNText
-            title={"SPEEDBOARD"}
-            body={leaders}
-            deltaY={props.deltaY}
-            space={{...STS.SHubIndex0}}
-        />
-    );
-}
-
 function Story(props:any) { 
     return (
         <TitleNText
@@ -1025,7 +948,7 @@ function TitleNText(props:any) {
     }, [props.deltaY]);
 
     const diff = 0;
-    useFrame(({ clock, camera }) => { 
+    useFrame(() => { 
         if(!didUpdate){
             let newPos = Math.min(titleRef.current.position.y + (deltaY / 1000), 5);
             newPos = Math.max(newPos, -1.55);
@@ -1081,7 +1004,7 @@ function Lock(props:any) {
         return theta / 2.1;
     }
 
-    useFrame(({ clock, camera }) => {
+    useFrame(() => {
         let theta = getTheta();
         if(lockRef.current){
             lockRef.current.position.y = getYPos(theta);
@@ -1111,72 +1034,6 @@ function Lock(props:any) {
                 space: safeSpace,
             } as GLBParams}
         /> 
-    );
-}
-
-// SCENE ---------------
-const OffsetTheta = 2 * PI / 6;
-function Floor(props:any){  
-
-    useFrame(({ clock, camera }) => { 
-        props.fref.current.rotation.x = PI/2; 
-        props.fref.current.rotation.y = 0; 
-        props.fref.current.rotation.z += 0;
-    });
-
-    var radius = props.radius;
-    var gap = 0.1;
-    var gapRad = Math.sqrt(3)/2 * gap;
-    var smallRad = radius - gapRad * gap;
-    var h = gap + Math.sqrt(3)/2 * smallRad;
-    var w = smallRad / 2;
-
-    var shape = new Shape()
-    shape.moveTo(0, gap);
-    shape.lineTo(-w, h);
-    shape.lineTo(w, h);
-    shape.lineTo(0, gap);
-
-    const extrudeSettings = {
-        curveSegments: 1,
-        steps: 1,
-        depth: 0.3,
-        bevelEnabled: false
-    }
-
-    return (
-        <mesh ref={props.fref} position={props.pos ?? [0,0,0]} rotation={[PI/2, 0, props.startingTheta]}>
-          <extrudeBufferGeometry attach="geometry" args={[shape, extrudeSettings]} />
-          <meshStandardMaterial wireframe={true} transparent={false} opacity={1} color="#EAEAEA"/>
-        </mesh>
-    );
-
-    // return (
-    //     <Plane ref={props.fref} args={[3, 3]} position={[0,0,0]} >
-    //         <meshPhongMaterial attach="material" color="#f3f3f3" />
-    //     </Plane>
-    // );
-}
-
-function FloorSet(props:any) {
-    const refs = [
-        React.useRef(),
-        React.useRef(),
-        React.useRef(),
-        React.useRef(),
-        React.useRef(),
-        React.useRef(),
-    ];
-
-    return (
-        <group>
-            <Floor wire={props.cameraSlot === (props.indexes ? props.indexes[0] : 3)} pos={props.pos} fref={refs[0]} radius={props.radius} startingTheta={OffsetTheta * 0}/>
-            <Floor wire={props.cameraSlot === (props.indexes ? props.indexes[1] : 4)} pos={props.pos} fref={refs[1]} radius={props.radius} startingTheta={OffsetTheta * 1}/>
-            <Floor wire={props.cameraSlot === (props.indexes ? props.indexes[2] : 5)} pos={props.pos} fref={refs[2]} radius={props.radius} startingTheta={OffsetTheta * 2}/>
-            <Floor wire={props.cameraSlot === (props.indexes ? props.indexes[3] : 0)} pos={props.pos} fref={refs[3]} radius={props.radius} startingTheta={OffsetTheta * 3}/>
-            <Floor wire={props.cameraSlot === (props.indexes ? props.indexes[4] : 1)} pos={props.pos} fref={refs[4]} radius={props.radius} startingTheta={OffsetTheta * 4}/>
-            <Floor wire={props.cameraSlot === (props.indexes ? props.indexes[5] : 2)} pos={props.pos} fref={refs[5]} radius={props.radius} startingTheta={OffsetTheta * 5}/>
-        </group>
     );
 }
 
@@ -1305,27 +1162,6 @@ function STController(props:any){
     return <React.Suspense fallback={null}><pointLight ref={lightRef} intensity={0.1}/></React.Suspense>;
 }
 
-// Loads the skybox texture and applies it to the scene.
-function SkyBox() {
-    // const { scene } = useThree();
-
-    // React.useEffect(() => {
-    //     const loader = new CubeTextureLoader();
-    //     const texture = loader.load([
-    //         STS.SKYBOX_PX,
-    //         STS.SKYBOX_NX,
-    //         STS.SKYBOX_PY,
-    //         STS.SKYBOX_NY,
-    //         STS.SKYBOX_PZ,
-    //         STS.SKYBOX_NZ,
-    //       ]);
-    //       // Set the scene background property to the resulting texture.
-    //       scene.background = texture;
-    // }, []);
-
-    return null;
-}
-
 export function STWorld() {
     const [scrollDeltaY, setScrollDeltaY] = React.useState(0);
     const [assetsLoaded, setAssetsLoaded] = React.useState(false);
@@ -1369,17 +1205,11 @@ export function STWorld() {
                         <Chest globalState={globalState} gameState={gameState} isSecret={false}/>: 
                         <BlackChestOpened globalState={globalState} gameState={gameState}/>
                     }
-                    {/* <FloorSet 
-                        cameraSlot={cameraSlot}
-                        pos={STS.StartingCamera.pos}
-                    
-                    /> */}
                     <Leaderboard deltaY={scrollDeltaY} gameAccount={gameAccount}/>
                     <Lock secret={false} locked={gameState.blueKey === 0} index={2} lock={STS.BlueLockGLB} unlock={STS.BlueUnlockGLB} space={STS.HubIndex2} />
                     <Lock secret={false} locked={gameState.greenKey === 0} index={3} lock={STS.GreenLockGLB} unlock={STS.GreenUnlockGLB} space={STS.HubIndex3} />
                     <Lock secret={false} locked={gameState.purpleKey === 0} index={4} lock={STS.PurpleLockGLB} unlock={STS.PurpleUnlockGLB} space={STS.HubIndex4} />
                     <Story deltaY={scrollDeltaY}/>
-                    {/* <gridHelper position={STS.MainArea.toArray()} args={[10, 10, ST_COLORS.purple, ST_COLORS.grey]}/> */}
                 </React.Suspense>
                 <React.Suspense fallback={null}>
                     <BlackHole />
@@ -1399,7 +1229,6 @@ export function STWorld() {
                     <Title 
                         globalState={globalState}
                     />
-                    <SkyBox/>
                     <Stars
                         radius={100} // Radius of the inner sphere (default=100)
                         depth={100} // Depth of area where stars should fit (default=50)

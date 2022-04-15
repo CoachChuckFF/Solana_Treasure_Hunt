@@ -1,12 +1,7 @@
-import { useRef, useState, useEffect, useContext } from "react";
-import Button from '@mui/material/Button';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import ImageList from '@mui/material/ImageList';
-import ImageListItem from '@mui/material/ImageListItem';
+import { useState, useEffect, useContext } from "react";
 import { PuzzlePageFrame, PuzzlePageParams } from "../views/puzzleCommons";
-import { getFractalCodes, getNootCode } from "../models/hashes";
-import { FRACTAL_SOLUTION, NULL_MINT_CODES as NULL_MINT_BYTES, ST_PUZZLE_STATE } from "../models/state";
+import { getFractalCodes } from "../models/hashes";
+import { NULL_MINT_CODES as NULL_MINT_BYTES, ST_PUZZLE_STATE } from "../models/state";
 import { StoreContext } from "../controllers/store";
 
 const FRACTALS = [

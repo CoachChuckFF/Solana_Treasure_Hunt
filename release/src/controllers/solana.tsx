@@ -1,11 +1,5 @@
-import * as spl from "@solana/spl-token";
 import * as anchor from '@project-serum/anchor';
-import * as meta from "@metaplex/js";
-
-import { web3, BN } from "@project-serum/anchor";
-
-const NETWORK = anchor.web3.clusterApiUrl('devnet');
-const OPTS = { preflightCommitment: "processed" }
+import { web3 } from "@project-serum/anchor";
 
 export const connectWallet = (onlyIfTrusted?: boolean) => {
     return new Promise<anchor.web3.PublicKey>(async (resolve, reject) => {
@@ -43,13 +37,6 @@ export const getProvider = () => {
       getSolanaWallet(),
       opts,
     );
-    // anchor.setProvider(provider);
-    // const connection = new anchor.web3.Connection(NETWORK, OPTS.preflightCommitment as any);
-    // const provider = new anchor.Provider(
-    //   connection, getSolanaWallet(), OPTS.preflightCommitment as any,
-    // );
-
-    
 
     return provider;
 }

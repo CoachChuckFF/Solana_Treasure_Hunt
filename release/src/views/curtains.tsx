@@ -47,25 +47,11 @@ export function STCurtains() {
     } = React.useContext(StoreContext)
 
 
-    const dismisss = () => {
-
-    }
-
-    const onClick = () => {
-        // if( state.clickToDismiss ){
-        //     if( state.cb ) state.cb();
-        //     setTimeout(()=>{
-        //         setCurtains(NULL_CURTAINS);
-        //     }, 999);
-        // }
-    }
-
     React.useEffect(() => {
         if( state.showing ){
             if( ref.current ){
                 ref.current.className = "scene-change";
             }
-
                 setTimeout(()=>{
                     if( state.cb ) state.cb();
                 }, 999);
@@ -83,7 +69,7 @@ export function STCurtains() {
 
     if(!state.showing) return null;
     return (
-        <div ref={ref} className="scene-overlay" onClick={onClick}>
+        <div ref={ref} className="scene-overlay" >
             <div className="message">
                 {state.message}
             </div>

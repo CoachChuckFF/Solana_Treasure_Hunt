@@ -5,10 +5,7 @@ import * as STWorldSpace from "../models/space";
 import * as STPopup from "../views/popup";
 import * as STState from "../models/state";
 import * as STS from "../models/space";
-
-import { PublicKey } from '@solana/web3.js';
-import { Vector3 } from 'three';
-import { GameAccount, getPlayerAccount, PlayerAccount, STProvider } from "../models/sol-treasure";
+import { GameAccount, PlayerAccount, STProvider } from "../models/sol-treasure";
 
 // TODO Change to Player State
 export interface Store {

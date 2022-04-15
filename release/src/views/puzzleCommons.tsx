@@ -1,13 +1,5 @@
-import { useRef, useState, useEffect, MutableRefObject, useContext } from "react";
-import Button from '@mui/material/Button';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import ImageList from '@mui/material/ImageList';
-import ImageListItem from '@mui/material/ImageListItem';
-import { ConstCode, Header } from "./commons";
-import { codeToHexString } from "../models/hashes";
-import { CancelIcon, KeyIcon, PuzzleIcon } from "./icons";
-import { StoreContext } from "../controllers/store";
+import { useRef } from "react";
+import { CancelIcon, PuzzleIcon } from "./icons";
 import { ST_GLOBAL_STATE, ST_PUZZLE_STATE } from "../models/state";
 import { HudControls, HUDState, NULL_HUD_STATE } from "./hud";
 import { ST_THEME_COLORS } from "../models/theme";
@@ -62,18 +54,6 @@ export function PuzzlePageFrame(props:any){
         overrideThemeColor: ST_THEME_COLORS.grey,
         showingOnStart: true
     }
-
-    // export const NULL_HUD_STATE: HUDState = {
-    //     enabled: false,
-    //     icon: (<KeyIcon />),
-    //     puzzleIcon: (<PuzzleIcon />),
-    //     text: "Connect Wallet",
-    //     title: "Mint Bytes:",
-    //     codes: STState.NULL_MINT_CODES,
-    //     puzzleThemeColor: ST_THEME_COLORS.disabled,
-    //     puzzleIconColor: ST_COLORS.enabledTextColor,
-    //     showingOnStart: false,
-    // } 
 
     return (
         <div ref={refs[0]} className="puzzle-page">
