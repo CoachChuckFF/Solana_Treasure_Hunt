@@ -13,18 +13,18 @@
       }
     ]
   },
-  "external_url": "https://pesky-penguins.com",
+  "external_url": "https://solscan.io/token/7DbhgaKRv4c9WWpGdkNy2S7kfz2voHvCiGfFezDAzmQP",
   "symbol": "NOOT",
   "name": "Pesky Penguin #7119",
   "image": "https://www.arweave.net/EImqZ7GmraVINv5xcsHlmSdTN77WJSLwrtHJFSdwXkU?ext=png",
   "seller_fee_basis_points": 500,
   "attributes": [
+    { "trait_type": "Red Herring", "value": "LOC: [13, 34, 55]" },
     { "trait_type": "Background", "value": "Violet" },
     { "trait_type": "Type", "value": "Black" },
     { "trait_type": "Head", "value": "None" },
     { "trait_type": "Accessories", "value": "None" },
     { "trait_type": "Eyes", "value": "Normal" },
-    { "trait_type": "Body", "value": "Tuxedo" },
-    { "trait_type": "Red Herring", "value": "LOC: [13, 34, 55]" }
+    { "trait_type": "Body", "value": "Tuxedo" }
   ]
 }

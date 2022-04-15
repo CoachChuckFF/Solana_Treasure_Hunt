@@ -26,9 +26,9 @@ const test = "https://arweave.net/NuSmhExsvXotBoCJ0CN9UFh8FOe37FhjIVi_E63sdaw"
 
 const COLLECTION = "";
 
-const META = require('../../ar/metadata/blue_chest_fix.json');
-const URI = ITEMS.blueChestFix.json;
-const AMOUNT = ITEMS.blueChestFix.amount;
+const META = require('../../ar/metadata/puzzle_forrest.json');
+const URI = ITEMS.forrest.json;
+const AMOUNT = ITEMS.forrest.amount;
 
 const SPL = undefined; //new anchor.web3.PublicKey('DEAj8PGJrszPvzoFEihCfNxcFTjEsSqGiwaFgUwehPz2');
 const METADATA = undefined; //new anchor.web3.PublicKey('3P3EGw8kw6CPAKccFCv9aEc2eY26vPmHVCzqvbQPvMps');

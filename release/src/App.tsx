@@ -340,16 +340,17 @@ function Loop(){
         newGameAccount,
         { name: stProvider.owner.toString().substring(0,3).toUpperCase() }
       ).then((newPlayerAccount)=>{
-  
         onAccountsLoaded(
           newGameAccount,
           newPlayerAccount,
         )
       }).catch((error)=>{
         setIsLoading(false);
-        drawCurtains(
-          "Could not create player account.",
-        );
+        showPopup(
+          "Try Again!",
+          "Something went wrong or there was a timeout. Try connecting again, you won't be charged twice!",
+          cb,
+        )
       });
     }
 

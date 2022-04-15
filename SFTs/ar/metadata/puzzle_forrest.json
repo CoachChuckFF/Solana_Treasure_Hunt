@@ -1,0 +1,27 @@
+{
+  "name": "15-Tree Forrest",
+  "symbol": "ST-V0H",
+  "description": "There are 0xF trees in this forrest.",
+  "collection": {
+    "name": "Sol-Treasure",
+    "family": "V0 Helpers"
+  },
+  "seller_fee_basis_points": 300,
+  "external_url": "https://sol-treasure.io/",
+  "image": "https://arweave.net/MneXcA_Gpkq6x_wHIlTWR7pahVIzJkQZ1Jr0DWqQKno",
+  "properties": {
+    "files": [
+      {
+        "uri": "https://arweave.net/MneXcA_Gpkq6x_wHIlTWR7pahVIzJkQZ1Jr0DWqQKno",
+        "type": "application/octet-stream"
+      }
+    ],
+    "category": "image",
+    "creators": [
+      {
+        "address": "4YjAYbmdHXC1QUUoQc363QKitVYoxw9qxCVk5J4ZAYDg",
+        "share": 100
+      }
+    ]
+  }
+}

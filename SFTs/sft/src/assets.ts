@@ -95,14 +95,20 @@ export const ITEMS = {
     },
     fakeNoot: {
         amount: 1,
-        json: "https://arweave.net/DxiyfXrJOlLHPHszlSSdK-nXv0Z7GeNZ8ylJiXkrNes",
-        mint: "7DbhgaKRv4c9WWpGdkNy2S7kfz2voHvCiGfFezDAzmQP",
+        json: "https://arweave.net/-cx0CYvMGq5gex_DCHGCYFgHzq9bT85Ak6DU4tEsPT0",
+        mint: "4VASUXojN2yYofEjgpuHLMei7JmMRbjTycWQmChuYpyT",
     },
     clue1: {
         amount: 1,
         png:  "https://arweave.net/anEbj2gI1xqqr7raf40lgWgUjVuzRqn8nDcenxVlnL4",
         json: "https://arweave.net/MyOjvcD2MaxMe0-jJccnIN29MADM-x32DAiN3wCR-xw",
         mint: "HNXPZTB1zSLiWVuTatCwrA2ZgHDwUN7nM4zwWBZJQdxf",
+    },
+    forrest: {
+        amount: 1,
+        png:  "https://arweave.net/MneXcA_Gpkq6x_wHIlTWR7pahVIzJkQZ1Jr0DWqQKno",
+        json: "https://arweave.net/KmkBGV5o929ifP43hCAaSwI0ONGsOqhEb67Yhp8ZfaM",
+        mint: "7DE2JGJE2JDNYTrP44giKrPQZXkUMqV5RRpg8MkpAbMN",
     },
     clue2: {
         amount: 1,
