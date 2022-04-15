@@ -4,7 +4,8 @@ import {
     Stars, 
     Environment,
     Plane,
-    Dodecahedron, 
+    Dodecahedron,
+    GradientTexture, 
 } from "@react-three/drei";
 import {
     Clock,
@@ -29,7 +30,7 @@ import * as STS from "../models/space";
 
 import { TextWoraround } from "../controllers/renderers";
 import { ST_COLORS } from "../models/theme";
-import { getCountdownString, getTimeString } from "../models/clock";
+import { getCountdownString, getTimeString, getTimerString } from "../models/clock";
 import { lerp } from "three/src/math/MathUtils";
 import { FXs, playByte } from "../sounds/music-man";
 import { BNToDate, GameAccount, LeaderboardType, sortLeaderboard } from "../models/sol-treasure";
@@ -233,6 +234,7 @@ function RedHerring(props:any) {
                 params={{
                     file: STS.FishGLB,
                     objRef: redHerringRef,
+                    canHighlight: true,
                     space: {
                         ...STS.SHubIndex4,
                         pos: new Vector3(
@@ -373,7 +375,7 @@ function Supernova(props:any) {
     );
 }
 
-function MainChestOpened(props:any) {
+function BlackChestOpened(props:any) {
     const timerRef = React.useRef<any>();
     const chestRef = React.useRef<any>();
     const tokenRef = React.useRef<Group>();
@@ -382,7 +384,7 @@ function MainChestOpened(props:any) {
         const gameState = (props.gameState as STState.GameState);
         let time = gameState.runPercentTimestamp.getTime() - 
             ((gameState.isSpeedrunning) ? 
-                gameState.runPercentTimestamp.getTime():
+                gameState.runStart.getTime():
                 gameState.gameStart.getTime()
             );
 
@@ -431,7 +433,7 @@ function MainChestOpened(props:any) {
     );
 }
 
-function SecretChestOpened(props:any) {
+function WhiteChestOpened(props:any) {
     const timerRef = React.useRef<any>();
     const chestRef = React.useRef<any>();
     const tokenRef = React.useRef<Group>();
@@ -478,6 +480,8 @@ function Timer(props:any) {
     const [color, setColor] = React.useState('#FFFFFF');
     const [lastTime, setLastTime] = React.useState(Math.trunc(Date.now() / 1000));
 
+    const gameState = props.gameState as STState.GameState;
+
     React.useEffect(() => {
         // if(lastTime % 2 === 0){
         //     playByte(
@@ -497,21 +501,23 @@ function Timer(props:any) {
             return;
         }
 
+        const time = gameState.supernova.getTime() - Date.now();
+        const state = Math.round(time / 1000) % 30;
+
         if(props.globalState === STState.ST_GLOBAL_STATE.reconstruction){
-            setMessage("TODO");
-            setColor("#4FA5C4");
-            // if(props.puzzleState.regular){
-            //     // setMessage(getTimeString(props.run[1] - props.run[0]));
-            //     setMessage("TODO");
-            //     setColor("#4FA5C4");
-            // } else {
-            //     setMessage(getTimeString(Date.now() - props.run[0]));
-            //     setColor("#FFFFFF");
-            // }
+            if(state > 28){
+                setMessage("RECONSTRUCTION");
+                setColor("#4FA5C4");
+            } else if(state > 27) {
+                setMessage("MODE.");
+                setColor("#4FA5C4");
+            } else {
+                setLastTime(Math.trunc(Date.now() / 1000));
+                setMessage(`${gameState.runPercent}%  ` + getTimerString(gameState.runStart));
+                setColor("#FFFFFF");
+            }
         } else {
-            let time = props.gameState.supernova - Date.now();
-            let state = Math.round(time / 1000) % 30;
-            
+
             if(props.globalState !== STState.ST_GLOBAL_STATE.notConnected) {
                 if(state > 28){
                     setMessage("SUPERNOVA");
@@ -533,7 +539,7 @@ function Timer(props:any) {
                     setColor("#4FA5C4");
                 } else {
                     setLastTime(Math.trunc(Date.now() / 1000));
-                    setMessage(`${props.gameState.runPercent}%  ` + getCountdownString(props.gameState.supernova));
+                    setMessage(`${gameState.runPercent}%  ` + getCountdownString(gameState.supernova));
                     setColor("#FFFFFF");
                 }
             }
@@ -723,6 +729,33 @@ function Chest(props:any) {
     );
 }
 
+function InventoryBG (props:any) {
+    const yStart = 0.34;
+    const xSpan = 0.13;
+    const ySpan = 0.11;
+
+    const shape = new Shape()
+    shape.moveTo(-xSpan, yStart);
+    shape.lineTo(xSpan, yStart);
+    shape.lineTo(xSpan, yStart - ySpan);
+    shape.lineTo(-xSpan, yStart - ySpan);
+    shape.lineTo(-xSpan, yStart);
+
+    const extrudeSettings = {
+        curveSegments: 1,
+        steps: 1,
+        depth: 0,
+        bevelEnabled: false
+    }
+
+    return (
+        <mesh ref={props.objRef}>
+          <extrudeBufferGeometry attach="geometry" args={[shape, extrudeSettings]} />
+          <meshStandardMaterial wireframe={false} transparent={true} opacity={0.1} color="#EAEAEA"/>
+        </mesh>
+    );
+}
+
 function Inventory(props:any) {
     const gameState = props.gameState as STState.GameState;
     const globalState = props.globalState as STState.ST_GLOBAL_STATE;
@@ -739,10 +772,10 @@ function Inventory(props:any) {
         blueKeyRef,
         greenKeyRef,
         purpleKeyRef,
+        blackKeyRef,
+        whiteKeyRef,
         brokenKey0Ref,
         brokenKey1Ref,
-        blackKeyRef,
-        whiteKeyRef
     ];
 
     const indexToAmount = (index: number) => {
@@ -750,22 +783,23 @@ function Inventory(props:any) {
             case 0: return gameState.blueKey;
             case 1: return gameState.greenKey;
             case 2: return gameState.purpleKey;
-            case 3: return gameState.brokenKey;
-            case 4: return gameState.brokenKey;
-            case 5: return gameState.blackKey;
-            case 6: return gameState.whiteKey;
+            case 3: return gameState.blackKey;
+            case 4: return gameState.whiteKey;
+            case 5: return gameState.brokenKey;
+            case 6: return gameState.brokenKey;
         }
 
         return 0;
     }
     
     useFrame(({ clock, camera }) => {
+
         for(var i = 0; i < refs.length; i++){  
             let ref = refs[i] as React.MutableRefObject<Group>;
             let amount = indexToAmount(i);
 
             if(amount > 0 && globalState === STState.ST_GLOBAL_STATE.playing){
-                if(i === 4 && amount === 1) { ref.current.visible = false; continue; }
+                if(i === 6 && amount === 1) { ref.current.visible = false; continue; }
                 ref.current.position.copy( camera.position );
                 ref.current.rotation.copy( camera.rotation );
                 ref.current.updateMatrix();
@@ -783,11 +817,13 @@ function Inventory(props:any) {
 
     return (
         <group>
+            {/* <InventoryBG objRef={planeRef}/> */}
             <STGLBFile 
                 params={{
                     file: STS.BlueKeyGLB,
                     objRef: blueKeyRef,
                     canHighlight: true,
+                    url: "https://solscan.io/token/27zp1EbjTnzL6vFckoTXKng54piUyr77pTKUR2ktT9Qb",
                     space: {
                         ...STS.HubIndex0,
                         scale: STS.keyScale
@@ -799,6 +835,7 @@ function Inventory(props:any) {
                     file: STS.GreenKeyGLB,
                     objRef: greenKeyRef,
                     canHighlight: true,
+                    url: "https://solscan.io/token/JCcLJCKxuvwTeKCzAweaDuXwUqaRBtWi6BJuBCi21MtF",
                     space: {
                         ...STS.HubIndex0,
                         scale: STS.keyScale
@@ -810,6 +847,7 @@ function Inventory(props:any) {
                     file: STS.PurpleKeyGLB,
                     objRef: purpleKeyRef,
                     canHighlight: true,
+                    url: "https://solscan.io/token/2cpDi9tK6txAH83hhF9wMr7WqdJByHegjbh4PxFVknyv",
                     space: {
                         ...STS.HubIndex0,
                         scale: STS.keyScale
@@ -821,6 +859,7 @@ function Inventory(props:any) {
                     file: STS.BrokenKeyGLB,
                     objRef: brokenKey0Ref,
                     canHighlight: true,
+                    url: "https://solscan.io/token/BqToRRuffJa1nhy2ozy5L9BaqaTVCgq47S9w28Md6HYs",
                     space: {
                         ...STS.HubIndex0,
                         scale: STS.keyScale
@@ -832,6 +871,7 @@ function Inventory(props:any) {
                     file: STS.BrokenKeyGLB,
                     objRef: brokenKey1Ref,
                     canHighlight: true,
+                    url: "https://solscan.io/token/BqToRRuffJa1nhy2ozy5L9BaqaTVCgq47S9w28Md6HYs",
                     space: {
                         ...STS.HubIndex0,
                         scale: STS.keyScale
@@ -843,6 +883,7 @@ function Inventory(props:any) {
                     file: STS.BlackKeyGLB,
                     objRef: blackKeyRef,
                     canHighlight: true,
+                    url: "https://solscan.io/token/8vn6D45BqpxHYbu5QPbKypUztvrA9YERsBda5Hbox2Lt",
                     space: {
                         ...STS.HubIndex0,
                         scale: STS.keyScale
@@ -854,6 +895,7 @@ function Inventory(props:any) {
                     file: STS.WhiteKeyGLB,
                     objRef: whiteKeyRef,
                     canHighlight: true,
+                    url: "https://solscan.io/token/5X82vXfWg4RWy9RymE2BbVBNxuhCSoqoVh9TtXfx51L2",
                     space: {
                         ...STS.HubIndex0,
                         scale: STS.keyScale
@@ -1325,8 +1367,13 @@ export function STWorld() {
                     <Supernova globalState={globalState} />
                     {(gameState.blackChest === 0) ? 
                         <Chest globalState={globalState} gameState={gameState} isSecret={false}/>: 
-                        <MainChestOpened globalState={globalState} gameState={gameState}/>
+                        <BlackChestOpened globalState={globalState} gameState={gameState}/>
                     }
+                    {/* <FloorSet 
+                        cameraSlot={cameraSlot}
+                        pos={STS.StartingCamera.pos}
+                    
+                    /> */}
                     <Leaderboard deltaY={scrollDeltaY} gameAccount={gameAccount}/>
                     <Lock secret={false} locked={gameState.blueKey === 0} index={2} lock={STS.BlueLockGLB} unlock={STS.BlueUnlockGLB} space={STS.HubIndex2} />
                     <Lock secret={false} locked={gameState.greenKey === 0} index={3} lock={STS.GreenLockGLB} unlock={STS.GreenUnlockGLB} space={STS.HubIndex3} />
@@ -1338,7 +1385,7 @@ export function STWorld() {
                     <BlackHole />
                     {(gameState.whiteChest === 0) ? 
                         <Chest isSecret={true} globalState={globalState} gameState={gameState}/>:
-                        <SecretChestOpened globalState={globalState} gameState={gameState}/>
+                        <WhiteChestOpened globalState={globalState} gameState={gameState}/>
                     }
                     <Lock secret={true} locked={gameState.whiteKey === 0} index={5} lock={STS.WhiteLockGLB} unlock={STS.WhiteUnlockGLB} space={STS.SHubIndex5} />
                     <Lock secret={true} locked={gameState.blackKey === 0} index={1} lock={STS.BlackLockGLB} unlock={STS.BlackUnlockGLB} space={STS.SHubIndex1} />

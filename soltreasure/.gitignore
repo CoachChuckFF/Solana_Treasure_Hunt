@@ -6,3 +6,4 @@ target
 node_modules
 _tests
 test-ledger
+recovery

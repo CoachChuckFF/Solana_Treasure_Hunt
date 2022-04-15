@@ -233,7 +233,7 @@ pub mod soltreasure {
         let now = get_time!();
 
         // Check Game
-        if is_playing!(game.start_date) { return Err(error!(ErrorCode::IsPlaying)) }
+        // if is_playing!(game.start_date) { return Err(error!(ErrorCode::IsPlaying)) }
 
         // Check Items
         let replay_token_index = get_item_index_from_mint(&game.replay_token_mint, &game.items);
@@ -295,7 +295,7 @@ pub mod soltreasure {
             let token_tx_result = token::burn(cpi_ctx, item_vault.amount);
     
             if !token_tx_result.is_ok() {
-                return Err(error!(ErrorCode::CouldNotTX))
+                return Err(error!(ErrorCode::CouldNotBurn))
             }
         }
 
@@ -372,9 +372,11 @@ pub mod soltreasure {
         let is_recreation = is_recreation!(game.supernova_date);
         let now = get_time!();
 
-        if !is_playing!(game.start_date) { return Err(error!(ErrorCode::NotPlaying)) }
-        if !is_recreation { return Err(error!(ErrorCode::StillPlaying)) }
-        if player_account.og_percent == 0 && ctx.accounts.player_replay_vault.amount == 0 { return Err(error!(ErrorCode::DoesNotHaveReplay)) }
+        if player_account.player != game.coach {
+            if !is_playing!(game.start_date) { return Err(error!(ErrorCode::NotPlaying)) }
+            if !is_recreation { return Err(error!(ErrorCode::StillPlaying)) }
+            if player_account.og_percent == 0 && ctx.accounts.player_replay_vault.amount == 0 { return Err(error!(ErrorCode::DoesNotHaveReplay)) }
+        }
 
         player_account.run_start = now;
         player_account.run_percent_timestamp = now;
@@ -612,11 +614,14 @@ pub mod soltreasure {
         }
 
         // Set State
+        let old_percent = player_account.run_percent;
         player_account.run_percent += game.items[item_index].percent_per_item * amount;
         player_account.run_percent += game.items[bad_item_index].percent_per_item * bad_amount;
         player_account.inventory[inventory_index].minted_count = player_account.inventory[inventory_index].amount;
         player_account.inventory[bad_inventory_index].minted_count = player_account.inventory[bad_inventory_index].amount;
         player_account.run_percent_timestamp = get_time!();
+
+        if old_percent == player_account.run_percent { return Ok(()) }
 
         if !is_recreation { player_account.og_percent = player_account.run_percent; }
 
@@ -735,6 +740,45 @@ pub mod soltreasure {
         if player_i_0.amount < combo.input_0_amount { return Err(error!(ErrorCode::ItemDoesNotExistInInventory)) }
         if player_i_1.amount < combo.input_1_amount { return Err(error!(ErrorCode::ItemDoesNotExistInInventory)) }
         if player_o.amount + combo.output_amount > game.items[output_index].max_items_per_inventory { return Err(error!(ErrorCode::ItemDoesNotExistInInventory)) }
+
+        // Burn the inputs
+        if !is_recreation {
+            if ctx.accounts.input_0_player_vault.mint == ctx.accounts.input_0_mint.key() {
+                if ctx.accounts.input_0_player_vault.amount >= combo.input_0_amount as u64 {
+                    let cpi_accounts = Burn {
+                        mint: ctx.accounts.input_0_mint.to_account_info().clone(),
+                        to: ctx.accounts.input_0_player_vault.to_account_info().clone(),
+                        authority: ctx.accounts.player.to_account_info().clone(),
+                    };
+                    let cpi_program = ctx.accounts.token_program.clone();
+                    let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
+            
+                    let token_burn_results = token::burn(cpi_ctx, combo.input_0_amount as u64);
+            
+                    if !token_burn_results.is_ok() {
+                        return Err(error!(ErrorCode::CouldNotBurn))
+                    }
+                }
+            }
+
+            if ctx.accounts.input_1_player_vault.mint == ctx.accounts.input_1_mint.key() {
+                if ctx.accounts.input_1_player_vault.amount >= combo.input_1_amount as u64 {
+                    let cpi_accounts = Burn {
+                        mint: ctx.accounts.input_1_mint.to_account_info().clone(),
+                        to: ctx.accounts.input_1_player_vault.to_account_info().clone(),
+                        authority: ctx.accounts.player.to_account_info().clone(),
+                    };
+                    let cpi_program = ctx.accounts.token_program.clone();
+                    let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
+            
+                    let token_burn_results = token::burn(cpi_ctx, combo.input_1_amount as u64);
+            
+                    if !token_burn_results.is_ok() {
+                        return Err(error!(ErrorCode::CouldNotBurn))
+                    }
+                }
+            }
+        }
 
         // // Set State
         player_account.inventory[input_0_inventory_index].amount -= combo.input_0_amount;
@@ -1184,33 +1228,55 @@ pub struct ForgeItem<'info> {
     )]
     pub player_account: Box<Account<'info, Player>>,
 
+    // Mints
+    #[account(mut)]
+    pub input_0_mint: Box<Account<'info, Mint>>,
+    #[account(mut)]
+    pub input_1_mint: Box<Account<'info, Mint>>,
+
     // Game Vaults
     #[account(
         mut, 
         constraint = &input_0_vault.owner == gatekeeper.key
+        && input_0_vault.mint == input_0_mint.key()
     )]
-    pub input_0_vault: Account<'info, TokenAccount>,
+    pub input_0_vault: Box<Account<'info, TokenAccount>>,
     #[account(
         mut, 
         constraint = &input_1_vault.owner == gatekeeper.key
+        && input_1_vault.mint == input_1_mint.key()
     )]
-    pub input_1_vault: Account<'info, TokenAccount>,
+    pub input_1_vault: Box<Account<'info, TokenAccount>>,
     #[account(
         mut, 
         constraint = &output_vault.owner == gatekeeper.key
     )]
-    pub output_vault: Account<'info, TokenAccount>,
+    pub output_vault: Box<Account<'info, TokenAccount>>,
+
+    //Player Vaults
+    #[account(
+        mut, 
+        constraint = &input_0_player_vault.owner == player.key
+    )]
+    pub input_0_player_vault: Box<Account<'info, TokenAccount>>,
+    #[account(
+        mut, 
+        constraint = &input_1_player_vault.owner == player.key
+    )]
+    pub input_1_player_vault: Box<Account<'info, TokenAccount>>,
 
     #[account(
         mut, 
         constraint = &player_replay_vault.owner == player.key
         && player_replay_vault.mint == game.replay_token_mint
     )]
-    pub player_replay_vault: Account<'info, TokenAccount>,// Signers
+    pub player_replay_vault: Box<Account<'info, TokenAccount>>,// Signers
 
     // Signers
     #[account(mut)]
     pub player: Signer<'info>,    
+    /// CHECK: Global Account
+    pub token_program: AccountInfo<'info>, 
 }
 #[derive(Clone, AnchorSerialize, AnchorDeserialize)]
 pub struct ForgeItemParams {
@@ -1534,74 +1600,76 @@ pub fn get_leaderbaord_bump_index(
 // --------------- ERRORS ---------------------------------
 #[error_code]
 pub enum ErrorCode {
-    #[msg("General Error")]
+    #[msg("General Error.")]
     GeneralError,
-    #[msg("Name too long")]
+    #[msg("Name too long.")]
     NameTooLong,
-    #[msg("Could not TX")]
+    #[msg("Could not TX.")]
     CouldNotTX,
-    #[msg("Game has already started")]
+    #[msg("Could not burn.")]
+    CouldNotBurn,
+    #[msg("Game has already started.")]
     IsPlaying,
-    #[msg("Game has not started")]
+    #[msg("Game has not started.")]
     NotPlaying,
-    #[msg("The game has not ended yet")]
+    #[msg("The game has not ended yet.")]
     StillPlaying,
-    #[msg("Item does not exists")]
+    #[msg("Item does not exist.")]
     ItemDoesNotExist,
-    #[msg("Inventory item does not exists")]
+    #[msg("Inventory item does not exist.")]
     ItemDoesNotExistInInventory,
-    #[msg("Does not have replay token or is OG")]
+    #[msg("Does not have replay token or is OG.")]
     DoesNotHaveReplay,
 
-    #[msg("Bad gatekeeper")]
+    #[msg("Bad gatekeeper.")]
     BadGatekeeper,
 
-    #[msg("Not enough spl in coach's vault")]
+    #[msg("Not enough SPL in coach's vault.")]
     NotEnoughInCoachesVault,
-    #[msg("Item already exists")]
+    #[msg("Item already exists.")]
     ItemAlreadyExists,
-    #[msg("Bad tail seed")]
+    #[msg("Bad tail seed.")]
     BadTailSeed,
-    #[msg("Bad mint bytes")]
+    #[msg("Bad mint bytes.")]
     BadMintBytes,
-    #[msg("Max items loaded")]
+    #[msg("Max items loaded.")]
     MaxItemsLoaded,
-    #[msg("Bad item type")]
+    #[msg("Bad item type.")]
     BadItemType,
 
-    #[msg("Max combos loaded")]
+    #[msg("Max combos loaded.")]
     MaxCombosLoaded,
-    #[msg("Bad combo")]
+    #[msg("Bad combo.")]
     BadCombo,
 
-    #[msg("Need reply token")]
+    #[msg("Need reply token.")]
     NeedReplayToken,
-    #[msg("Need wrong answer item")]
+    #[msg("Need wrong answer item.")]
     NeedWrongAnswerItem,
 
-    #[msg("Start time > supernova")]
+    #[msg("Start time > Supernova")]
     BadSupernovaTime,
-    #[msg("Start time + Cheater time > supernova")]
+    #[msg("Start time + Cheater time > Supernova")]
     BadCheaterTime,
 
-    #[msg("Item has already burned")]
+    #[msg("Item has already burned.")]
     AlreadyBurned,
 
-    #[msg("Bad player account")]
+    #[msg("Bad player account.")]
     BadPlayerAccount,
 
-    #[msg("Cannot hash a combo")]
+    #[msg("Cannot hash a combo item.")]
     IsCombo,
     #[msg("Pumkin Eater...")]
     IsPumkinEater,
-    #[msg("Does not meet reqs")]
+    #[msg("Does not meet requirements.")]
     DoesNotMeetReqs,
-    #[msg("Would mint/hash too many")]
+    #[msg("Would mint too many.")]
     WouldMintTooMany,
 
-    #[msg("Cannot mint from a recreation")]
+    #[msg("Cannot mint in recreation mode.")]
     IsRecreation,
-    #[msg("None to mint")]
+    #[msg("Nothing to mint.")]
     NoneToMint,
 }
 

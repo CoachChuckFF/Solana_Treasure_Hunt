@@ -536,8 +536,9 @@ export const startSpeedrun = async (
         }
     );
 
-    return getPlayerAccount(stProvider, playerAccount, true);
+    return getPlayerAccount(stProvider, playerAccount.playerAccount, true);
 }
+
 
 export const hashItem = async (
     stProvider: STProvider,
@@ -783,11 +784,15 @@ export const forgeItem = async (
     const playerAccount = await getPlayerAccount(stProvider, playerAccountKey);
     const player = stProvider.owner;
 
+    const isRecreation = await getIsRecreation(stProvider, game);
+
+    const playerI0Vault = await helpers.getAssociatedTokenAddress(isRecreation ? game.replayTokenMint : mintI0, player);
+    const playerI1Vault = await helpers.getAssociatedTokenAddress(isRecreation ? game.replayTokenMint : mintI1, player);
+
     const gameI0Vault = await helpers.getAssociatedTokenAddress(mintI0, game.gatekeeper, true);
     const gameI1Vault = await helpers.getAssociatedTokenAddress(mintI1, game.gatekeeper, true);
     const gameOVault = await helpers.getAssociatedTokenAddress(mintO, game.gatekeeper, true);
 
-    const isRecreation = await getIsRecreation(stProvider, game);
 
     const gameVault = await helpers.getAssociatedTokenAddress(mintO, game.gatekeeper, true);
     const { vault, shouldCreate } = await helpers.getAssociatedTokenAddressAndShouldCreate(
@@ -806,11 +811,16 @@ export const forgeItem = async (
                     game: game.game,
                     gatekeeper: game.gatekeeper,
                     playerAccount: playerAccount.playerAccount,
+                    input0Mint: mintI0,
+                    input1Mint: mintI1,
                     input0Vault: gameI0Vault,
                     input1Vault: gameI1Vault,
                     outputVault: gameOVault,
+                    input0PlayerVault: playerI0Vault,
+                    input1PlayerVault: playerI1Vault,
                     playerReplayVault: playerAccount.playerReplayVault,
                     player: player,
+                    tokenProgram: spl.TOKEN_PROGRAM_ID,
                 },
                 signers: [],
                 instructions: [],
@@ -1156,11 +1166,26 @@ export const createForgeParams = async (
     };
 }
 
+export const errorToString = (error: any) => {
+    let message = "Unkown";
+    if(error.logs){
+        if(error.logs.length >= 3){
+            const split = (error.logs[2] as String).split('Error Message:');
+            if(split.length >= 2){
+                message = split[1];
+            }
+        }
+    }
+
+    return message;
+}
+
 export const gameToString = async (
     stProvider: STProvider,
     gameKey: web3.PublicKey | GameAccount,
 ) => {
     const game = await getGameAccount(stProvider, gameKey);
+
 
     let string = "\n";
     string += `---------- SOL-TREASURE -------------\n`;

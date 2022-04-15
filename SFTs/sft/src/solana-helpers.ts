@@ -31,10 +31,24 @@ const SolanaConnectionLocalnet = new web3.Connection(
     SolanaDefaultCommitment
 );
 
+const DeployConnection = new web3.Connection(
+    "https://ssc-dao.genesysgo.net/", 
+    SolanaDefaultCommitment
+);
+
+const SolanaConnect = new web3.Connection(
+    "https://ssc-dao.genesysgo.net/", 
+    SolanaDefaultCommitment
+);
+
+// https://ssc-dao.genesysgo.net/ 
+
 // Pass in window.solana for wallet
 export const getSolanaProvider = (wallet: any, isDevnet: boolean = true) => {
     return new Provider(
-        (isDevnet) ? SolanaConnectionDevnet : SolanaConnectionMainnet, 
+        // DeployConnection,
+        SolanaConnectionMainnet,
+        // (isDevnet) ? SolanaConnectionDevnet : SolanaConnectionMainnet, 
         // SolanaConnectionLocalnet,
         wallet, 
         {
@@ -497,36 +511,35 @@ export const createSFT = async (
     }
     console.log(`Mint = ${splToken.mint.toString()}`);
 
-    // Get the Collection
-    let collectionData = {} as SFTCollectionData;
-    if( !existingCollection ){
-        console.log("Creating Collection...");
-        collectionData = await createSFTCollection(
-            provider,
-            metadataStruct.name,
-            metadataURI,
-            metadataStruct.symbol,
-            metadataStruct.sellerFeeBasisPoints,
-        );
-        console.log(`Collection ${collectionData.collectionMint.toString()}`);
-        return await {} as SFTData;
-    } else {
-        if(existingCollection){
-            collectionData = existingCollection;
-        }
-    }
-    const collectionMetadata = await getMetadataAccount(
-        provider,
-        collectionData.collectionMint,
-    );
+    // // Get the Collection
+    // let collectionData = {} as SFTCollectionData;
+    // if( !existingCollection ){
+    //     console.log("Creating Collection...");
+    //     collectionData = await createSFTCollection(
+    //         provider,
+    //         metadataStruct.name,
+    //         metadataURI,
+    //         metadataStruct.symbol,
+    //         metadataStruct.sellerFeeBasisPoints,
+    //     );
+    //     console.log(`Collection ${collectionData.collectionMint.toString()}`);
+    // } else {
+    //     if(existingCollection){
+    //         collectionData = existingCollection;
+    //     }
+    // }
+    // const collectionMetadata = await getMetadataAccount(
+    //     provider,
+    //     collectionData.collectionMint,
+    // );
 
-    // if( collectionMetadata.data.symbol !== metadataStruct.symbol ) { throw new Error("Collection Symbol does not match...") }
-    // if( collectionMetadata.data.sellerFeeBasisPoints !== metadataStruct.sellerFeeBasisPoints ?? 0) { throw new Error("Collection seller points do not match...") }
+    // // if( collectionMetadata.data.symbol !== metadataStruct.symbol ) { throw new Error("Collection Symbol does not match...") }
+    // // if( collectionMetadata.data.sellerFeeBasisPoints !== metadataStruct.sellerFeeBasisPoints ?? 0) { throw new Error("Collection seller points do not match...") }
 
-    const collection = new meta.programs.metadata.Collection({
-        key: collectionData.collectionMint.toString(),
-        verified: false, 
-    })
+    // const collection = new meta.programs.metadata.Collection({
+    //     key: collectionData.collectionMint.toString(),
+    //     verified: false, 
+    // })
     
     // Build the creators feild
     const creators = [] as meta.programs.metadata.Creator[];
@@ -563,7 +576,7 @@ export const createSFT = async (
         uri: metadataURI,
         sellerFeeBasisPoints: metadataStruct.sellerFeeBasisPoints ?? 0,
         creators,
-        collection,
+        collection: null,
         uses: null,
     });
 
@@ -589,22 +602,22 @@ export const createSFT = async (
     console.log(`Metadata ${metadataKey.toString()}`);
 
 
-    // Verify Collection
-    if(isVerified === undefined || !isVerified){
-        console.log("Verifying Metadata...");
-        const verifyCollectionTx = new meta.programs.metadata.VerifyCollection(
-            { feePayer: owner },
-            {
-                metadata: metadataKey,
-                collectionAuthority: owner,
-                collectionMint: collectionData.collectionMint,
-                collectionMetadata: collectionData.collectionMetadata,
-                collectionMasterEdition: collectionData.collectionMasterEdition,
-            },
-        );
-        await provider.send(verifyCollectionTx);
-        console.log("verified");
-    }
+    // // Verify Collection
+    // if(isVerified === undefined || !isVerified){
+    //     console.log("Verifying Metadata...");
+    //     const verifyCollectionTx = new meta.programs.metadata.VerifyCollection(
+    //         { feePayer: owner },
+    //         {
+    //             metadata: metadataKey,
+    //             collectionAuthority: owner,
+    //             collectionMint: collectionData.collectionMint,
+    //             collectionMetadata: collectionData.collectionMetadata,
+    //             collectionMasterEdition: collectionData.collectionMasterEdition,
+    //         },
+    //     );
+    //     await provider.send(verifyCollectionTx);
+    //     console.log("verified");
+    // }
 
     console.log("Signing Metadata...");
     const signMetadataTX = new meta.programs.metadata.SignMetadata(
@@ -620,7 +633,8 @@ export const createSFT = async (
     return await getSFTData(
         provider,
         splToken.mint,
-        collectionData.collectionMint
+        splToken.mint,
+        // collectionData.collectionMint
     );
 
     // console.log("--------- SAVE THE FOLLOWING --------------\n");

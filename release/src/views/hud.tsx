@@ -11,7 +11,7 @@ import Grid from '@mui/material/Grid';
 import { ConstCode, Header } from './commons';
 
 // Icons
-import { PuzzleIcon, WalletIcon, ChestIcon, KeyIcon, LeftIcon, LogoutIcon } from './icons';
+import { PuzzleIcon, WalletIcon, ChestIcon, KeyIcon, LeftIcon, LogoutIcon, TerminalIcon, ForgeIcon, BreakIcon, SpeedrunIcon, RefreshIcon } from './icons';
 import { codeToHexString, getGuideCodes } from '../models/hashes';
 import { ST_COLORS, ST_THEME_COLORS } from '../models/theme';
 
@@ -26,8 +26,8 @@ function TheButton(props:any) {
     let isLoading = props.isLoading as boolean;
     let state = props.state as HUDState;
 
-    let themeColor = ST_THEME_COLORS.enabled;
-    let textColor = ST_COLORS.enabledTextColor;
+    let themeColor = state.themeColor ?? ST_THEME_COLORS.enabled;
+    let textColor = state.textColor ?? ST_COLORS.enabledTextColor;
 
     let cb = () => {
         if(state.enabled && !isLoading){
@@ -40,7 +40,7 @@ function TheButton(props:any) {
         textColor = ST_COLORS.disabledTextColor;
     }
 
-    if(state.overrideThemeColor){
+    if(state.overrideThemeColor && !isLoading){
         themeColor = state.overrideThemeColor;
     }
 
@@ -66,6 +66,7 @@ function TheButton(props:any) {
         >{state.text}</Button>
     );
 }
+
 
 function PuzzleButton(props:any) {
     let handleClick = props.handleClick as ()=>null;
@@ -102,12 +103,13 @@ function PuzzleButton(props:any) {
 }
 
 export function HudControls(props: any) {
-    let bytesRef = props.bytesRef;
-    let buttonsRef = props.buttonsRef;
-    let hudState = props.hudState as HUDState;
-    let isLoading = props.isLoading as boolean;
-    let handlePuzzleClick = props.handlePuzzleClick as ()=>null;
-    let handleMintClick = props.handleMintClick as ()=>null;
+    const bytesRef = props.bytesRef;
+    const buttonsRef = props.buttonsRef;
+    const hudState = props.hudState as HUDState;
+    const isLoading = props.isLoading as boolean;
+    const handleRefreshClick = props.handleRefreshClick as ()=>null;
+    const handlePuzzleClick = props.handlePuzzleClick as ()=>null;
+    const handleMintClick = props.handleMintClick as ()=>null;
     return (
         <div className="hub-controls">
             <div className='puzzle-controls'>
@@ -130,9 +132,13 @@ export function HudControls(props: any) {
                             </Grid>
                         </Grid>
                     </Box>
+                    {(handleRefreshClick) ? (
                     <Box component="div" ref={buttonsRef} className="puzzle-control-row">
                         <Grid container spacing={2}>
-                            <Grid item xs={9}>
+                            <Grid item xs={3}>
+                                <PuzzleButton handleClick={handleRefreshClick} state={{...hudState, puzzleIcon: (<RefreshIcon />)}}/>
+                            </Grid>
+                            <Grid item xs={6}>
                                 <TheButton handleClick={handleMintClick} isLoading={isLoading}  state={hudState}/>
                             </Grid>
                             <Grid item xs={3}>
@@ -140,6 +146,18 @@ export function HudControls(props: any) {
                             </Grid>
                         </Grid>
                     </Box>
+                    ) : (
+                        <Box component="div" ref={buttonsRef} className="puzzle-control-row">
+                            <Grid container spacing={2}>
+                                <Grid item xs={9}>
+                                    <TheButton handleClick={handleMintClick} isLoading={isLoading}  state={hudState}/>
+                                </Grid>
+                                <Grid item xs={3}>
+                                    <PuzzleButton handleClick={handlePuzzleClick} state={hudState}/>
+                                </Grid>
+                            </Grid>
+                        </Box>
+                    )}
                 </div>
             </div>
         </div>
@@ -147,12 +165,12 @@ export function HudControls(props: any) {
 }
 
 function OneButtonHUD(props: any) {
-    let isLoading = props.isLoading as boolean;
-    let icon = props.icon as JSX.Element;
-    let text = props.text as string;
-    let overrideThemeColor = props.overrideThemeColor as string;
-    let overrideTextColor = props.overrideTextColor as string;
-    let handleClick = props.handleClick as ()=>null;
+    const isLoading = props.isLoading as boolean;
+    const icon = props.icon as JSX.Element;
+    const text = props.text as string;
+    const themeColor = props.themeColor as string;
+    const textColor = props.textColor as string;
+    const handleClick = props.handleClick as ()=>null;
     return (
         <div className="hub-controls">
             <div className='puzzle-controls'>
@@ -173,8 +191,8 @@ function OneButtonHUD(props: any) {
                                         icon: icon,
                                         text: text,
                                         title: "",
-                                        overrideThemeColor: overrideThemeColor ?? ST_THEME_COLORS.purple,
-                                        overrideTextColor: overrideTextColor ?? ST_COLORS.white,
+                                        themeColor: themeColor,
+                                        textColor: textColor,
                                         iconThemeColor: ST_THEME_COLORS.purple,
                                         iconColor: ST_COLORS.white,
                                     } as HUDState}
@@ -197,6 +215,8 @@ export interface HUDState {
     codes: number[],
     puzzleIconColor: ST_COLORS,
     puzzleThemeColor: ST_THEME_COLORS,
+    themeColor?: ST_THEME_COLORS,
+    textColor?: ST_COLORS,
     overrideThemeColor?: ST_THEME_COLORS,
     overrideTextColor?: ST_COLORS,
     showingOnStart?: boolean,
@@ -206,7 +226,7 @@ export const NULL_HUD_STATE: HUDState = {
     icon: (<KeyIcon />),
     puzzleIcon: (<PuzzleIcon />),
     text: "Connect Wallet",
-    title: "Mint Bytes:",
+    title: "Mint Hash:",
     codes: STState.NULL_MINT_CODES,
     puzzleThemeColor: ST_THEME_COLORS.disabled,
     puzzleIconColor: ST_COLORS.enabledTextColor,
@@ -234,6 +254,7 @@ function getHUDState(
                 enabled: canUnlock,
                 icon: (<ChestIcon />),
                 puzzleIcon: (<LogoutIcon />),
+                themeColor: didOpen ? ST_THEME_COLORS.grey : ST_THEME_COLORS.purple,
                 text: !canUnlock ? "Need Keys" : (didOpen ? "Winner!" : (isCheater ? "Pumkin Eater..." : "Open Chest")),
                 title: "Locks:",
             } as HUDState;
@@ -246,23 +267,42 @@ function getHUDState(
                 enabled: canUnlock,
                 icon: (<ChestIcon />),
                 puzzleIcon: (<LogoutIcon />),
-                text: !canUnlock ? "Need Keys" : (didOpen ? "YES!" : (isCheater ? "Pumkin Eater..." : "Open Chest")),
+                text: !canUnlock ? "Need Keys" : (didOpen ? "Real Winner!" : (isCheater ? "Pumkin Eater..." : "Open Chest")),
                 title: "Locks:",
+            } as HUDState;
+        case STS.ST_CAMERA_SLOTS.slot1:
+            return {
+                ...NULL_HUD_STATE,
+                icon: (<SpeedrunIcon />),
+                themeColor: ST_THEME_COLORS.gold,
+                enabled: true,
+                text: "Start Speedrun",
             } as HUDState;
         case STS.ST_CAMERA_SLOTS.sslot5:
             canTryMint = STState.canTryMint(gameState.whiteMintBytes);
             canBreak = gameState.whiteKey > 0;
+
+            let whiteString = "Solve White ->";
+            if(canBreak){
+                whiteString = "Mint Broken Key";
+            } else if(canTryMint){
+                whiteString = "Try to Mint Key";
+            }
             return {
                 ...NULL_HUD_STATE,
+                icon: canBreak ? (<BreakIcon />) : (<KeyIcon />),
+                themeColor: canBreak ? ST_THEME_COLORS.grey : ST_THEME_COLORS.purple,
                 enabled: canTryMint || canBreak,
-                text: !canTryMint ? "Solve White" : (canBreak ? "Break Key" : "Try Mint Bytes"),
+                text: whiteString,
                 codes: gameState.whiteMintBytes,
             } as HUDState;
         case STS.ST_CAMERA_SLOTS.sslot1:
+
+            let blackString = "Solve Black ->";
             return {
                 ...NULL_HUD_STATE,
                 enabled: false,
-                text: "Solve Black"
+                text: blackString,
             } as HUDState;
         case STS.ST_CAMERA_SLOTS.sslot2:
             let string = "Forge Key";
@@ -279,33 +319,60 @@ function getHUDState(
                 enabled: canFix,
                 title: "Items: ",
                 text: string,
+                icon: (<ForgeIcon />)
             } as HUDState;
         case STS.ST_CAMERA_SLOTS.slot2:
             canTryMint = STState.canTryMint(gameState.blueMintBytes);
             canBreak = gameState.blueKey > 0;
+
+            let blueString = "Solve Blue ->";
+            if(canBreak){
+                blueString = "Mint Broken Key";
+            } else if(canTryMint){
+                blueString = "Try to Mint Key";
+            }
+
             return {
                 ...NULL_HUD_STATE,
+                themeColor: canBreak ? ST_THEME_COLORS.grey : ST_THEME_COLORS.purple,
+                icon: canBreak ? (<BreakIcon />) : (<KeyIcon />),
                 enabled: canTryMint || canBreak,
-                text: !canTryMint ? "Solve Blue" : (canBreak ? "Break Key" : "Try Mint Bytes"),
+                text: blueString,
                 codes: gameState.blueMintBytes,
             } as HUDState;
         case STS.ST_CAMERA_SLOTS.slot3:
             canTryMint = STState.canTryMint(gameState.greenMintBytes);
             canBreak = gameState.greenKey > 0;
-            
+            let greenString = "Solve Green ->";
+            if(canBreak){
+                greenString = "Mint Broken Key";
+            } else if(canTryMint){
+                greenString = "Try to Mint Key";
+            }
             return {
                 ...NULL_HUD_STATE,
+                themeColor: canBreak ? ST_THEME_COLORS.grey : ST_THEME_COLORS.purple,
+                icon: canBreak ? (<BreakIcon />) : (<KeyIcon />),
                 enabled: canTryMint || canBreak,
-                text: !canTryMint ? "Solve Green" : (canBreak ? "Break Key" : "Try Mint Bytes"),
+                text: greenString,
                 codes: gameState.greenMintBytes,
             } as HUDState;
         case STS.ST_CAMERA_SLOTS.slot4:
             canTryMint = STState.canTryMint(gameState.purpleMintBytes);
             canBreak = gameState.purpleKey > 0;
+
+            let purpleString = "Solve Purple ->";
+            if(canBreak){
+                purpleString = "Mint Broken Key";
+            } else if(canTryMint){
+                purpleString = "Try to Mint Key";
+            }
             return {
                 ...NULL_HUD_STATE,
+                themeColor: canBreak ? ST_THEME_COLORS.grey : ST_THEME_COLORS.purple,
+                icon: canBreak ? (<BreakIcon />) : (<KeyIcon />),
                 enabled: canTryMint || canBreak,
-                text: !canTryMint ? "Solve Purple" : (canBreak ? "Break Key" : "Try Mint Bytes"),
+                text: purpleString,
                 codes: gameState.purpleMintBytes,
             } as HUDState;
     }
@@ -324,6 +391,7 @@ export function STHUD(props: any) {
         gameState: [gameState],
         cameraSlot: [cameraSlot],
         puzzleState: [puzzleState],
+        
     } = React.useContext(StoreContext)
 
     const [hudState, setHUDState] = React.useState(NULL_HUD_STATE);
@@ -340,8 +408,8 @@ export function STHUD(props: any) {
             case STS.ST_CAMERA_SLOTS.sslot2:
                 shouldHideBytes = true; 
                 break;
-            case STS.ST_CAMERA_SLOTS.slot1:
             case STS.ST_CAMERA_SLOTS.slot5:
+            case STS.ST_CAMERA_SLOTS.slot1:
                 shouldHideBytes = true;
                 shouldHideButtons = true;
                 break;
@@ -389,17 +457,33 @@ export function STHUD(props: any) {
     const connectWallet = () => { props.connectWallet(); }
     const startMint = () => { props.startMint(cameraSlot); }
     const openPuzzle = () => { props.openPuzzle(cameraSlot); }
+    const forceRefresh = () => { props.forceRefresh(); }
 
     if(globalState === STState.ST_GLOBAL_STATE.notConnected) return <OneButtonHUD isLoading={isLoading} icon={(<WalletIcon/>)} text={"Connect Wallet"} handleClick={connectWallet}/>;
-    if((cameraSlot === STS.ST_CAMERA_SLOTS.slot3 && devMode) || (cameraSlot === STS.ST_CAMERA_SLOTS.sslot3) || cameraSlot === STS.ST_CAMERA_SLOTS.devSlot) 
-        return <OneButtonHUD isLoading={isLoading} icon={(<WalletIcon/>)} text={"Enter Terminal"} handleClick={openPuzzle}/>;
-
+    if((cameraSlot === STS.ST_CAMERA_SLOTS.slot3 && devMode) || (cameraSlot === STS.ST_CAMERA_SLOTS.sslot3) || cameraSlot === STS.ST_CAMERA_SLOTS.devSlot){
+        return <OneButtonHUD isLoading={isLoading} icon={(<TerminalIcon/>)} text={"Enter Terminal"} handleClick={openPuzzle}/>;
+    }
+    if(
+        (globalState === STState.ST_GLOBAL_STATE.reconstruction || gameState.player.equals(gameState.coach))
+        && cameraSlot === STS.ST_CAMERA_SLOTS.slot1
+    ){
+        return <OneButtonHUD 
+            isLoading={isLoading} 
+            icon={(<SpeedrunIcon/>)} 
+            themeCo
+            text={"Start Speedrun"} 
+            handleClick={startMint}
+            themeColor={ST_THEME_COLORS.gold}
+            textColor={ST_COLORS.grey}
+        />;
+    }
 
     return <HudControls 
         bytesRef={bytesRef}
         buttonsRef={buttonsRef}
         hudState={hudState}
         isLoading={isLoading}
+        handleRefreshClick={forceRefresh}
         handleMintClick={startMint}
         handlePuzzleClick={openPuzzle}
     />

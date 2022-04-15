@@ -619,6 +619,9 @@ export const forgeItem = async (
     const playerAccount = await getPlayerAccount(stProvider, playerAccountKey);
     const player = stProvider.owner;
 
+    const playerI0Vault = await helpers.getAssociatedTokenAddress(mintI0, player, true);
+    const playerI1Vault = await helpers.getAssociatedTokenAddress(mintI1, player, true);
+
     const gameI0Vault = await helpers.getAssociatedTokenAddress(mintI0, game.gatekeeper, true);
     const gameI1Vault = await helpers.getAssociatedTokenAddress(mintI1, game.gatekeeper, true);
     const gameOVault = await helpers.getAssociatedTokenAddress(mintO, game.gatekeeper, true);
@@ -642,10 +645,15 @@ export const forgeItem = async (
                     game: game.game,
                     gatekeeper: game.gatekeeper,
                     playerAccount: playerAccount.playerAccount,
+                    input0Mint: mintI0,
+                    input1Mint: mintI1,
                     input0Vault: gameI0Vault,
                     input1Vault: gameI1Vault,
                     outputVault: gameOVault,
+                    input0PlayerVault: playerI0Vault,
+                    input1PlayerVault: playerI1Vault,
                     playerReplayVault: playerAccount.playerReplayVault,
+                    tokenProgram: spl.TOKEN_PROGRAM_ID,
                     player: player,
                 },
                 signers: [],
@@ -1197,9 +1205,9 @@ export interface MinItemParams {
   ) => {
     return {
         playing: playing,
-        countdownTime: new BN(params.countdownTime ?? 0),
+        countdownTime: new BN(Math.floor(params.countdownTime ?? 0) / 1000),
         supernovaDate: DateToBN(Date.now() + (params.gameTime ?? (1000 * 60 * 30))),
-        cheaterTime: new BN(params.cheaterTime ?? 0),
+        cheaterTime: new BN(Math.floor(params.cheaterTime ?? 0) / 1000),
     } as StartStopCountdownParams;
   }
 

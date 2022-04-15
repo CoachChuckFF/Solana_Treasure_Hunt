@@ -13,6 +13,11 @@ import {
     faPlay,
     faAngleUp,
     faAngleDown,
+    faArrowRightFromBracket,
+    faTerminal,
+    faKeySkeletonLeftRight,
+    faXmark,
+    faTimer,
 } from '@fortawesome/pro-regular-svg-icons'
 
 export function GuideIcon() {
@@ -39,8 +44,24 @@ export function WalletIcon() {
   return <FontAwesomeIcon icon={faWallet}/>
 }
 
+export function SpeedrunIcon() {
+  return <FontAwesomeIcon icon={faTimer}/>
+}
+
+export function BreakIcon() {
+  return <FontAwesomeIcon icon={faXmark}/>
+}
+
+export function ForgeIcon() {
+  return <FontAwesomeIcon icon={faKeySkeletonLeftRight}/>
+}
+
+export function TerminalIcon() {
+  return <FontAwesomeIcon icon={faTerminal}/>
+}
+
 export function LogoutIcon() {
-  return <FontAwesomeIcon icon={faWallet}/>
+  return <FontAwesomeIcon icon={faArrowRightFromBracket}/>
 }
 
 export function CancelIcon() {

@@ -13,13 +13,13 @@ const sol = (sol:number) => {
     return new BN(Math.floor(sol * web3.LAMPORTS_PER_SOL));
 }
 
-export const GAME_KEY = new web3.PublicKey('BPRGLYsq5HiXBTGdRJT8kZYDeCZEU4McDWCiLadE53G5');
+export const GAME_KEY = new web3.PublicKey('FABt9886NbLDkfJReCNw4EicD2zPoYVC25jkmMyGXvUP');
 
 export const GAME_SETTINGS = {
-    // countdownTime: _MS_PER_MIN * 3, //3 Min
-    // gameTime: _MS_PER_DAY * 5,     //5 Days
-    // cheaterTime: _MS_PER_MIN * 10, //10 min
-    // leaderboardCount: 10,
+    countdownTime: _MS_PER_MIN * 3, //3 Min
+    gameTime: _MS_PER_DAY * 14,     // Days
+    cheaterTime: _MS_PER_MIN * 10,  //10 min
+    leaderboardCount: 10,
 
     // // TEST
     // countdownTime: 0,
@@ -28,10 +28,10 @@ export const GAME_SETTINGS = {
     // leaderboardCount: 10,
 
     // WEB TEST
-    countdownTime: 0,
-    gameTime: _MS_PER_DAY * 5,
-    cheaterTime: 0,
-    leaderboardCount: 10,
+    // countdownTime: 0,
+    // gameTime: _MS_PER_MIN * 500,
+    // cheaterTime: 0,
+    // leaderboardCount: 10,
 }
 
 export const INDEXES = {
@@ -57,104 +57,104 @@ export const CODES = {
 
 export const ITEMS = {
     blueKey: ST.createMinGameItem(
-        web3.PublicKey.default,
+        new web3.PublicKey("27zp1EbjTnzL6vFckoTXKng54piUyr77pTKUR2ktT9Qb"),
         {
             name: "Blue Key",
             ...CODES.noot,
             percentPerItem: 22,
-            amountToMake: 100_000_000,
+            amountToMake: 100_000,
             costPerItem: sol(0.05),
         }
     ),
     greenKey: ST.createMinGameItem(
-        web3.PublicKey.default,
+        new web3.PublicKey("JCcLJCKxuvwTeKCzAweaDuXwUqaRBtWi6BJuBCi21MtF"),
         {
             name: "Green Key",
             ...CODES.dronie,
             percentPerItem: 42,
-            amountToMake: 100_000_000,
+            amountToMake: 100_000,
             costPerItem: sol(0.05),
         }
     ),
     purpleKey: ST.createMinGameItem(
-        web3.PublicKey.default,
+        new web3.PublicKey("2cpDi9tK6txAH83hhF9wMr7WqdJByHegjbh4PxFVknyv"),
         {
             name: "Purple Key",
             ...CODES.desolates,
             percentPerItem: 32,
-            amountToMake: 100_000_000,
+            amountToMake: 100_000,
             costPerItem: sol(0.05),
         }
     ),
     whiteKey: ST.createMinGameItem(
-        web3.PublicKey.default,
+        new web3.PublicKey("5X82vXfWg4RWy9RymE2BbVBNxuhCSoqoVh9TtXfx51L2"),
         {
             name: "White Key",
             ...CODES.fractals,
             percentPerItem: 1,
-            amountToMake: 100_000_000,
+            amountToMake: 100_000,
             costPerItem: sol(0.05),
         }
     ),
     brokenKey: ST.createMinGameItem(
-        web3.PublicKey.default,
+        new web3.PublicKey("BqToRRuffJa1nhy2ozy5L9BaqaTVCgq47S9w28Md6HYs"),
         {
             name: "Broken Key",
             percentPerItem: 0,
-            amountToMake: 100_000_000,
+            amountToMake: 100_000,
             isWrongAnswerItem: true,
             maxItemsPerInventory: 2,
             costPerItem: sol(0.025),
         }
     ),
     blackKey: ST.createMinGameItem(
-        web3.PublicKey.default,
+        new web3.PublicKey("8vn6D45BqpxHYbu5QPbKypUztvrA9YERsBda5Hbox2Lt"),
         {
             name: "Black Key",
             percentPerItem: 1,
-            amountToMake: 100_000_000,
+            amountToMake: 100_000,
             itemType: ST.GameItemType.comb,
         }
     ),
     blackChest: ST.createMinGameItem(
-        web3.PublicKey.default,
+        new web3.PublicKey("HkNhhakjJNoewms2e2yES3DRFpGDQ9C4cDoA3LwryJGi"),
         {
             name: "Black Chest",
             percentPerItem: 3,
-            amountToMake: 100_000_000,
+            amountToMake: 100_000,
             itemType: ST.GameItemType.reward,
         }
     ),
     whiteChest: ST.createMinGameItem(
-        web3.PublicKey.default,
+        new web3.PublicKey("ALVHiPAbFibDdFGxUwogvqMKa5FoRkSFipAyDqmU7NS8"),
         {
             name: "White Chest",
             percentPerItem: 1,
-            amountToMake: 100_000_000,
+            amountToMake: 100_000,
             itemType: ST.GameItemType.reward,
         }
     ),
     replayToken: ST.createMinGameItem(
-        web3.PublicKey.default,
+        new web3.PublicKey("H1FAJcnpuWQQmbvqecyAgFZnC8daP27ALKyvAkgebYzh"),
         {
             name: "Replay Token",
             percentPerItem: 0,
-            amountToMake: 100_000_000,
+            amountToMake: 100_000,
             isReplayToken: true,
             itemType: ST.GameItemType.reward,
         }
     ),
     realTreasure: ST.createMinGameItem(
-        web3.PublicKey.default,
+        new web3.PublicKey("BcKDpADLTnHoeNgAXxyKdWmMkd4iTxyA4XV4kYVqeWqh"),
         {
             name: "Real Treasure",
             percentPerItem: 0,
-            amountToMake: 100_000_000,
+            amountToMake: 100_000,
             itemType: ST.GameItemType.reward,
         }
     ),
     redHerring: ST.createMinGameItem(
-        web3.PublicKey.default,
+        new web3.PublicKey("8p7H4N3gvbSo7UKZbA3kvA82vTzbSnuhVuJMNyaASqD9"),
         {
             name: "Red Herring",
             percentPerItem: 1,
@@ -280,7 +280,7 @@ export const createTheGame = async (
     let game = await ST.createGame(
       stProvider,
       {
-        name: "Sol-Treasure",
+        name: "Sol-Treasure V0",
         itemCount: Object.keys(items).length,
         combinationCount: Object.keys(combinations).length,
         leaderboardCount: 10,
@@ -291,14 +291,17 @@ export const createTheGame = async (
     // ---------------------- LOAD ITEMS ----------------------------------
     console.log("Loading Items...");
     for (const [key, value] of Object.entries(items)) {
-      console.log("--- " + key);
-      game = await ST.loadItem(
-        stProvider,
-        game,
-        value.mint,
-        value.params,
-      )
+        if(value.mint.equals(ITEMS.redHerring.mint)){
+            console.log("--- " + key);
+            game = await ST.loadItem(
+              stProvider,
+              game,
+              value.mint,
+              value.params,
+            )
+        }
     }
+
 
     // ---------------------- LOAD COMBOS ----------------------------------
     console.log("Loading Combos...");

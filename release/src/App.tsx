@@ -19,7 +19,7 @@ import { DesolatePuzzlePage } from './pages/puzzleDesolate';
 import { RugPuzzlePage } from './pages/puzzleRug';
 import { FractalsPuzzlePage } from './pages/puzzleFractals';
 import { ForgePage } from './pages/forge';
-import { BNToDate, checkAllBurned, createPlayerAccount, forgeItem, GameAccount, gameToString, hashItem, hashTwoItems, NULL_MINT_BYTES, PlayerAccount, STProvider } from './models/sol-treasure';
+import { BNToDate, checkAllBurned, createPlayerAccount, errorToString, forgeItem, GameAccount, gameToString, getGameAccount, getPlayerAccount, hashItem, hashTwoItems, NULL_MINT_BYTES, PlayerAccount, startSpeedrun, STProvider } from './models/sol-treasure';
 import { GAME_KEY, INDEXES, ITEMS } from './models/v0';
 import { web3 } from '@project-serum/anchor';
 // import { BG_SOUND, FXs, playByte } from './sounds/music-man';
@@ -46,19 +46,60 @@ function Loop(){
     actionCrank: [actionCrank, crankAction],
     globalState: [globalState, setGlobalState],
     curtains: [curtains, drawCurtains, setCurtains],
+    isLoading: [isLoading, setIsLoading],
     popup: [popup, showPopup],
     logout: [logout],
   } = React.useContext(StoreContext);
   const [playingMusic, setPlayingMusic] = React.useState(false);
 
+  const forceUpdate = () => {
+    setIsLoading(true);
+    STSolana.connectWallet(false).then(()=>{
+      getGameAccount(
+        stProvider,
+        gameAccount.game,
+      ).then((newGameAccount)=>{
+        getPlayerAccount(
+          stProvider,
+          playerAccount.playerAccount,
+        ).then((newPlayerAccount)=>{
+          drawCurtains(
+            "State Loaded."
+          );
+          onAccountsLoaded(
+            newGameAccount,
+            newPlayerAccount,
+          )
+        }).catch((error)=>{
+          setIsLoading(false);
+          drawCurtains(
+            "Solana Error [" + errorToString(error) + "]",
+          );
+        })
+      }).catch((error)=>{
+        setIsLoading(false);
+        drawCurtains(
+          "Solana Error [" + errorToString(error) + "]",
+        );
+      })
+    }).catch((error)=>{
+      setIsLoading(false);
+      drawCurtains(
+        "Solana Error [Can't connect to wallet]",
+      );
+    })
+
+  }
 
   const connectWallet = (onlyIfTrusted?:boolean) => { 
+    setIsLoading(true);
     STSolana.connectWallet(onlyIfTrusted).then(async (walletKey:PublicKey)=>{
       setSTProvider(await STProvider.init(
         STSolana.getProvider()
       ))
     }).catch((error)=>{
       console.log("Connecting Wallet Error");
+      setIsLoading(false);
     });
   };
 
@@ -66,63 +107,92 @@ function Loop(){
     index0: number,
     index1: number,
   ) => {
-    hashTwoItems(
-      stProvider,
-      gameAccount,
-      playerAccount,
-      gameAccount.items[index0].mint,
-      gameAccount.items[index1].mint,
-      { hash: NULL_MINT_BYTES }
-    ).then((updatedAccount)=>{
-      setPlayerAccount(updatedAccount);
-    }).catch((error)=>{
-      showSnackbar(
-        "Error minting answer",
-        SNACKBAR_SEVERITY.error,
+    setIsLoading(true);
+    STSolana.connectWallet(false).then(()=>{
+      hashTwoItems(
+        stProvider,
+        gameAccount,
+        playerAccount,
+        gameAccount.items[index0].mint,
+        gameAccount.items[index1].mint,
+        { hash: NULL_MINT_BYTES }
+      ).then((updatedAccount)=>{
+        setPlayerAccount(updatedAccount);
+      }).catch((error)=>{
+        setIsLoading(false);
+        drawCurtains(
+          "Solana Error [" + errorToString(error) + "]",
+        );
+      });
+    }).catch(()=>{
+      setIsLoading(false);
+      drawCurtains(
+        "Solana Error [Can't connect to wallet]",
       );
     });
+
   }
 
   const mintAnswer = (
     index: number,
     hash: number[],
   ) => {
-    hashItem(
-      stProvider,
-      gameAccount,
-      playerAccount,
-      gameAccount.items[index].mint,
-      { hash }
-    ).then((updatedAccount)=>{
-      setPlayerAccount(updatedAccount);
+    setIsLoading(true);
+    STSolana.connectWallet(false).then(()=>{
+      hashItem(
+        stProvider,
+        gameAccount,
+        playerAccount,
+        gameAccount.items[index].mint,
+        { hash }
+      ).then((updatedAccount)=>{
+        setPlayerAccount(updatedAccount);
+      }).catch((error)=>{
+        setIsLoading(false);
+  
+        drawCurtains(
+          "Solana Error [" + errorToString(error) + "]",
+        );
+      });
     }).catch((error)=>{
-
+      setIsLoading(false);
       drawCurtains(
-        "Solana Error",
+        "Solana Error [Can't connect to wallet]",
       );
-    });
+    })
+
   }
 
   const blackHoleForge = (
     input0: web3.PublicKey,
     input1: web3.PublicKey,
   ) => {
-    forgeItem(
-      stProvider,
-      gameAccount,
-      playerAccount,
-      input0,
-      input1,
-      gameAccount.items[INDEXES.blackKey].mint,
-      { combinationIndex: 0 }
-    ).then((updatedAccount)=>{
-      setPlayerAccount(updatedAccount);
+    setIsLoading(true);
+    STSolana.connectWallet(false).then(()=>{
+      forgeItem(
+        stProvider,
+        gameAccount,
+        playerAccount,
+        input0,
+        input1,
+        gameAccount.items[INDEXES.blackKey].mint,
+        { combinationIndex: 0 }
+      ).then((updatedAccount)=>{
+        setPlayerAccount(updatedAccount);
+      }).catch((error)=>{
+        console.log(error);
+        setIsLoading(false);
+        drawCurtains(
+          "Solana Error [" + errorToString(error) + "]",
+        );
+      });
     }).catch((error)=>{
-
+      setIsLoading(false);
       drawCurtains(
-        "Solana Error",
+        "Solana Error [Can't connect to wallet]",
       );
     });
+
   }
 
   const redHerring = () => {
@@ -132,11 +202,50 @@ function Loop(){
     );
   }
 
+  const startRecreationSpeedrun = () => {
+    if(gameState.supernova.getTime() < Date.now()
+      || stProvider.owner.equals(gameAccount.coach)
+    ){
+      setIsLoading(true);
+      STSolana.connectWallet(false).then(()=>{
+        startSpeedrun(
+          stProvider,
+          gameAccount,
+          playerAccount,
+        ).then(()=>{
+          drawCurtains(
+            "Ready. Set. Go.",
+            false,
+            ()=>{
+              setTimeout(logout, 999);
+            }
+          );
+        }).catch((error)=>{
+          setIsLoading(false);
+          console.log(error);
+          console.log(JSON.stringify(error));
+          drawCurtains(
+            "Solana Error",
+          );
+        })
+      }).catch((error)=>{
+        setIsLoading(false);
+        drawCurtains(
+          "Solana Error [Can't connect to wallet]",
+        );
+      })
+
+    }
+  }
+
   const startMint = ( cameraSlot: STS.ST_CAMERA_SLOTS ) => { 
-    console.log("Mint Button: " + cameraSlot);
     // playByte(FXs.noOp, playingMusic);
 
+
     switch(cameraSlot){
+      case STS.ST_CAMERA_SLOTS.slot1:
+        startRecreationSpeedrun();
+      break;
       case STS.ST_CAMERA_SLOTS.sslot0:
         if(gameState.whiteChest < 1){
           mintTwo(
@@ -145,10 +254,9 @@ function Loop(){
           );
         } else {
           drawCurtains(
-            "Winner!",
+            "Real Winner!",
           );
         }
-
       break;
       case STS.ST_CAMERA_SLOTS.slot0: 
         if(gameState.blackChest < 1){
@@ -196,13 +304,13 @@ function Loop(){
           gameState.whiteKey == 0 ? gameState.whiteMintBytes : NULL_MINT_BYTES,
         );
       break;
+
     }
 
   };
   const openPuzzle = (cameraSlot: STS.ST_CAMERA_SLOTS ) => { 
     // playByte(FXs.op, playingMusic);
 
-    console.log("Puzzle Button: " + cameraSlot);
     switch(cameraSlot){
       case STS.ST_CAMERA_SLOTS.sslot0: logout(); break;
       case STS.ST_CAMERA_SLOTS.slot0: logout(); break;
@@ -251,9 +359,9 @@ function Loop(){
           newPlayerAccount,
         )
       }).catch((error)=>{
-        showSnackbar(
-          "Could not create player account",
-          SNACKBAR_SEVERITY.error
+        setIsLoading(false);
+        drawCurtains(
+          "Could not create player account.",
         );
       });
     }
@@ -262,13 +370,13 @@ function Loop(){
 
     let message = "";
     if(isRecon){
-      message = "You'll need to have at least 1 Replay Token to create an account. After this you will be asked to create a Sol-Treasure Account. This only has to be done once!";
+      message = "You'll need to have at least 1 Replay Token to create an account. Once that happens and your account has been created, you can freely play the game as long as you hold on to your token!";
     } else {
-      message = "I'm glad you're here! We need to get the treasure out of the chest before the supernove! But before we can begin you will be asked to create a 1-time Sol-Treasure account.";
+      message = "Your mission is simple, solve the puzzles, mint the keys (0.05 ◎ ea) and open the chest BEFORE the supernova. Since you are a new explorer, you'll be asked to open a data account (~0.01 ◎). This only has to be done once! \n\n\nGood luck, we're all counting on you!";
     }
 
     showPopup(
-      "Welcome!",
+      "You Ready?",
       message,
       cb,
     )
@@ -279,16 +387,17 @@ function Loop(){
     newGameAccount: GameAccount,
     newPlayerAccount: PlayerAccount,
   ) => {
-
-
+    console.log("Supernova Date: " + new Date(1000 * (newGameAccount.supernovaDate.toNumber())));
 
     setGameAccount(newGameAccount);
     setPlayerAccount(newPlayerAccount);
-
+    setIsLoading(false);
   }
 
   // On Player Account Change
   React.useEffect(() => {
+    setIsLoading(false);
+
     if ( stProvider.valid ) {
 
       const newGameState = STState.updateGameState(
@@ -353,6 +462,7 @@ function Loop(){
     // BG_SOUND.set(playingMusic);
 
   }, [playingMusic]);
+
   
   // On Login
   React.useEffect(() => {
@@ -365,22 +475,19 @@ function Loop(){
       )
 
     } else {
+      setIsLoading(false);
       setGlobalState(STState.ST_GLOBAL_STATE.notConnected)
     }
   }, [stProvider]);
 
-  // On Crank
-  React.useEffect(() => {
-
-  }, [actionCrank]);
-
-
   return (<>
+
     <STHUD 
         connectWallet={connectWallet}
         startMint={startMint}
         openPuzzle={openPuzzle}
         leaveDevMode={leaveDevMode}
+        forceRefresh={forceUpdate}
     />
     <NootPuzzlePage/>
     <DroniesPuzzlePage redHerring={redHerring}/>
@@ -399,7 +506,6 @@ function App() {
           <Loop/>
           <STWorld />
           <Ticker />
-          <STSnackbar/>
           <STCurtains/>
           <STPopup />
         </StoreProvider>

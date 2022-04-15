@@ -152,7 +152,7 @@ export function FractalsPuzzlePage(props:any){
         puzzle: ST_PUZZLE_STATE.fractals,
         currentPuzzleState: puzzleState,
         globalState: globalState,
-        title: "[RF6]",
+        title: "[RF8]",
         codes: bytes,
         currentCodes: gameState.whiteMintBytes,
         onClose: (bytes)=>{

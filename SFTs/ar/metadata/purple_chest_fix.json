@@ -1,0 +1,27 @@
+{
+  "name": "Purple Chest",
+  "description": "Purple Chest for the DESOLATEs puzzle",
+  "seller_fee_basis_points": 0,
+  "symbol": "ST-H-PC",
+  "collection": {
+    "name": "Sol-Treasure",
+    "family": "V0 Helpers"
+  },
+  "external_url": "https://sol-treasure.io/",
+  "animation_url": "https://arweave.net/JAPkROSTvxeFmG5mY3n9RfzMgKXf3qNuM9DrbheD75k?ext=glb",
+  "properties": {
+    "files": [
+      {
+        "uri": "https://arweave.net/JAPkROSTvxeFmG5mY3n9RfzMgKXf3qNuM9DrbheD75k?ext=glb",
+        "type": "application/octet-stream"
+      }
+    ],
+    "category": "vr",
+    "creators": [
+      {
+        "address": "4YjAYbmdHXC1QUUoQc363QKitVYoxw9qxCVk5J4ZAYDg",
+        "share": 100
+      }
+    ]
+  }
+}

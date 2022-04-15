@@ -2,7 +2,8 @@
 export const ITEMS = {
     config: {
         collection: "93AM1qra2a8mRjz8KQ4ij2D1GTZaB2Ct62jUzyhtFwji",
-        helper_collection: "ARFqPyjV5WA7Nu2bYqbEaeE8gjWrnN11ddXaHXmxq2d3"
+        helper_collection: "ARFqPyjV5WA7Nu2bYqbEaeE8gjWrnN11ddXaHXmxq2d3",
+        game: "FABt9886NbLDkfJReCNw4EicD2zPoYVC25jkmMyGXvUP"
     },
     solape: {
         amount: 100_000,
@@ -133,16 +134,34 @@ export const ITEMS = {
         json: "https://arweave.net/5ZJ2Y97gBaJdYp1P-zNcqTlhDFXp2q5K21mwdGgjyLM",
         mint: "2G5T3dhjwp8WCAs4W44KfW1bVJESe8ZHxHDkjytXPCa4",
     },
+    greenChestFix: {
+        amount: 1,
+        glb:  "https://arweave.net/88Nq6kThK6EzlNavEmo0riwvC1vTgstPxCi4j_JhmQw",
+        json: "https://arweave.net/M-MI3iIpwzLQYZ13jraT6LNetPT4wO2z-N5KmorJjm4",
+        mint: "",
+    },
     blueChest: {
         amount: 1,
         glb:  "https://arweave.net/9iBVnYBlOmHaf41i3LQ6-lDrXVs76jpbe69NjJRXaho",
         json: "https://arweave.net/vlTlTSzx_xBHWJObstiMxa310iKHk5YA62PApjtxkQ4",
         mint: "J7NeabhWP78HrDWKBJ9hH7ijXKhxhvTfCrnr7Hu1kc7A",
     },
+    blueChestFix: {
+        amount: 1,
+        glb:  "https://arweave.net/9iBVnYBlOmHaf41i3LQ6-lDrXVs76jpbe69NjJRXaho",
+        json: "https://arweave.net/mQRaHFyrdtBVeUlAUMi-aGnCzKAknwi9TmtTmawARVw",
+        mint: "J7NeabhWP78HrDWKBJ9hH7ijXKhxhvTfCrnr7Hu1kc7A",
+    },
     purpleChest: {
         amount: 1,
         glb:  "https://arweave.net/JAPkROSTvxeFmG5mY3n9RfzMgKXf3qNuM9DrbheD75k",
         json: "https://arweave.net/haSEU87jSTeUr6FYFYE4asW6O9816n8RvcvkaZncu1Q",
+        mint: "EowBFyrTyZHD3HQQqehrWZmzoog9afNH4FnVsUk9o9LA",
+    },
+    purpleChestFix: {
+        amount: 1,
+        glb:  "https://arweave.net/JAPkROSTvxeFmG5mY3n9RfzMgKXf3qNuM9DrbheD75k",
+        json: "https://arweave.net/mXdqUb_saDynJfdlMjCi0Q_A52I6iw4l5Mjby20lJqA",
         mint: "EowBFyrTyZHD3HQQqehrWZmzoog9afNH4FnVsUk9o9LA",
     },
 }

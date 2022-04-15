@@ -8,7 +8,7 @@ const secretArray = require('/Users/drkrueger/.config/solana/programs/sol-treasu
 const secret = new Uint8Array(secretArray);
 const payerKeypair = anchor.web3.Keypair.fromSecretKey(secret);
 
-const gameToEnd = new anchor.web3.PublicKey("BPRGLYsq5HiXBTGdRJT8kZYDeCZEU4McDWCiLadE53G5");
+const gameToEnd = new anchor.web3.PublicKey("FABt9886NbLDkfJReCNw4EicD2zPoYVC25jkmMyGXvUP");
 
 const supernova = async(
     stProvider: ST.STProvider,
@@ -52,13 +52,8 @@ const endGame = async() => {
 const main = async() => {
     console.log("🚀 Starting test...");
   
-    // const provider = anchor.Provider.env();
-    const opts = anchor.Provider.defaultOptions()
-    const provider = new anchor.Provider(
-      new anchor.web3.Connection("http://localhost:8899", opts.preflightCommitment),
-      new NodeWallet(payerKeypair),
-      opts,
-    )
+    let ownerWallet = new NodeWallet(payerKeypair);
+    const provider = helpers.getSolanaProvider(ownerWallet, false);
     anchor.setProvider(provider);
 
         
@@ -69,23 +64,27 @@ const main = async() => {
 
 
     // ---------------------- CREATE GAME ----------------------------------
-    let game = await V0.createTheGame(
-      stProvider,
-      anchor.web3.Keypair.generate(),
-      true
-    );
+    // let game = await V0.createTheGame(
+    //   stProvider,
+    //   anchor.web3.Keypair.generate(),
+    //   false
+    // );
 
-    game = await V0.startGame(
-      stProvider,
-      game,
-    );
+    let game = await ST.getGameAccount(stProvider, V0.GAME_KEY);
 
-    console.log(await ST.gameToString(
-      stProvider,
-      game
-    ));
+    // game = await V0.startGame(
+    //   stProvider,
+    //   game,
+    // );
 
-    console.log("... to the moon! 🌑")
+    // console.log(await ST.gameToString(
+    //   stProvider,
+    //   game
+    // ));
+
+    console.log(await ST.getGameAccount(stProvider, V0.GAME_KEY));
+
+    // console.log("... to the moon! 🌑")
   }
   
   const runMain = async () => {

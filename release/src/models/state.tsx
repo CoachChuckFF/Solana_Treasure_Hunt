@@ -9,6 +9,7 @@ import { Vector3 } from 'three';
 import { addDays } from "./clock";
 import { GAME_KEY, INDEXES } from "./v0";
 import { BNToDate, findPlayerAccount, GameAccount, getGameAccount, getPlayerAccount, PlayerAccount, STProvider } from "./sol-treasure";
+import { web3 } from "@project-serum/anchor";
 
 export const FRACTAL_SOLUTION = "TTQPHHPT";
 
@@ -41,6 +42,8 @@ export enum ST_PUZZLE_STATE {
 
 export interface GameState {
     // Metrics
+    player: web3.PublicKey,
+    coach: web3.PublicKey,
     supernova: Date;
     gameStart: Date;
     runStart: Date;
@@ -86,6 +89,8 @@ export const NULL_GAME_STATE: GameState = {
     gameStart: NULL_START_DATE,
     runStart: NULL_START_DATE,
     runPercentTimestamp: NULL_TIMESTAMP,
+    player: web3.PublicKey.default,
+    coach: web3.PublicKey.default,
     runPercent: 0,
     ogPercent: 0,
     isSpeedrunning: false,
@@ -219,7 +224,7 @@ export const getStory = () => {
     //     return "Welcome! The supernova has already happened... Hoever, if you're playing this right now, you're actually playing a digitally recreated world saved within a replay token or an OG sol-treasure account. You won't be able to mint anything, however, you can see how fast you can solve the puzzles! Happy Speedrunning!\n\nLove,\nCoach Chuck";
     // }
 
-    return "Welcome to the Sol-Treasure microverse, which is, going to explode soon... The center star is going supernova. There is treasure trapped here, and when the supernova hits, everything remaining will be burned. Fortunately, if you can retrieve 99% of the collection, I'll be able to digitally recreate this little world! So your mission is simple: solve puzzles, mint keys, and discover the secrets before they are blown away forever. \n\nGood Luck!\n\np.s. Keys cost 0.05 and wrong answers break keys at 0.025.";
+    return "Welcome to the Sol-Treasure microverse, which is, going to explode soon... The star beneath you is going supernova. There is treasure trapped here, and when the supernova hits, everything remaining will be burned. Fortunately, if you can retrieve 99% of the collection, you'll be able to digitally recreate this little world! So your mission is simple: solve puzzles, mint keys, and discover the secrets before they are blown away forever. \n\n Each key costs 0.05, BUT a wrong answer results in a broken key at 0.025\n\nGood Luck!\n\n";
     
 }
 
@@ -233,6 +238,8 @@ export const updateGameState = (
         supernova: BNToDate(gameAccount.supernovaDate),
         gameStart: BNToDate(gameAccount.startDate),
         runStart: BNToDate(playerAccount.runStart),
+        player: playerAccount.player,
+        coach: gameAccount.coach,
         runPercentTimestamp: BNToDate(playerAccount.runPercentTimestamp),
         runPercent: playerAccount.runPercent,
         ogPercent: playerAccount.ogPercent,

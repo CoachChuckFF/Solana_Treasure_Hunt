@@ -42,8 +42,16 @@ export const getMSToSupernova = (supernova: Date) => {
     return supernova.getTime() - Date.now();
 }
 
+export const getMSFromRunStart = (runStart: Date) => {
+    return Date.now() - runStart.getTime();
+}
+
 export const getCountdownString = (supernova: Date) => {
     return(getTimeString(getMSToSupernova(supernova)));
+}
+
+export const getTimerString = (startRun: Date) => {
+    return(getTimeString(getMSFromRunStart(startRun)));
 }
 
 export const getTimeString = (timeInMS: number) => {

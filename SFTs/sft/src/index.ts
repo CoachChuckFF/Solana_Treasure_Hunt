@@ -24,11 +24,11 @@ const command = "spl-token transfer BSuCiPcSpWRT7PabVWyBDemgndb1gZX2mMMkqur5Gfxs
 const test = "https://arweave.net/NuSmhExsvXotBoCJ0CN9UFh8FOe37FhjIVi_E63sdaw"
 
 
-const COLLECTION = ITEMS.config.collection;
+const COLLECTION = "";
 
-const META = require('../../ar/metadata/purple_chest.json');
-const URI = ITEMS.purpleChest.json;
-const AMOUNT = ITEMS.purpleChest.amount;
+const META = require('../../ar/metadata/blue_chest_fix.json');
+const URI = ITEMS.blueChestFix.json;
+const AMOUNT = ITEMS.blueChestFix.amount;
 
 const SPL = undefined; //new anchor.web3.PublicKey('DEAj8PGJrszPvzoFEihCfNxcFTjEsSqGiwaFgUwehPz2');
 const METADATA = undefined; //new anchor.web3.PublicKey('3P3EGw8kw6CPAKccFCv9aEc2eY26vPmHVCzqvbQPvMps');
@@ -46,13 +46,14 @@ const main = async () => {
 
     let collectionData = undefined;
     if( COLLECTION.length !== 0 ){
+        console.log("Getting Collection");
         collectionData = await helpers.getCollectionData(
             provider,
             new anchor.web3.PublicKey(COLLECTION),
         );
     }
 
-    if(collectionData === undefined &&  COLLECTION.length !== 0 ) return;
+    if(collectionData === undefined && COLLECTION.length !== 0 ) return;
 
     console.log("Creating SFT...");
     const SFTData = await helpers.createSFT(
