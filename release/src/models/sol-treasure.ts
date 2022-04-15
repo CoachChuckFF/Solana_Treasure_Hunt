@@ -1009,8 +1009,8 @@ export const leaderboardSort = (
     a: GameLeaderboardInfo,
     b: GameLeaderboardInfo,
 ) => {
-    if(a.runPercent > b.runPercent){ return 1; }
-    if(a.runPercent < b.runPercent){ return -1; }
+    if(a.runPercent > b.runPercent){ return -1; }
+    if(a.runPercent < b.runPercent){ return 1; }
 
     let aTime = a.runPercentTimestamp.sub(a.gameStart);
     let bTime = b.runPercentTimestamp.sub(b.gameStart);
@@ -1021,8 +1021,8 @@ export const speedboardSort = (
     a: GameLeaderboardInfo,
     b: GameLeaderboardInfo,
 ) => {
-    if(a.runPercent > b.runPercent){ return 1; }
-    if(a.runPercent < b.runPercent){ return -1; }
+    if(a.runPercent > b.runPercent){ return -1; }
+    if(a.runPercent < b.runPercent){ return 1; }
 
     let aTime = a.runPercentTimestamp.sub(a.runStart);
     let bTime = b.runPercentTimestamp.sub(b.runStart);

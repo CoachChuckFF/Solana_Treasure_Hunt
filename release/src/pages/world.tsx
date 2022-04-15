@@ -879,7 +879,7 @@ function Leaderboard(props:any) {
             string += sortedLB[i].name.substring(0,3);
             string += "             ";
             string += `${sortedLB[i].runPercent}%   `;
-            string += `[${getTimeString( BNToDate(sortedLB[i].runPercentTimestamp).getTime() - startTime)}]`;
+            string += `[${getTimeString( BNToDate(sortedLB[i].runPercentTimestamp).getTime() - startTime)}]\n`;
         }
 
         string += '\n ';
@@ -890,7 +890,7 @@ function Leaderboard(props:any) {
                 string += sortedSB[i].name.substring(0,3);
                 string += "             ";
                 string += `${sortedSB[i].runPercent}%   `;
-                string += `[${getTimeString( BNToDate(sortedSB[i].runPercentTimestamp).getTime() - startTime)}]`;
+                string += `[${getTimeString( BNToDate(sortedSB[i].runPercentTimestamp).getTime() - startTime)}]\n`;
             }
         } else {
             string += "Open after Supernova";
