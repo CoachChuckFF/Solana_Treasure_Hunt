@@ -284,9 +284,9 @@ function getHUDState(
 
             let whiteString = "Solve ->";
             if(canBreak){
-                whiteString = "Mint Broken Key";
+                whiteString = "Break Key";
             } else if(canTryMint){
-                whiteString = "Try to Mint Key";
+                whiteString = "Mint Key";
             }
             return {
                 ...NULL_HUD_STATE,
@@ -327,9 +327,9 @@ function getHUDState(
 
             let blueString = "Solve ->";
             if(canBreak){
-                blueString = "Mint Broken Key";
+                blueString = "Break Key";
             } else if(canTryMint){
-                blueString = "Try to Mint Key";
+                blueString = "Mint Key";
             }
 
             return {
@@ -345,9 +345,9 @@ function getHUDState(
             canBreak = gameState.greenKey > 0;
             let greenString = "Solve ->";
             if(canBreak){
-                greenString = "Mint Broken Key";
+                greenString = "Break Key";
             } else if(canTryMint){
-                greenString = "Try to Mint Key";
+                greenString = "Mint Key";
             }
             return {
                 ...NULL_HUD_STATE,
@@ -363,9 +363,9 @@ function getHUDState(
 
             let purpleString = "Solve ->";
             if(canBreak){
-                purpleString = "Mint Broken Key";
+                purpleString = "Break Key";
             } else if(canTryMint){
-                purpleString = "Try to Mint Key";
+                purpleString = "Mint Key";
             }
             return {
                 ...NULL_HUD_STATE,
