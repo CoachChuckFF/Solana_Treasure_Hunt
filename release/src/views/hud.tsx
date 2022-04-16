@@ -282,7 +282,7 @@ function getHUDState(
             canTryMint = STState.canTryMint(gameState.whiteMintBytes);
             canBreak = gameState.whiteKey > 0;
 
-            let whiteString = "Solve White ->";
+            let whiteString = "Solve ->";
             if(canBreak){
                 whiteString = "Mint Broken Key";
             } else if(canTryMint){
@@ -298,7 +298,7 @@ function getHUDState(
             } as HUDState;
         case STS.ST_CAMERA_SLOTS.sslot1:
 
-            let blackString = "Solve Black ->";
+            let blackString = "Solve ->";
             return {
                 ...NULL_HUD_STATE,
                 enabled: false,
@@ -325,7 +325,7 @@ function getHUDState(
             canTryMint = STState.canTryMint(gameState.blueMintBytes);
             canBreak = gameState.blueKey > 0;
 
-            let blueString = "Solve Blue ->";
+            let blueString = "Solve ->";
             if(canBreak){
                 blueString = "Mint Broken Key";
             } else if(canTryMint){
@@ -343,7 +343,7 @@ function getHUDState(
         case STS.ST_CAMERA_SLOTS.slot3:
             canTryMint = STState.canTryMint(gameState.greenMintBytes);
             canBreak = gameState.greenKey > 0;
-            let greenString = "Solve Green ->";
+            let greenString = "Solve ->";
             if(canBreak){
                 greenString = "Mint Broken Key";
             } else if(canTryMint){
@@ -361,7 +361,7 @@ function getHUDState(
             canTryMint = STState.canTryMint(gameState.purpleMintBytes);
             canBreak = gameState.purpleKey > 0;
 
-            let purpleString = "Solve Purple ->";
+            let purpleString = "Solve ->";
             if(canBreak){
                 purpleString = "Mint Broken Key";
             } else if(canTryMint){
