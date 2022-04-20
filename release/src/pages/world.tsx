@@ -876,7 +876,7 @@ function Leaderboard(props:any) {
         let string = '- OG Players -\n';
         for (let i = 0; i < sortedLB.length; i++) {
             string += `#${i+1}  `;
-            string += sortedLB[i].name.substring(0,3);
+            string += sortedLB[i].name.substring(0,5);
             string += "             ";
             string += `${sortedLB[i].runPercent}%   `;
             string += `[${getTimeString( BNToDate(sortedLB[i].runPercentTimestamp).getTime() - startTime)}]\n`;
@@ -887,7 +887,7 @@ function Leaderboard(props:any) {
         if( Date.now() > endTime ){
             for (let i = 0; i < sortedSB.length; i++) {
                 string += `#${i+1}  `;
-                string += sortedSB[i].name.substring(0,3);
+                string += sortedSB[i].name.substring(0,5);
                 string += "             ";
                 string += `${sortedSB[i].runPercent}%   `;
                 string += `[${getTimeString( BNToDate(sortedSB[i].runPercentTimestamp).getTime() - startTime)}]\n`;

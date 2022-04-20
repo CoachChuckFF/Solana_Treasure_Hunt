@@ -108,7 +108,7 @@ function Loop(){
       }).catch((error)=>{
         setIsLoading(false);
         drawCurtains(
-          "Solana Error [" + errorToString(error) + "]",
+          "Solana Error [" + errorToString(error, true) + "]",
         );
       });
     }).catch(()=>{
@@ -138,7 +138,7 @@ function Loop(){
         setIsLoading(false);
   
         drawCurtains(
-          "Solana Error [" + errorToString(error) + "]",
+          "Solana Error [" + errorToString(error, true) + "]",
         );
       });
     }).catch((error)=>{

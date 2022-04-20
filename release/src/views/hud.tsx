@@ -21,6 +21,8 @@ export default function TestButton(props:any) {
     );
 }
 
+const SOLVE_TEXT = 'Solve ->';
+
 function TheButton(props:any) {
     let handleClick = props.handleClick as ()=>null;
     let isLoading = props.isLoading as boolean;
@@ -30,7 +32,7 @@ function TheButton(props:any) {
     let textColor = state.textColor ?? ST_COLORS.enabledTextColor;
 
     let cb = () => {
-        if(state.enabled && !isLoading){
+        if(!isLoading){
             handleClick();
         }
     }
@@ -282,7 +284,7 @@ function getHUDState(
             canTryMint = STState.canTryMint(gameState.whiteMintBytes);
             canBreak = gameState.whiteKey > 0;
 
-            let whiteString = "Solve ->";
+            let whiteString = SOLVE_TEXT;
             if(canBreak){
                 whiteString = "Break Key";
             } else if(canTryMint){
@@ -298,7 +300,7 @@ function getHUDState(
             } as HUDState;
         case STS.ST_CAMERA_SLOTS.sslot1:
 
-            let blackString = "Solve ->";
+            let blackString = SOLVE_TEXT;
             return {
                 ...NULL_HUD_STATE,
                 enabled: false,
@@ -325,7 +327,7 @@ function getHUDState(
             canTryMint = STState.canTryMint(gameState.blueMintBytes);
             canBreak = gameState.blueKey > 0;
 
-            let blueString = "Solve ->";
+            let blueString = SOLVE_TEXT;
             if(canBreak){
                 blueString = "Break Key";
             } else if(canTryMint){
@@ -343,7 +345,7 @@ function getHUDState(
         case STS.ST_CAMERA_SLOTS.slot3:
             canTryMint = STState.canTryMint(gameState.greenMintBytes);
             canBreak = gameState.greenKey > 0;
-            let greenString = "Solve ->";
+            let greenString = SOLVE_TEXT;
             if(canBreak){
                 greenString = "Break Key";
             } else if(canTryMint){
@@ -361,7 +363,7 @@ function getHUDState(
             canTryMint = STState.canTryMint(gameState.purpleMintBytes);
             canBreak = gameState.purpleKey > 0;
 
-            let purpleString = "Solve ->";
+            let purpleString = SOLVE_TEXT;
             if(canBreak){
                 purpleString = "Break Key";
             } else if(canTryMint){
@@ -455,7 +457,13 @@ export function STHUD(props: any) {
     }, [cameraSlot, globalState, gameState, puzzleState]);
 
     const connectWallet = () => { props.connectWallet(); }
-    const startMint = () => { props.startMint(cameraSlot); }
+    const startMint = () => { 
+        if(hudState.text === SOLVE_TEXT){
+            props.openPuzzle(cameraSlot); 
+        } else {
+            props.startMint(cameraSlot); 
+        }
+    }
     const openPuzzle = () => { props.openPuzzle(cameraSlot); }
     const forceRefresh = () => { props.forceRefresh(); }
 

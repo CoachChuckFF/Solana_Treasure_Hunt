@@ -1166,8 +1166,9 @@ export const createForgeParams = async (
     };
 }
 
-export const errorToString = (error: any) => {
-    let message = "Unkown";
+export const errorToString = (error: any, isMint: boolean = false) => {
+
+    let message = (isMint) ? "Need 0.05 Sol" : "Unkown";
     if(error.logs){
         if(error.logs.length >= 3){
             const split = (error.logs[2] as String).split('Error Message:');

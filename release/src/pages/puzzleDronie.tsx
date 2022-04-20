@@ -13,11 +13,19 @@ import * as STS from "../models/space";
 import { KEY_CODES } from "../models/keycodes";
 
 const TERMINALSPLIT = '▹';
-const ERRORMSG = 'ERROR: Use SOS for help.';
+const ERRORMSG = 'Tap out SOS for available commands.';
 const NOOP = 'No operation, tap out SOS for available commands.'
 const ERRORMSGSYN = 'SYNTAX ERROR:';
 const WELCOME_MESSAGE = '* Real Bird Noises';
-const WELCOME_DEV_MESSAGE = 'Welcome back Creator';
+const WELCOME_DEV_MESSAGE = 'Welcome back Dev';
+
+const DRONIE_REPONSES = [
+    "Chirp Chirp",
+    "(I'm a pretty bird)",
+    "* Real Bird Noises",
+    "Noot Noot?",
+    "Beep Boop",
+];
 
 function morseToText(morse:string){
     switch(morse){
@@ -175,6 +183,12 @@ function runEmulator(
         return "Ribbit Ribbit! 🐸";
     }
 
+    if(codes[0] === 'BEEP'){
+        setOmniCB();
+        return "BOOP!";
+    }
+
+
     if(codes[0] === 'SUBA'){
         setOmniCB();
         return "Suba Suba! 🐍";
@@ -294,7 +308,7 @@ function runEmulator(
         return "Green Key codes unlocked.";
     }
 
-    return ERRORS[0] + ` [${program}] is not a valid command`;
+    return ERRORS[0] + ` [${program}] is not a valid command - ${ERRORMSG}`;
 }
 
 
@@ -754,7 +768,13 @@ export function DroniesPuzzlePage(props:any){
         clearProgram();
     }
 
-    const onDronie = () => { setResponse("Chirp Chirp") }
+
+
+    const getRandomResponse = () => {
+        return DRONIE_REPONSES[Math.floor(Math.random() * DRONIE_REPONSES.length)];
+    }
+
+    const onDronie = () => { setResponse(getRandomResponse()) }
     const addSpace = () => { handleChar(" "); }
     const addDash = () => { handleChar("-"); }
     const addDot = () => { handleChar("."); }
