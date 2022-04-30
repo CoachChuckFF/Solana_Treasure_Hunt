@@ -91,7 +91,7 @@ export function RugPuzzlePage(props:any){
         <PuzzlePageFrame params={params}>
             <div className="rug-top"></div>
             <div className="rug-middle">
-                <RuggedTerminal program={`This puzzle has been rugged. Orignally, the '${FRACTAL_SOLUTION}' NFT was marketed as your key to the openworld-mmorpg-crafting-puzzle-forkilft-simulator-metaverse (with fishing!). Turns out the 1 week delivery time was UnrEALIstIC... I digress. Fortuntatly for you, the black key can be obtained in another fashion.`}/>
+                <RuggedTerminal program={`This puzzle has been rugged. Originally, the '${FRACTAL_SOLUTION}' NFT was marketed as your key to the openworld-mmorpg-crafting-puzzle-forklift-simulator-metaverse (with fishing!). Turns out the 1 week delivery time was UnrEALIstIC... I digress. Fortuntatly for you, the black key can be obtained in another fashion.`}/>
             </ div>
             <div className="rug-bottom"></div>
         </PuzzlePageFrame>

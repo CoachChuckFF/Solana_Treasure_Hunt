@@ -178,6 +178,7 @@ export const canUnlockChest = ( state: GameState, chest: ST_CHEST_TYPES, globalS
 export const canTryMint = ( mintCodes: number[] ) => {
     if(mintCodes.length !== 4) return false;
     if(mintCodes.includes(-1)) return false;
+
     return true;
 }
 
