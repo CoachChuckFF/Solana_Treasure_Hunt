@@ -950,8 +950,8 @@ function TitleNText(props:any) {
     const diff = 0;
     useFrame(() => { 
         if(!didUpdate){
-            let newPos = Math.min(titleRef.current.position.y + (deltaY / 1000), 5);
-            newPos = Math.max(newPos, -1.55);
+            let newPos = Math.min(titleRef.current.position.y + (deltaY / 1000), 8);
+            newPos = Math.max(newPos, -3.55);
             titleRef.current.position.y = newPos;
             bodyRef.current.position.y = newPos - diff;
 
@@ -966,7 +966,7 @@ function TitleNText(props:any) {
                 objRef: titleRef,
                 text: props.title,
                 fontSize: 0.5,
-                maxWidth: 2.34,
+                maxWidth: 2.55,
                 lineHeight: 1.55,
                 anchorY: "bottom",
                 space: {
@@ -978,7 +978,7 @@ function TitleNText(props:any) {
                 objRef: bodyRef,
                 text: props.body,
                 fontSize: 0.21,
-                maxWidth: 2.34,
+                maxWidth: 2.55,
                 lineHeight: 1.55,
                 anchorY: "top",
                 space: {
