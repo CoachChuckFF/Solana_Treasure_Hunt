@@ -91,7 +91,7 @@ export function ForgePage(props:any){
         <PuzzlePageFrame params={params}>
             <div className="rug-top"></div>
             <div className="rug-middle">
-                <ForgeTerminal program={`You can use this white hole to forge new items by metling down enough scrap materal.`}/>
+                <ForgeTerminal program={`You can use this white hole to forge new items by melting down enough scrap material.`}/>
             </ div>
             <div className="rug-bottom"></div>
         </PuzzlePageFrame>
