@@ -393,7 +393,7 @@ function runDevEmulator(
                     index = parseInt(codes[1].charAt(2));
                     if (isNaN(index)) return ERRORS[4];
                     if (index < 0 ) return ERRORS[4];
-                    if (index > 7 ) return ERRORS[4];
+                    if (index > 8 ) return ERRORS[4];
                 
                     file = FILES[index];
                 } else {
