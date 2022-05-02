@@ -6,7 +6,7 @@ import { Vector3 } from 'three';
 import { addDays } from "./clock";
 import { GAME_KEY, INDEXES } from "./v0";
 import { BNToDate, findPlayerAccount, GameAccount, getGameAccount, getPlayerAccount, PlayerAccount, STProvider } from "./sol-treasure";
-import { web3 } from "@project-serum/anchor";
+import { BN, web3 } from "@project-serum/anchor";
 
 export const FRACTAL_SOLUTION = "TTQPHHPT";
 
@@ -219,12 +219,12 @@ export const updateGameState = (
 ) => {
     const gameState: GameState = {
         ...NULL_GAME_STATE,
-        supernova: BNToDate(gameAccount.supernovaDate),
-        gameStart: BNToDate(gameAccount.startDate),
-        runStart: BNToDate(playerAccount.runStart),
+        supernova: BNToDate(gameAccount.supernovaDate ?? new BN(0)),
+        gameStart: BNToDate(gameAccount.startDate ?? new BN(0)),
+        runStart: BNToDate(playerAccount.runStart ?? new BN(0)),
         player: playerAccount.player,
         coach: gameAccount.coach,
-        runPercentTimestamp: BNToDate(playerAccount.runPercentTimestamp),
+        runPercentTimestamp: BNToDate(playerAccount.runPercentTimestamp ?? new BN(0)),
         runPercent: playerAccount.runPercent,
         ogPercent: playerAccount.ogPercent,
         isSpeedrunning: playerAccount.isSpeedrunning,

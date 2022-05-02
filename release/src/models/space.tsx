@@ -24,9 +24,11 @@ export const WhiteKeyGLB = "models/sol/white_key.glb";
 export const WhiteLockGLB = "models/sol/white_lock.glb";
 export const WhiteUnlockGLB = "models/sol/white_unlock.glb";
 
+export const ChestGLB = "models/sol/black_chest.glb"
 export const ChestOpenedGLB = "models/sol/chest_opened.glb";
 export const ChestClosedGLB = "models/sol/chest_closed.glb";
 
+export const WhiteChestGLB = "models/sol/white_chest.glb"
 export const WhiteChestOpenedGLB = "models/sol/white_chest_opened.glb";
 export const WhiteChestClosedGLB = "models/sol/white_chest_closed.glb";
 
@@ -82,6 +84,7 @@ export const superNovaDistance = 888
 // Spaces
 export const MainArea = new Vector3(0, 0, 0);
 export const SecretArea = new Vector3(0x13, 0x34, 0x55);
+export const GalleryArea = new Vector3(0x00, 0x00, superNovaDistance + 0x55);
 export const CameraOffset = new Vector3(0, EyeLevel, 0);
 
 export const NullSpace: STSpace = {pos: MainArea.clone(), rot: MainArea.clone()};
@@ -89,6 +92,7 @@ export const NullSpace: STSpace = {pos: MainArea.clone(), rot: MainArea.clone()}
 export const StartingCamera: STSpace = {pos: new Vector3(0, EyeLevel, superNovaDistance), rot: new Vector3(0, 0, 0)};
 export const MainCamera: STSpace = {pos: new Vector3(0, EyeLevel, 0).add(MainArea), rot: new Vector3(0, 0, 0) };
 export const SecretCamera: STSpace = {pos: new Vector3(0, EyeLevel, 0).add(SecretArea), rot: new Vector3(0, 0, 0) };
+export const GalleryCamera: STSpace = {pos: new Vector3(0, EyeLevel, 0).add(GalleryArea), rot: new Vector3(0, 0, 0) };
 
 export const HubIndex0: STSpace = {pos: new Vector3(0, 0, -HubRadius), rot: new Vector3(0, 0, 0) };
 export const HubIndex1: STSpace = {pos: new Vector3(HubX, 0, -HubZ), rot: new Vector3(0, -(HexTheta * 1), 0),};
@@ -103,6 +107,13 @@ export const SHubIndex2: STSpace = {pos: (HubIndex2.pos.clone()).add(SecretArea)
 export const SHubIndex3: STSpace = {pos: (HubIndex3.pos.clone()).add(SecretArea), rot: HubIndex3.rot};
 export const SHubIndex4: STSpace = {pos: (HubIndex4.pos.clone()).add(SecretArea), rot: HubIndex4.rot};
 export const SHubIndex5: STSpace = {pos: (HubIndex5.pos.clone()).add(SecretArea), rot: HubIndex5.rot};
+
+export const GHubIndex0: STSpace = {pos: (HubIndex0.pos.clone()).add(GalleryArea), rot: HubIndex0.rot};
+export const GHubIndex1: STSpace = {pos: (HubIndex1.pos.clone()).add(GalleryArea), rot: HubIndex1.rot};
+export const GHubIndex2: STSpace = {pos: (HubIndex2.pos.clone()).add(GalleryArea), rot: HubIndex2.rot};
+export const GHubIndex3: STSpace = {pos: (HubIndex3.pos.clone()).add(GalleryArea), rot: HubIndex3.rot};
+export const GHubIndex4: STSpace = {pos: (HubIndex4.pos.clone()).add(GalleryArea), rot: HubIndex4.rot};
+export const GHubIndex5: STSpace = {pos: (HubIndex5.pos.clone()).add(GalleryArea), rot: HubIndex5.rot};
 
 export const MasterHubInfo = [
     HubIndex0,

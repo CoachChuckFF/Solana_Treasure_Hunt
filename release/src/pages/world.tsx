@@ -21,32 +21,10 @@ import * as STS from "../models/space";
 import { TextWoraround } from "../controllers/renderers";
 import { ST_COLORS } from "../models/theme";
 import { getCountdownString, getTimeString, getTimerString } from "../models/clock";
-import { lerp } from "three/src/math/MathUtils";
 // import { FXs, playByte } from "../sounds/music-man";
 import { BNToDate, GameAccount, LeaderboardType, sortLeaderboard } from "../models/sol-treasure";
 
 const PI = Math.PI;
-const TRI = Math.sqrt(3)/2;
-
-const HubRadius = 5.5;
-const HexTheta = (2*PI/6);
-const Thirty = HexTheta / 2;
-const HubZ = Math.sin(Thirty) * (TRI * HubRadius)
-const HubX = Math.cos(Thirty) * (TRI * HubRadius)
-
-
-const P0 = 0;
-const P1 = 0.34;
-const P2 = 1.56;
-const P3 = 0.64;
-const P4 = 1;
-const EASE = (t:number) => {
-    let p0 = lerp(P0, P1, t);
-    let p1 = lerp(P1, P2, t);
-    let p2 = lerp(P2, P3, t);
-    let p3 = lerp(P3, P4, t);
-    return lerp(p0, p3, t);
-}
 
 // Builders -----------------
 interface GLBParams {
@@ -709,6 +687,203 @@ function Chest(props:any) {
     );
 }
 
+function Gallery(props:any) {
+
+    const sunRef = React.useRef<Group>();
+
+    const brokenKeyRef = React.useRef<Group>();
+    const blackKeyRef = React.useRef<Group>();
+    const whiteKeyRef = React.useRef<Group>();
+    const blueKeyRef = React.useRef<Group>();
+    const greenKeyRef = React.useRef<Group>();
+    const purpleKeyRef = React.useRef<Group>();
+
+    const blackChestRef = React.useRef<Group>();
+    const whiteChestRef = React.useRef<Group>();
+    const replayTokenRef = React.useRef<Group>();
+    const realTreasureRef = React.useRef<Group>();
+    const redHerringRef = React.useRef<Group>();
+
+    const refs = [
+        brokenKeyRef,
+        blackKeyRef,
+        whiteKeyRef,
+        blueKeyRef,
+        greenKeyRef,
+        purpleKeyRef,
+        blackChestRef,
+        replayTokenRef,
+        redHerringRef,
+        realTreasureRef,
+        whiteChestRef,
+    ]
+
+    useFrame(({ clock, camera }) => {
+        if( sunRef.current ){
+            sunRef.current.rotation.y  -= 0.003;
+        }
+
+        for (let i = 0; i < refs.length; i++) {
+            const ref = refs[i];
+            if(ref.current){
+                ref.current.rotation.y = (clock.getElapsedTime() / PI) + ((PI / 8) * i)
+            }
+        }
+
+    });
+
+
+    if(props.shouldHide) return (<></>);
+
+    return (
+        <group>
+            <pointLight intensity={0.5} />
+            <STGLBFile params={{
+                file: STS.SunGLB,
+                objRef: sunRef,
+                space: {pos: STS.GalleryArea, rot: STS.GalleryArea, scale: STS.scaleMiniLock},
+            } as GLBParams} />
+            <STGLBFile
+                params={{
+                    file: STS.BrokenKeyGLB,
+                    objRef: brokenKeyRef,
+                    canHighlight: true,
+                    url: "https://solscan.io/token/BqToRRuffJa1nhy2ozy5L9BaqaTVCgq47S9w28Md6HYs",
+                    space: {
+                        ...STS.GHubIndex0,
+                        pos: (new Vector3(0, -0.69, 0)).add(STS.GHubIndex0.pos),
+                        scale: 1
+                    },
+                } as GLBParams}
+            />
+            <STGLBFile
+                params={{
+                    file: STS.BlackKeyGLB,
+                    objRef: blackKeyRef,
+                    canHighlight: true,
+                    url: "https://solscan.io/token/8vn6D45BqpxHYbu5QPbKypUztvrA9YERsBda5Hbox2Lt",
+                    space: {
+                        ...STS.GHubIndex0,
+                        pos: (new Vector3(0, 0, 0)).add(STS.GHubIndex0.pos),
+                        scale: 1
+                    },
+                } as GLBParams}
+            />
+            <STGLBFile
+                params={{
+                    file: STS.WhiteKeyGLB,
+                    objRef: whiteKeyRef,
+                    canHighlight: true,
+                    url: "https://solscan.io/token/5X82vXfWg4RWy9RymE2BbVBNxuhCSoqoVh9TtXfx51L2",
+                    space: {
+                        ...STS.GHubIndex0,
+                        pos: (new Vector3(0, 0.69, 0)).add(STS.GHubIndex0.pos),
+                        scale: 1
+                    },
+                } as GLBParams}
+            />
+            <STGLBFile
+                params={{
+                    file: STS.BlueKeyGLB,
+                    objRef: blueKeyRef,
+                    canHighlight: true,
+                    url: "https://solscan.io/token/27zp1EbjTnzL6vFckoTXKng54piUyr77pTKUR2ktT9Qb",
+                    space: {
+                        ...STS.GHubIndex0,
+                        pos: (new Vector3(0, 2*0.69, 0)).add(STS.GHubIndex0.pos),
+                        scale: 1
+                    },
+                } as GLBParams}
+            />
+            <STGLBFile
+                params={{
+                    file: STS.GreenKeyGLB,
+                    objRef: greenKeyRef,
+                    canHighlight: true,
+                    url: "https://solscan.io/token/JCcLJCKxuvwTeKCzAweaDuXwUqaRBtWi6BJuBCi21MtF",
+                    space: {
+                        ...STS.GHubIndex0,
+                        pos: (new Vector3(0, 3*0.69, 0)).add(STS.GHubIndex0.pos),
+                        scale: 1
+                    },
+                } as GLBParams}
+            />
+            <STGLBFile
+                params={{
+                    file: STS.PurpleKeyGLB,
+                    objRef: purpleKeyRef,
+                    canHighlight: true,
+                    url: "https://solscan.io/token/2cpDi9tK6txAH83hhF9wMr7WqdJByHegjbh4PxFVknyv",
+                    space: {
+                        ...STS.GHubIndex0,
+                        pos: (new Vector3(0, 4*0.69, 0)).add(STS.GHubIndex0.pos),
+                        scale: 1
+                    },
+                } as GLBParams}
+            />
+            <STGLBFile
+                params={{
+                    file: STS.WhiteChestGLB,
+                    objRef: whiteChestRef,
+                    canHighlight: true,
+                    url: "https://solscan.io/token/ALVHiPAbFibDdFGxUwogvqMKa5FoRkSFipAyDqmU7NS8",
+                    space: {
+                        ...STS.GHubIndex5,
+                        scale: 0.34
+                    },
+                } as GLBParams}
+            />
+            <STGLBFile
+                params={{
+                    file: STS.ChestGLB,
+                    objRef: blackChestRef,
+                    canHighlight: true,
+                    url: "https://solscan.io/token/HkNhhakjJNoewms2e2yES3DRFpGDQ9C4cDoA3LwryJGi",
+                    space: {
+                        ...STS.GHubIndex1,
+                        scale: 0.34
+                    },
+                } as GLBParams}
+            />
+            <STGLBFile
+                params={{
+                    file: STS.ReplayTokenGLB,
+                    objRef: replayTokenRef,
+                    canHighlight: true,
+                    url: "https://solscan.io/token/H1FAJcnpuWQQmbvqecyAgFZnC8daP27ALKyvAkgebYzh",
+                    space: {
+                        ...STS.GHubIndex2,
+                        scale: 1
+                    },
+                } as GLBParams}
+            />
+            <STGLBFile
+                params={{
+                    file: STS.FishGLB,
+                    objRef: redHerringRef,
+                    canHighlight: true,
+                    url: "https://solscan.io/token/8p7H4N3gvbSo7UKZbA3kvA82vTzbSnuhVuJMNyaASqD9",
+                    space: {
+                        ...STS.GHubIndex3,
+                        scale: 0.69
+                    },
+                } as GLBParams}
+            />
+            <STGLBFile
+                params={{
+                    file: STS.MirrorGLB,
+                    objRef: realTreasureRef,
+                    canHighlight: true,
+                    url: "https://solscan.io/token/BcKDpADLTnHoeNgAXxyKdWmMkd4iTxyA4XV4kYVqeWqh",
+                    space: {
+                        ...STS.GHubIndex4,
+                        scale: 1
+                    },
+                } as GLBParams}
+            />
+        </group>
+    );
+}
 
 function Inventory(props:any) {
     const gameState = props.gameState as STState.GameState;
@@ -865,35 +1040,36 @@ function Leaderboard(props:any) {
 
     React.useEffect(() => {
         if((props.gameAccount as GameAccount).leaderboard == null) return;
+        if((props.gameAccount as GameAccount).speedboard == null) return;
 
         const leaderboard = (props.gameAccount as GameAccount).leaderboard;
-        const speedboard = (props.gameAccount as GameAccount).leaderboard;
+        const speedboard = (props.gameAccount as GameAccount).speedboard;
         const startTime = BNToDate((props.gameAccount as GameAccount).startDate).getTime();
         const endTime = BNToDate((props.gameAccount as GameAccount).supernovaDate).getTime();
         const sortedLB = [...sortLeaderboard(leaderboard, LeaderboardType.og)];
         const sortedSB = [...sortLeaderboard(speedboard, LeaderboardType.speed)];
     
-        let string = '- OG Players -\n';
-        for (let i = 0; i < sortedLB.length; i++) {
-            string += `#${i+1}  `;
-            string += sortedLB[i].name.substring(0,5);
-            string += "             ";
-            string += `${sortedLB[i].runPercent}%   `;
-            string += `[${getTimeString( BNToDate(sortedLB[i].runPercentTimestamp).getTime() - startTime)}]\n`;
-        }
-
-        string += '\n ';
-        string += '\n- Speedrunners -\n';
+        let string = '- Speedrunners -\n';
         if( Date.now() > endTime ){
             for (let i = 0; i < sortedSB.length; i++) {
                 string += `#${i+1}  `;
                 string += sortedSB[i].name.substring(0,5);
                 string += "             ";
                 string += `${sortedSB[i].runPercent}%   `;
-                string += `[${getTimeString( BNToDate(sortedSB[i].runPercentTimestamp).getTime() - startTime)}]\n`;
+                string += `[${getTimeString( Date.now() - BNToDate(sortedSB[i].runPercentTimestamp).getTime() )}]\n`;
             }
         } else {
             string += "Open after Supernova";
+        }
+
+        string += '\n ';
+        string += '\n- OG Players -\n';
+        for (let i = 0; i < sortedLB.length; i++) {
+            string += `#${i+1}  `;
+            string += sortedLB[i].name.substring(0,5);
+            string += "             ";
+            string += `${sortedLB[i].runPercent}%   `;
+            string += `[${getTimeString( BNToDate(sortedLB[i].runPercentTimestamp).getTime() - startTime)}]\n`;
         }
 
 
@@ -1222,6 +1398,9 @@ export function STWorld() {
                     <Lock secret={true} locked={gameState.greenKey === 0} index={3} lock={STS.GreenLockGLB} unlock={STS.GreenUnlockGLB} space={STS.SHubIndex3} />
                     <BlackHoleForge gameState={gameState}/>
                     {/* <gridHelper position={STS.SecretArea.toArray()} args={[10, 10, ST_COLORS.white, ST_COLORS.grey]}/> */}
+                </React.Suspense>
+                <React.Suspense fallback={null}>
+                    <Gallery shouldHide={!STS.vectorsMatch(cameraPosition.pos, STS.GalleryArea)}/>
                 </React.Suspense>
                 <React.Suspense fallback={null}>
                     <RedHerring gameState={gameState}/>

@@ -36,12 +36,8 @@ const supernova = async(
 const endGame = async() => {
     console.log("🚀 Supernova");
 
-    const opts = anchor.Provider.defaultOptions()
-    const provider = new anchor.Provider(
-      new anchor.web3.Connection("http://localhost:8899", opts.preflightCommitment),
-      new NodeWallet(payerKeypair),
-      opts,
-    )
+    let ownerWallet = new NodeWallet(payerKeypair);
+    const provider = helpers.getSolanaProvider(ownerWallet, false);
     anchor.setProvider(provider);
     const stProvider = await ST.STProvider.init(provider);
 
@@ -98,7 +94,7 @@ const main = async() => {
     }
   };
   
-  runMain();
-// endGame();
+  // runMain();
+  endGame();
 
 

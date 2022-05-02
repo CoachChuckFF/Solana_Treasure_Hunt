@@ -81,6 +81,7 @@ const FILES = [
     "463F3A20446576656C6F706572206E6F7465202D204920646F6E2774206B6E6F7720696620492063616E2066756C6C7920666C657368206F75742074686520275265642048657272696E672720656E642067616D6520636F6E74656E7420696E2074696D652E2E2E20427574207468652069646561206F662061207365636F6E642068756220696E206120626C61636B20686F6C6520697320746F6F206578636974696E6720746F206E6F742066696E6973682E",
     "463F3A20446576656C6F706572204E6F7465202D20546170206F757420534F4C564520746F20717569636B6C7920736F6C76652074686520677265656E2070757A7A6C652E",
     "46383A2054686520776869746520274672616374616C73272070757A7A6C65206E6565647320616E20382D63686172616374657220636F646520746F20736F6C76652E2054686520706F737369626C6520696E7075747320617265205B542C20512C20502C20485D20616674657220746865697220726573706563746976652066616374696F6E732E",
+    "*REDACTED*",
 ]
 
 const ERRORS = [
@@ -101,13 +102,14 @@ const SOS = [
 ];
 
 const DEVHELP = [
-    ("Available commands: SOS [CMD], RF# (# = 0-8), H2A [RF#], *REDACTED*, LOC[##] [##] [##] (## = 00-FF), SN, EXIT"),
+    ("Available commands: SOS [CMD], RF# (# = 0-8), H2A [RF#], *REDACTED*, LOC[##] [##] [##] (## = 00-FF), SN, GAL, EXIT"),
     ("SOS: Gives info. Uses: SOS" + TERMINALSPLIT + "CMD"),
     ("RF#: Read data file #. RF0-RF4"),
     ("H2A: Converts the input hex file to human readable ASCII. H2A" + TERMINALSPLIT + "RF#"),
     ("REDHERRING: Mints the elusive Red Herring"),
     ("LOC: Change the [X, Y, Z] location of the camera, where X, Y, Z = 00-FF. Uses: LOC" + TERMINALSPLIT + "XX" + TERMINALSPLIT + "YY"+ TERMINALSPLIT + "ZZ"),
     ("SN: Triggers a test Supernova"),
+    ("GAL: Takes you to asset Gallery"),
     ("EXIT: Exits dev mode"),
 ];
 
@@ -207,8 +209,6 @@ function runEmulator(
     if(codes[0].includes('RF')){
         if(codes[0].length == 3){
             let number = parseInt(codes[0].charAt(2));
-            if (number < 0 ) return ERRORS[4];
-            if (number > 8 ) return ERRORS[4];
 
             return FILES[number];
         }
@@ -287,8 +287,6 @@ function runEmulator(
                 if(codes[1].length == 3){
                     index = parseInt(codes[1].charAt(2));
                     if (isNaN(index)) return ERRORS[4];
-                    if (index < 0 ) return ERRORS[4];
-                    if (index > 7 ) return ERRORS[4];
                 
                     file = FILES[index];
                 } else {
@@ -325,7 +323,8 @@ function sosDevCode(cmd:string){
     if(cmd.includes('MINT')) return DEVHELP[4];
     if(cmd.includes('LOC')) return DEVHELP[5];
     if(cmd.includes('SN')) return DEVHELP[6];
-    if(cmd.includes('EXIT')) return DEVHELP[7];
+    if(cmd.includes('GAL')) return DEVHELP[7];
+    if(cmd.includes('EXIT')) return DEVHELP[8];
 
     return DEVHELP[0];
 }
@@ -333,6 +332,7 @@ function sosDevCode(cmd:string){
 function runDevEmulator(
     program:string, 
     isAtBH: boolean,
+    isAtGal: boolean,
     gameState: GameState,
     snCB:()=>void, 
     locCB:(vec:Vector3)=>void,
@@ -356,12 +356,22 @@ function runDevEmulator(
 
     if(codes[0] === 'TEL'){
         locCB(isAtBH ? STS.MainArea : STS.SecretArea);
-        return "Teleporting to Secret Location [13, 34, 55]";
+
+        return isAtBH ? 
+            "Teleporting to Main Hub" :
+            "Teleporting to Black Hole [13, 34, 55]";
     }
 
     if(codes[0] === 'EXIT'){
         exitCB();
         return "Exiting Dev mode...";
+    }
+
+    if(codes[0] === 'GAL'){
+        locCB(isAtGal ? STS.MainArea : STS.GalleryArea);
+        return isAtGal ? 
+            "Teleporting to Main Hub" :
+            "Teleporting to Asset Gallery";
     }
 
     if(codes[0] === 'REDHERRING'){
@@ -375,8 +385,7 @@ function runDevEmulator(
     if(codes[0].includes('RF')){
         if(codes[0].length == 3){
             let number = parseInt(codes[0].charAt(2));
-            if (number < 0 ) return ERRORS[4];
-            if (number > 7 ) return ERRORS[4];
+            if (isNaN(number)) return ERRORS[4];
 
             return FILES[number];
         }
@@ -392,8 +401,6 @@ function runDevEmulator(
                 if(codes[1].length == 3){
                     index = parseInt(codes[1].charAt(2));
                     if (isNaN(index)) return ERRORS[4];
-                    if (index < 0 ) return ERRORS[4];
-                    if (index > 8 ) return ERRORS[4];
                 
                     file = FILES[index];
                 } else {
@@ -462,6 +469,8 @@ function runDevEmulator(
         }
         return DEVHELP[3];
     }
+
+
 
     return ERRORS[0] + ` '${program}' is not valid`;
 }
@@ -750,6 +759,7 @@ export function DroniesPuzzlePage(props:any){
             newResponse = runDevEmulator(
                 handleSpace(true), 
                 cameraPostion.pos.equals(STS.SecretArea),
+                cameraPostion.pos.equals(STS.GalleryArea),
                 gameState,
                 snCB, 
                 locCB,
