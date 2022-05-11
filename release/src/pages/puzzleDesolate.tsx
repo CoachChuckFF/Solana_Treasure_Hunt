@@ -165,8 +165,8 @@ export function DesolatePuzzlePage(props:any){
         >
             <div className="puzzle-half" onClick={toDesolate}>
                 <img
-                    src={'/img/desolates.png'}
-                    srcSet={'/img/desolates.png'}
+                    src={'https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/desolates.png'}
+                    srcSet={'https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/desolates.png'}
                     alt={'Coach Chuck'}
                     loading="lazy"
                 />

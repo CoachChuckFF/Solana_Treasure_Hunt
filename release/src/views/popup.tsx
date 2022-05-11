@@ -41,6 +41,11 @@ export default function STPopup() {
     setPopup(NULL_POPUP);
   };
 
+  const handleGetToken = () => {
+    window.open("https://famousfoxes.com/tokenmarket/H1FAJcnpuWQQmbvqecyAgFZnC8daP27ALKyvAkgebYzh", '_blank');
+  }
+
+
   return (
     <div>
       <Dialog
@@ -57,6 +62,7 @@ export default function STPopup() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
+          <Button onClick={handleGetToken}>Get Token</Button>
           <Button onClick={handleClose}>OK</Button>
         </DialogActions>
       </Dialog>

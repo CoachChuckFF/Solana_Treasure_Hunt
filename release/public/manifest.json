@@ -3,17 +3,17 @@
   "name": "Sol-Treasure",
   "icons": [
     {
-      "src": "favicon.ico",
+      "src": "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
     },
     {
-      "src": "logo192.png",
+      "src": "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/logo192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "logo512.png",
+      "src": "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/logo512.png",
       "type": "image/png",
       "sizes": "512x512"
     }

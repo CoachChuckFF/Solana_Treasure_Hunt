@@ -1,13 +1,13 @@
 @font-face {
   font-family: "Vimland";
   src: local("Vimland"),
-   url("./fonts/Vimland.otf") format("truetype");
+   url("https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/Vimland.woff") format("truetype");
 }
 
 @font-face {
   font-family: "Roboto";
   src: local("Roboto"),
-   url("./fonts/robot.woff") format("truetype");
+   url("https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/robot.woff") format("truetype");
 }
   
 

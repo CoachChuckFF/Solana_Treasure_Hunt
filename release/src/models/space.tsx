@@ -2,44 +2,71 @@ import { Camera, Vector3 } from 'three';
 import { lerp } from 'three/src/math/MathUtils';
 
 // MODELS -----------------
-export const BlueKeyGLB = "models/sol/blue_key.glb";
-export const BlueLockGLB = "models/sol/blue_lock.glb";
-export const BlueUnlockGLB = "models/sol/blue_unlock.glb";
+// export const BlueKeyGLB = "models/sol/blue_key.glb";
+// export const BlueLockGLB = "models/sol/blue_lock.glb";
+// export const BlueUnlockGLB = "models/sol/blue_unlock.glb";
+export const BlueKeyGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/blue_key.glb";
+export const BlueLockGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/blue_lock.glb";
+export const BlueUnlockGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/blue_unlock.glb";
+ 
+// export const GreenKeyGLB = "models/sol/green_key.glb";
+// export const GreenLockGLB = "models/sol/green_lock.glb";
+// export const GreenUnlockGLB = "models/sol/green_unlock.glb";
+export const GreenKeyGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/green_key.glb";
+export const GreenLockGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/green_lock.glb";
+export const GreenUnlockGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/green_unlock.glb";
 
-export const GreenKeyGLB = "models/sol/green_key.glb";
-export const GreenLockGLB = "models/sol/green_lock.glb";
-export const GreenUnlockGLB = "models/sol/green_unlock.glb";
+// export const PurpleKeyGLB = "models/sol/purple_key.glb";
+// export const PurpleLockGLB = "models/sol/purple_lock.glb";
+// export const PurpleUnlockGLB = "models/sol/purple_unlock.glb";
+export const PurpleKeyGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/purple_key.glb";
+export const PurpleLockGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/purple_lock.glb";
+export const PurpleUnlockGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/purple_unlock.glb";
 
-export const PurpleKeyGLB = "models/sol/purple_key.glb";
-export const PurpleLockGLB = "models/sol/purple_lock.glb";
-export const PurpleUnlockGLB = "models/sol/purple_unlock.glb";
+// export const BrokenKeyGLB = "models/sol/broken_key.glb";
+export const BrokenKeyGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/broken_key.glb";
 
-export const BrokenKeyGLB = "models/sol/broken_key.glb";
+// export const BlackKeyGLB = "models/sol/black_key.glb";
+// export const BlackLockGLB = "models/sol/black_lock.glb";
+// export const BlackUnlockGLB = "models/sol/black_unlock.glb";
+export const BlackKeyGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/black_key.glb";
+export const BlackLockGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/black_lock.glb";
+export const BlackUnlockGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/black_unlock.glb";
 
-export const BlackKeyGLB = "models/sol/black_key.glb";
-export const BlackLockGLB = "models/sol/black_lock.glb";
-export const BlackUnlockGLB = "models/sol/black_unlock.glb";
+// export const WhiteKeyGLB = "models/sol/white_key.glb";
+// export const WhiteLockGLB = "models/sol/white_lock.glb";
+// export const WhiteUnlockGLB = "models/sol/white_unlock.glb";
+export const WhiteKeyGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/white_key.glb";
+export const WhiteLockGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/white_lock.glb";
+export const WhiteUnlockGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/white_unlock.glb";
 
-export const WhiteKeyGLB = "models/sol/white_key.glb";
-export const WhiteLockGLB = "models/sol/white_lock.glb";
-export const WhiteUnlockGLB = "models/sol/white_unlock.glb";
+// export const ChestGLB = "models/sol/black_chest.glb"
+// export const ChestOpenedGLB = "models/sol/chest_opened.glb";
+// export const ChestClosedGLB = "models/sol/chest_closed.glb";
+export const ChestGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/black_chest.glb"
+export const ChestOpenedGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/chest_opened.glb";
+export const ChestClosedGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/chest_closed.glb";
 
-export const ChestGLB = "models/sol/black_chest.glb"
-export const ChestOpenedGLB = "models/sol/chest_opened.glb";
-export const ChestClosedGLB = "models/sol/chest_closed.glb";
+// export const WhiteChestGLB = "models/sol/white_chest.glb"
+// export const WhiteChestOpenedGLB = "models/sol/white_chest_opened.glb";
+// export const WhiteChestClosedGLB = "models/sol/white_chest_closed.glb";
+export const WhiteChestGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/white_chest.glb"
+export const WhiteChestOpenedGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/white_chest_opened.glb";
+export const WhiteChestClosedGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/white_chest_closed.glb";
 
-export const WhiteChestGLB = "models/sol/white_chest.glb"
-export const WhiteChestOpenedGLB = "models/sol/white_chest_opened.glb";
-export const WhiteChestClosedGLB = "models/sol/white_chest_closed.glb";
+// export const ReplayTokenGLB = "models/sol/replay_token.glb";
+// export const MirrorGLB = "models/sol/mirror.glb";
+// export const FishGLB = "models/sol/fish.glb";
+export const ReplayTokenGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/replay_token.glb";
+export const MirrorGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/mirror.glb";
+export const FishGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/fish.glb";
 
-export const ReplayTokenGLB = "models/sol/replay_token.glb";
-export const MirrorGLB = "models/sol/mirror.glb";
-export const FishGLB = "models/sol/fish.glb";
+// export const SunGLB = "models/sol/sun.glb";
+// export const SupernovaGLB = "models/sol/supernova.glb";
+export const SunGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/sun.glb";
+export const SupernovaGLB = "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/supernova.glb";
 
-export const SunGLB = "models/sol/sun.glb";
-export const SupernovaGLB = "models/sol/supernova.glb";
-
-export const VimlandFont = 'fonts/Vimland.woff';
+export const VimlandFont = 'https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/Vimland.woff';
 export const VimlandChars = 'abcdefghijklmnopqrstuvwxyz';
 
 // MATHS ------------------

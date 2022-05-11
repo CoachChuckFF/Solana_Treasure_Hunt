@@ -95,8 +95,8 @@ function Penguins(props:any){
                     key={nootObj.id}
                     activeNoot={props.activeNoot}
                     nootID={nootObj.id}
-                    nootSrc={`/img/noot.png`}
-                    nootSetSrc={`/img/noot.png`}
+                    nootSrc={`https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/noot.png`}
+                    nootSetSrc={`https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/noot.png`}
                     nootTitle={nootObj.title}
                     onNoot={props.onNoot}
                 />

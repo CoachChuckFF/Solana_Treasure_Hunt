@@ -140,7 +140,7 @@ function Title(props:any) {
 
     return (
         <STText params={{
-            text: "Sol-Treasure",
+            text: "Sol-Treasure\nOn $SHDW",
             objRef: ref,
             space: STS.StartingCamera,
             anchorX: "center",
@@ -927,7 +927,11 @@ function Inventory(props:any) {
             let ref = refs[i] as React.MutableRefObject<Group>;
             let amount = indexToAmount(i);
 
-            if(amount > 0 && globalState === STState.ST_GLOBAL_STATE.playing){
+            if(
+                amount > 0 && 
+                (globalState === STState.ST_GLOBAL_STATE.playing ||
+                globalState === STState.ST_GLOBAL_STATE.reconstruction)
+            ){
                 if(i === 6 && amount === 1) { ref.current.visible = false; continue; }
                 ref.current.position.copy( camera.position );
                 ref.current.rotation.copy( camera.rotation );

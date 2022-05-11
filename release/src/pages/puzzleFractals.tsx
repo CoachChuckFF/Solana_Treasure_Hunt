@@ -10,24 +10,28 @@ const FRACTALS = [
         id: 0,
         url: "https://solscan.io/token/F95gRGdq3prYCZYtXeYXK5MQw5qu3c7rh2hnaAjux9Ld",
         char: 'T',
+        img: "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/Blidain.jpeg",
     },
     {
         title: 'Denhino',
         id: 1,
         url: "https://solscan.io/token/2dVh45UrGpBMjqBB5Dst5DapYR1hiPjADuxmMFpsYVPk",
         char: 'Q',
+        img: "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/Denhino.jpeg",
     },
     {
         title: 'Wordel',
         id: 2,
         url: "https://solscan.io/token/CLHqxn6ETH558S8MkbFFq6kHMXEAGmF3kNQxJ4R8MrzM",
         char: 'P',
+        img: "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/Wordel.jpeg",
     },
     {
         title: 'Dels',
         id: 3,
         url: "https://solscan.io/token/F889P7iHTypAiR9nudsLSx1KbUVrG5SurGQuhM4kzDJP",
         char: 'H',
+        img: "https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/Dels.jpeg",
     },
 ];
 
@@ -50,8 +54,8 @@ function Fractals(props:any){
                 <div className="demo-left">
                     <div className={activeFractal == 0 ? "demo-selected" : "demo-image"} onClick={()=>{onFractal(0)}} key={0}>
                         <img
-                            src={'/img/' + FRACTALS[0].title + '.jpeg'}
-                            srcSet={'/img/' + FRACTALS[0].title + '.jpeg'}
+                            src={"https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/Blidain.jpeg"}
+                            srcSet={"https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/Blidain.jpeg"}
                             alt={FRACTALS[0].title}
                             loading="lazy"
                         />
@@ -60,8 +64,8 @@ function Fractals(props:any){
                 <div className="demo-right">
                 <div className={activeFractal == 1 ? "demo-selected" : "demo-image"} onClick={()=>{onFractal(1)}} key={1}>
                         <img
-                            src={'/img/' + FRACTALS[1].title + '.jpeg'}
-                            srcSet={'/img/' + FRACTALS[1].title + '.jpeg'}
+                            src={"https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/Denhino.jpeg"}
+                            srcSet={"https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/Denhino.jpeg"}
                             alt={FRACTALS[1].title}
                             loading="lazy"
                         />
@@ -72,8 +76,8 @@ function Fractals(props:any){
                 <div className="demo-left">
                 <div className={activeFractal == 2 ? "demo-selected" : "demo-image"} onClick={()=>{onFractal(2)}} key={2}>
                         <img
-                            src={'/img/' + FRACTALS[2].title + '.jpeg'}
-                            srcSet={'/img/' + FRACTALS[2].title + '.jpeg'}
+                            src={"https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/Wordel.jpeg"}
+                            srcSet={"https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/Wordel.jpeg"}
                             alt={FRACTALS[2].title}
                             loading="lazy"
                         />
@@ -82,8 +86,8 @@ function Fractals(props:any){
                 <div className="demo-right">
                 <div className={activeFractal == 3 ? "demo-selected" : "demo-image"} onClick={()=>{onFractal(3)}} key={3}>
                         <img
-                            src={'/img/' + FRACTALS[3].title + '.jpeg'}
-                            srcSet={'/img/' + FRACTALS[3].title + '.jpeg'}
+                            src={"https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/Dels.jpeg"}
+                            srcSet={"https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/Dels.jpeg"}
                             alt={FRACTALS[3].title}
                             loading="lazy"
                         />

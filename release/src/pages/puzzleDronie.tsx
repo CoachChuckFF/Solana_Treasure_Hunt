@@ -826,8 +826,8 @@ export function DroniesPuzzlePage(props:any){
             <PuzzlePageFrame params={params}>
                 <div className="dronie-top" onClick={onDronie}>
                     <img
-                        src={'/img/dronie.png'}
-                        srcSet={'/img/dronie.png'}
+                        src={'https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/commander.png'}
+                        srcSet={'https://shdw-drive.genesysgo.net/DYwKHj8KEMXreNEH1nK7tspEWB4Mn2kM2bvVRZ3vgmq5/commander.png'}
                         alt={'Coach Chuck'}
                         loading="lazy"
                     />

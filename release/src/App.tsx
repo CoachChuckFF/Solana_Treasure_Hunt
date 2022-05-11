@@ -85,7 +85,7 @@ function Loop(){
         STSolana.getProvider()
       ))
     }).catch((error)=>{
-      console.log("Connecting Wallet Error");
+      console.log("Connecting Wallet Error", error);
       setIsLoading(false);
     });
   };

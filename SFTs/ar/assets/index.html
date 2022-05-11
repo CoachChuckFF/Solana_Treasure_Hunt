@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <style>
+        body {
+          background-color: #3D3D3D;
+          text-align: center;
+        }
+        h1 {
+          color: #FF5C38;
+          font-family: Arial, Helvetica, sans-serif;
+          text-shadow: 2px 2px 5px #232323;
+        }
+        .container {
+            height: 95vh;
+            width: 95vw;
+            margin: auto;
+            position: relative;
+            border-radius: 25px;
+            border: 3px solid #232323;
+        }
+        .center {
+            margin: 0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -ms-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+        }
+    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Hi Mom!</title>
+    <link rel="stylesheet" href="style.css">
+    <script>
+      
+        const ID = "momma";
+        const HIMOMMA = "Hi Mom!";
+        const ILOVEYOU = "I love you! ❤️";
+
+        // ---------------------
+        // Hi Momma! I love you! 
+        // -Son
+        // ---------------------
+
+        function iLoveYou() {
+            if(document.getElementById(ID).innerHTML === ILOVEYOU){
+                document.getElementById(ID).innerHTML = HIMOMMA;
+            } else {
+                document.getElementById(ID).innerHTML = ILOVEYOU;
+            }
+        }
+        
+    </script>
+  </head>
+  <body>
+    <div onclick="iLoveYou()" class="container">
+        <div class="center">
+            <h1 id="momma">Hi Mom!</h1>
+        </div>
+    </div>  
+  </body>
+</html>
