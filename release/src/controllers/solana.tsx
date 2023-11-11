@@ -31,7 +31,8 @@ export const getProvider = () => {
     const opts = anchor.Provider.defaultOptions()
     const provider = new anchor.Provider(
       new anchor.web3.Connection(
-        web3.clusterApiUrl('mainnet-beta'), 
+        // web3.clusterApiUrl('mainnet-beta'), 
+        "https://quiet-muddy-log.solana-mainnet.quiknode.pro/4fffdad3de6974646ada97e9a6941f6aa3c5fd8e/",
         opts.preflightCommitment
     ),
       getSolanaWallet(),
