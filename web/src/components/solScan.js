@@ -23,6 +23,9 @@ const getURLData = (baseURL = '', path = '', params = {}) => {
 export const getNFTs = (walletAddress) => {
     return new Promise((resolve, reject) => {
 
+      // Broken URL
+      resolve(FSM.ItemMap);
+
         getURLData(
             "https://public-api.solscan.io",
             "/account/tokens",
